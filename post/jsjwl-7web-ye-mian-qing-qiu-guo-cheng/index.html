@@ -2,29 +2,22 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>0.大纲 | FengBo`s Blog</title>
+<title>7.Web页面请求过程 | FengBo`s Blog</title>
 <link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602497029344">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
-<link rel="alternate" type="application/atom+xml" title="0.大纲 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="alternate" type="application/atom+xml" title="7.Web页面请求过程 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
 
 
 
-    <meta name="description" content="参考资料
+    <meta name="description" content="[TOC]
+可参考 Web页面的请求历程
+1.获取IP地址
 
 
-计算机网络自顶向下 第六版 链接:https://pan.baidu.com/s/1XGNh9ddlfr4ICYhAfVtF2g  密码:c7df
-
-
-图解HTTP彩色版
-
-
-JavaGuide 网络部分的总结
-
-
-整体内容
-..." />
+构建DHCP请求报文，放入UDP报文段，UDP报文段放在IP数据报中，IP数据报放在以太网帧中，通过广播地址到达DHCP服务器。
+DHCP服务器以CIDR快进行分配，生成DHC..." />
     <meta name="keywords" content="计算机网络" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
     <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
@@ -87,7 +80,7 @@ JavaGuide 网络部分的总结
         <div class="post-detail">
           <article class="post">
             <h2 class="post-title">
-              0.大纲
+              7.Web页面请求过程
             </h2>
             <div class="post-info">
               <span>
@@ -105,42 +98,32 @@ JavaGuide 网络部分的总结
             
             <div class="post-content-wrapper">
               <div class="post-content">
-                <h2 id="参考资料">参考资料</h2>
+                <p>[TOC]</p>
+<p>可参考 <a href="https://blog.csdn.net/sun927/article/details/50764837">Web页面的请求历程</a></p>
+<h1 id="1获取ip地址">1.获取IP地址</h1>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497012993.png" alt="" loading="lazy"></figure>
 <ul>
-<li>
-<p>计算机网络自顶向下 第六版 链接:https://pan.baidu.com/s/1XGNh9ddlfr4ICYhAfVtF2g  密码:c7df</p>
-</li>
-<li>
-<p><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/%E7%BD%91%E7%BB%9C/%E5%9B%BE%E8%A7%A3HTTP%E5%BD%A9%E8%89%B2%E7%89%88.pdf">图解HTTP彩色版</a></p>
-</li>
-<li>
-<p><a href="https://github.com/Snailclimb/JavaGuide/tree/master/docs/network">JavaGuide 网络部分的总结</a></p>
+<li>构建DHCP请求报文，放入UDP报文段，UDP报文段放在IP数据报中，IP数据报放在以太网帧中，通过广播地址到达DHCP服务器。</li>
+<li>DHCP服务器以CIDR快进行分配，生成DHCP ACK报文
+<ul>
+<li>IP地址</li>
+<li>DNS服务器IP地址（68.87.71.226）</li>
+<li>默认网关路由器（第一跳路由）IP地址 68.85.2.1</li>
+<li>子网块（网络掩码） 68.85.2.0/24</li>
+</ul>
 </li>
 </ul>
-<h2 id="整体内容">整体内容</h2>
-<ul>
-<li>计算机网络整体层次</li>
-<li>应用层</li>
-<li>运输层</li>
-<li>网络层</li>
-<li>链路层</li>
-<li>物理层</li>
-<li>其他网络</li>
-<li>安全</li>
-</ul>
-<h2 id="网上总结资料">网上总结资料</h2>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602493874726.jpg" alt="" loading="lazy"></figure>
+<h1 id="2dns-arp">2.DNS &amp; ARP</h1>
+<h1 id="3web客户服务器交互tcp和http">3.Web客户——服务器交互：TCP和HTTP</h1>
+<h1 id="4-非持续链接http和持续链接http">4. 非持续链接HTTP和持续链接HTTP</h1>
 
               </div>
               <div class="toc-container">
                 <ul class="markdownIt-TOC">
-<li>
-<ul>
-<li><a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">参考资料</a></li>
-<li><a href="#%E6%95%B4%E4%BD%93%E5%86%85%E5%AE%B9">整体内容</a></li>
-<li><a href="#%E7%BD%91%E4%B8%8A%E6%80%BB%E7%BB%93%E8%B5%84%E6%96%99">网上总结资料</a></li>
-</ul>
-</li>
+<li><a href="#1%E8%8E%B7%E5%8F%96ip%E5%9C%B0%E5%9D%80">1.获取IP地址</a></li>
+<li><a href="#2dns-arp">2.DNS &amp; ARP</a></li>
+<li><a href="#3web%E5%AE%A2%E6%88%B7%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BA%A4%E4%BA%92tcp%E5%92%8Chttp">3.Web客户——服务器交互：TCP和HTTP</a></li>
+<li><a href="#4-%E9%9D%9E%E6%8C%81%E7%BB%AD%E9%93%BE%E6%8E%A5http%E5%92%8C%E6%8C%81%E7%BB%AD%E9%93%BE%E6%8E%A5http">4. 非持续链接HTTP和持续链接HTTP</a></li>
 </ul>
 
               </div>
@@ -148,6 +131,15 @@ JavaGuide 网络部分的总结
           </article>
         </div>
 
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/jsjwl-6wu-li-ceng/">
+              <h3 class="post-title">
+                6.物理层
+              </h3>
+            </a>
+          </div>
         
 
         
