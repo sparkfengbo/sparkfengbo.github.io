@@ -3,7 +3,7 @@
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>7.Web页面请求过程 | FengBo`s Blog</title>
-<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602503357088">
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602504014169">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
 <link rel="alternate" type="application/atom+xml" title="7.Web页面请求过程 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
@@ -27,7 +27,7 @@ DHCP服务器以CIDR快进行分配，生成DHC..." />
       <div class="main-content">
         <div class="site-header">
   <a href="https://sparkfengbo.github.io">
-  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602503357088" alt="">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602504014169" alt="">
   </a>
   <h1 class="site-title">
     FengBo`s Blog
@@ -142,6 +142,32 @@ DHCP服务器以CIDR快进行分配，生成DHC..." />
           </div>
         
 
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io/',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
         
 
         <div class="site-footer">
