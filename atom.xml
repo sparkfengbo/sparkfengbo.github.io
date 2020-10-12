@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-12T09:15:23.691Z</updated>
+    <updated>2020-10-12T10:02:39.048Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -10,6 +10,1242 @@
     <logo>https://sparkfengbo.github.io/images/avatar.png</logo>
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, FengBo`s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[6.物理层]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-6wu-li-ceng/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-6wu-li-ceng/">
+        </link>
+        <updated>2020-10-12T10:01:59.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[5.链路层]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-5lian-lu-ceng/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-5lian-lu-ceng/">
+        </link>
+        <updated>2020-10-12T09:59:45.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="概述">概述</h1>
+<h2 id="提供的服务">提供的服务</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496804763.png" alt="" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<ul>
+<li>可靠交付</li>
+<li>差错检测和纠正</li>
+<li>部分功能是硬件实现的
+<ul>
+<li>网络适配器</li>
+</ul>
+</li>
+</ul>
+<h1 id="比特级差错检测和纠正">比特级差错检测和纠正</h1>
+<h2 id="奇偶校验">奇偶校验</h2>
+<h3 id="思想">思想</h3>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496812959.png" alt="" loading="lazy"></figure>
+<p>出现偶数个比特差错会失效。</p>
+<h3 id="进阶二维奇偶校验">进阶：二维奇偶校验</h3>
+<p>d个比特被划分为i行j列，产生i+j+1奇偶比特作为帧的差错检测比特。</p>
+<p>不仅可以识别，还可以<strong>纠正</strong></p>
+<p>接收方检测和纠正差错的能力称为<strong>前向纠错（FEC，Forward Error Correction）</strong></p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496867343.png" alt="" loading="lazy"></figure>
+<h2 id="检验和方法">检验和方法</h2>
+<p>通常多用于运输层</p>
+<p><strong>因特网检验和（Internet checksum）<strong>基于这种方法，即数据的字节作为16比特的整数对待并</strong>求和</strong>。将<strong>和的反码</strong>放在报文段首部作为<strong>因特网检验和</strong>。</p>
+<p>接收方通过对接受的数据（包括检验和）<strong>计算和并取反码</strong>，检测结构<strong>是否全部为1</strong>。有0就有差错。（TCP、UDP的检验和只用了16比特，降低分组开销）</p>
+<h2 id="循环冗余检测-crc">循环冗余检测  CRC</h2>
+<p>通常多应用在适配器中的链路层</p>
+<p>Cyclic Redundancy Check,CRC编码也称为多项式编码</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602496875809.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602496880524.png" alt="" loading="lazy"></p>
+<h1 id="多路访问协议">多路访问协议</h1>
+<ul>
+<li>信道划分协议
+<ul>
+<li>时分多路复用 TDM</li>
+<li>频分多路复用 FDM</li>
+<li>码分多址 CDMA</li>
+</ul>
+</li>
+<li>随机接入协议
+<ul>
+<li>ALOHA</li>
+<li>CSMA</li>
+</ul>
+</li>
+<li>轮流协议</li>
+</ul>
+<h1 id="链路层寻址和arp"><strong>链路层寻址和ARP</strong></h1>
+<h2 id="mac地址">MAC地址</h2>
+<p>链路层地址，LAN地址、物理地址、MAC地址，都可以</p>
+<p>长度 6字节</p>
+<h2 id="arp-地址解析协议">ARP 地址解析协议</h2>
+<p>Address Resolution Protocol，IP地址和MAC地址的转换</p>
+<p>DNS为因特网中任何地方的主机解析主机名，ARP只为在同一个子网的主机和路由器解析IP地址。</p>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496889894.png" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[4.网络层]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-4wang-luo-ceng/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-4wang-luo-ceng/">
+        </link>
+        <updated>2020-10-12T09:53:07.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="概述">概述</h1>
+<h2 id="功能">功能</h2>
+<p>网络层，将分组从一台发送主机移动到一台接收主机，网络层需要提供两个功能</p>
+<ul>
+<li>转发<br>
+将分组从一个输入链路接口转移到适当的输出链路接口的路由器本地动作</li>
+<li>路由选择<br>
+指网络范围的过程，以决定分组从源到目的地所采取的端到端路径。</li>
+</ul>
+<h2 id="分类">分类</h2>
+<ul>
+<li>虚电路网络（Virtual-Circuit，VC）<br>
+仅在网络层提供连接服务的计算机网络，如ATM网络、帧中继</li>
+<li>数据报网络（datagram network）<br>
+仅在网络层提供无连接服务的计算机网络</li>
+</ul>
+<p><strong>因特网</strong>的网络层提供尽力而为服务（best-effort service）</p>
+<p>其他的网络体系结构模型（例如ATM（Asynchronous Transfer Mode，异步传输）网络、帧中继等）可能提供确保交付、确保最小带宽等特定服务。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496408753.png" alt="" loading="lazy"></figure>
+<h1 id="网际协议ip"><strong>网际协议（IP）</strong></h1>
+<h2 id="ipv4">IPv4</h2>
+<p>可参考 <a href="https://zh.wikipedia.org/wiki/IPv4">维基百科 IPv4</a></p>
+<h3 id="报文格式">报文格式</h3>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496423765.png" alt="" loading="lazy"></figure>
+<h3 id="首部字段含义">首部字段含义</h3>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496436315.png" alt="" loading="lazy"></figure>
+<p><strong>一个IP数据报如果没有选项首部总长20字节，如果承载一个TCP报文段，则每个（无分片的）数据报共承载40字节首部（20字节IP首部、20字节TCP首部）</strong></p>
+<h2 id="ip数据报分片">IP数据报分片</h2>
+<h3 id="为什么要分片">为什么要分片？</h3>
+<p>一个链路层帧能承载的最大数据量叫做最大传送单元（MTU ,Maximum Transmissioon Unit)<br>
+不同的链路层帧的大小不同，以太网帧承载不超过1500字节的数据，在某些广域网链路的帧可承载不超过576字节的数据。当IP数据报比链路层协议的MTU大时，就需要分片。</p>
+<h3 id="如何分片和重组">如何分片和重组？</h3>
+<p>只有<strong>IPv4支持分片，IPv6不支持分片</strong>（如果IPv6数据报太大不能转发到链路上，则路由器只需丢掉该数据报，并向发送方发送“分组太大”的ICMP差错报文）</p>
+<p>分片是可以在路由器中执行的，<strong>重组放在路由器会影响性能，所以重组放在端系统中完成</strong>，目的主机通过IP数据报首部的标识、标志和片偏移字段进行组装。</p>
+<p>详细的组装过程不赘述，大致了解即可。</p>
+<h2 id="编址">编址</h2>
+<h3 id="容量">容量</h3>
+<p>IPv4使用32位（4字节）地址，因此地址空间中只有4,294,967,296（2^32）个地址。不过，一些地址是为特殊用途所保留的，如专用网络（约1800万个地址）和多播地址（约2.7亿个地址），这减少了可在互联网上路由的地址数量。</p>
+<h3 id="点分十进制记法">点分十进制记法</h3>
+<p>IPv4地址可被写作任何表示一个32位整数值的形式，但为了方便人类阅读和分析，它通常被写作点分十进制的形式，即四个字节被分开用十进制写出，中间用点分隔。 例如，<code>192.0.2.235</code>。此外，在点分格式中，每个字节都可用任意的进制表达。如，<code>192.0x00.0002.235</code>是一种合法（但不常用）的表示。</p>
+<h3 id="ipv6的地址表示方法">IPv6的地址表示方法</h3>
+<p>IPv6二进位制下为128位长度，以<strong>16位为一组，每组以冒号“:”隔开，可以分为8组，每组以4位十六进制方式表示</strong>。例如：<code>2001:0db8:86a3:08d3:1319:8a2e:0370:7344</code> 是一个合法的IPv6地址。类似于IPv4的点分十进制，同样也存在点分十六进制的写法，将8组4位十六进制地址的冒号去除后，每位以点号“.”分组，例如：<code>2001:0db8:85a3:08d3:1319:8a2e:0370:7344</code>则记为<code>2.0.0.1.0.d.b.8.8.5.a.3.0.8.d.3.1.3.1.9.8.a.2.e.0.3.7.0.7.3.4.4</code>，其倒序写法用于ip6.arpa子域名记录IPv6地址与域名的映射。</p>
+<p>省略规则</p>
+<ul>
+<li>每项数字前导的0可以省略，省略后前导数字仍是0则继续
+<ul>
+<li><code>2001:DB8:2de:0:0:0:0:e13</code></li>
+</ul>
+</li>
+<li>可以用双冒号“::”表示一组0或多组连续的0，但<strong>只能出现一次</strong>
+<ul>
+<li><code>2001:0DB8:0::0:1428:57ab</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="分类编址">分类编址</h3>
+<p>IP地址的网络部分被限制为长度为8、16或24比特，地址的高位字节被重定义为网络的类(Class)。这个系统定义了五个类别：A、B、C、D和E。A、B和C类有不同的网络类别长度，剩余的部分被用来识别网络内的主机，这就意味着每个网络类别有着不同的给主机编址的能力。D类被用于多播地址，E类被留作将来使用。</p>
+<p>但是C类（/24）子网仅能容纳 2^8 - 2 = 254台主机，B（/16）类可支持65534台主机又太大了。这样会导致地址空间不够用或极度浪费。</p>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496453131.png" alt="" loading="lazy"></figure>
+<h4 id="地址分类">地址分类</h4>
+<p>可参考<a href="https://zh.wikipedia.org/wiki/IPv4">维基百科 IPv4</a>中对地址分类的表述。</p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496468163.png" alt="" loading="lazy"></figure>
+<h5 id="本地回环地址">本地回环地址</h5>
+<p><a href="https://zh.wikipedia.org/zh-sg/Localhost">维基百科LocalHost</a></p>
+<p>localhost是一个在计算机网络中用于表示“此计算机”的主机名。它被用于通过本地环回网络接口，来访问本机运行的服务，并且将会绕过任何物理网络接口硬件。</p>
+<h5 id="公有地址-私有地址">公有地址、私有地址</h5>
+<p><a href="https://www.zhihu.com/question/19813460">知乎-为什么局域网的IP普遍是192.168开头？</a></p>
+<ul>
+<li>公有地址
+<ul>
+<li>A、B、C三类地址中，绝大多数的IP地址都是公有地址，需要向国际互联网信息中心申请注册。但是在IPv4地址协议中预留了3个IP地址段，作为私有地址，供组织机构内部使用。</li>
+</ul>
+</li>
+<li>私有地址
+<ul>
+<li>
+<blockquote>
+<p>A类地址：10.0.0.0--10.255.255.255<br>
+B类地址：172.16.0.0--172.31.255.255<br>
+C类地址：192.168.0.0--192.168.255.255</p>
+</blockquote>
+</li>
+<li>常见的局域网由于容量小，一般选择C类的192.168.0.0作为地址段使用，一些大型企业就需要使用B类甚至A类地址段作为内部网络的地址段。</li>
+</ul>
+</li>
+</ul>
+<h3 id="cidr">CIDR</h3>
+<p><strong>无类别域间路由选择，Classless Interdomain Routing</strong></p>
+<p>a.b.c.d/x</p>
+<p>CIDR创建的分层架构由互联网号码分配局（IANA）和区域互联网注册管理机构（RIR）进行管理，每个RIR均维护着一个公共的WHOIS数据库，以此提供IP地址分配的详情。</p>
+<h2 id="dhcp">DHCP</h2>
+<h3 id="作用">作用</h3>
+<p><strong>动态主机配置协议， Dynamic Host Configuration</strong></p>
+<p>DHCP允许主机<strong>自动</strong>获取（被分配）一个IP地址，获取其他信息，例如它的子网掩码、第一跳路由器地址（默认网关）、本地DNS服务器地址。</p>
+<p>网络管理员能够配置DHCP，以使某给定主机每次和网络连接时能得到一个相同的IP地址，或者某主机将被分配临时的IP地址。</p>
+<h3 id="请求过程">请求过程</h3>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602496499046.png" alt="" loading="lazy"></figure>
+<ul>
+<li>DHCP请求步骤中，会从一个或多个服务器中提供中选择一个，构建请求报文，DHCP服务器可能有多个</li>
+</ul>
+<h2 id="nat">NAT</h2>
+<p><strong>网路地址转换，Network Address Translation</strong></p>
+<p>可参考<a href="https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%8D%A2">维基百科NAT</a></p>
+<h3 id="作用-2">作用</h3>
+<p>一种解决IPv4地址短缺以避免保留IP地址困难的方案。流行在网络上的一种看法认为，IPv6的广泛采用将使得NAT不再需要，因为NAT只是一个处理IPv4的地址空间不足的方法</p>
+<blockquote>
+<p>可以这样理解，假设分配的IP地址已经并且只能满足256个主机使用，假设此时有更多的主机接入，那么没有NAT的话只能重新申请IP地址保证能容纳足够的主机，然是使用NAT的话就不需要，内部维护一个NAT转换表进行内部转发。</p>
+</blockquote>
+<h3 id="如何工作">如何工作</h3>
+<p>NAT转换表（NAT translation table）</p>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602496512030.png" alt="" loading="lazy"></figure>
+<p>假设路由器地址 138.76.29.7</p>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602496520214.jpg" alt="" loading="lazy"></figure>
+<h2 id="icmp"><strong>ICMP</strong></h2>
+<p>互联网控制消息协议（Internet Control Message Protocol）</p>
+<p>可参考<a href="https://zh.wikipedia.org/wiki/%E4%BA%92%E8%81%94%E7%BD%91%E6%8E%A7%E5%88%B6%E6%B6%88%E6%81%AF%E5%8D%8F%E8%AE%AE">维基百科ICMP</a></p>
+<h3 id="作用-3">作用</h3>
+<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602496529664.png" alt="" loading="lazy"></figure>
+<h3 id="报文">报文</h3>
+<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602496547246.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602496557328.png" alt="" loading="lazy"></figure>
+<h2 id="ipv6">IPv6</h2>
+<p>可参考 <a href="https://zh.wikipedia.org/wiki/IPv6">维基百科 IPv6</a></p>
+<h3 id="报文格式-2">报文格式</h3>
+<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602496573861.png" alt="" loading="lazy"></figure>
+<h3 id="首部字段含义-2">首部字段含义</h3>
+<figure data-type="image" tabindex="13"><img src="https://sparkfengbo.github.io/post-images/1602496587461.png" alt="" loading="lazy"></figure>
+<h3 id="与ipv4的不同">与IPv4的不同</h3>
+<figure data-type="image" tabindex="14"><img src="https://sparkfengbo.github.io/post-images/1602496601162.png" alt="" loading="lazy"></figure>
+<p>IPv4有单播地址、多播地址，<strong>IPv6多一个任播地址</strong>。</p>
+<h3 id="转换机制">转换机制</h3>
+<ul>
+<li>双堆栈
+<ul>
+<li>双堆栈（Dual IP stack implementation）是将IPv6视为一种IPv4的延伸，以共享代码的方式去实现网络堆栈，其可以同时支持IPv4和IPv6，如此是相对较为容易的。</li>
+</ul>
+</li>
+<li>隧道
+<ul>
+<li>为了连通IPv6互联网，一个孤立主机或网络需要使用现存IPv4的基础设施来携带IPv6数据包。这可由将IPv6数据包装入IPv4数据包的隧道协议来完成，实际上就是将IPv4当成IPv6的链接层。</li>
+</ul>
+</li>
+</ul>
+<h1 id="路由器">路由器</h1>
+<h2 id="工作原理">工作原理</h2>
+<figure data-type="image" tabindex="15"><img src="https://sparkfengbo.github.io/post-images/1602496616479.png" alt="" loading="lazy"></figure>
+<ul>
+<li>1.输入端口
+<ul>
+<li>将输入的物理链路和路由器连接，实现物理层功能</li>
+<li><img src="https://sparkfengbo.github.io/post-images/1602496658728.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>2.输出端口
+<ul>
+<li><img src="https://sparkfengbo.github.io/post-images/1602496663612.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>3.交换结构
+<ul>
+<li>路由器内部结构，将输入端口和输出端口连接</li>
+<li><img src="https://sparkfengbo.github.io/post-images/1602496672462.png" alt="" loading="lazy"></li>
+<li>经内存交换
+<ul>
+<li>最简单、最早的路由器是传统的计算机</li>
+</ul>
+</li>
+<li>经总线交换</li>
+<li>经互联网络交换</li>
+</ul>
+</li>
+<li>4.路由选择处理器
+<ul>
+<li>执行路由选择协议、维护路由选择表以及连接的链路状态信息</li>
+</ul>
+</li>
+</ul>
+<p>如果路由器输出队列缓存存在拥堵，则对缓存进行管理的策略称为 主动队列管理（AQM，Active Queue Management）</p>
+<p>随机早期检测（RED，Random Early Detection）算法是一种AQM算法。</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602496678994.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602496684544.png" alt="" loading="lazy"></p>
+<h2 id="路由选择算法">路由选择算法</h2>
+<h3 id="分类-链路状态算法与距离向量算法">分类-链路状态算法与距离向量算法</h3>
+<p>广义上的一种分类</p>
+<ul>
+<li>全局式路由选择算法
+<ul>
+<li>用完成的全局性的网络知识计算从源到目的地的最低费用路径，以所有结点之间的连通性和费用为输入</li>
+<li>例如：<strong>链路状态算法（Link State，LS）</strong>（<a href="https://blog.csdn.net/yalishadaa/article/details/55827681">Dijkstra算法</a>）</li>
+</ul>
+</li>
+<li>分散式路由选择算法
+<ul>
+<li>以迭代、分布式的方式计算最低费用路径，没有结点拥有所有网络链路费用的完整信息，而每个结点仅有与其直接相连链路的费用信息。</li>
+<li>例如：<strong>距离向量算法（Distance-Vector，DV）</strong></li>
+</ul>
+</li>
+</ul>
+<p>广义上的另一种分类</p>
+<ul>
+<li>静态路由选择算法
+<ul>
+<li>人工配置</li>
+</ul>
+</li>
+<li>动态路由选择算法
+<ul>
+<li>当网络负载或拓扑发生变化时改变路由选择路径</li>
+</ul>
+</li>
+</ul>
+<h3 id="链路状态算法-dijkstra算法">链路状态算法 - Dijkstra算法</h3>
+<p><a href="https://blog.csdn.net/yalishadaa/article/details/55827681">Dijkstra算法</a></p>
+<h3 id="距离向量算法">距离向量算法</h3>
+<p>每个结点需要维护 <strong>路由选择表</strong>,<strong>基于Bellman-Ford算法</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602496695644.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602496702178.png" alt="" loading="lazy"></p>
+<h3 id="对比">对比</h3>
+<p>暂时忽略，详见 4.5.2.3</p>
+<h3 id="自治系统">自治系统</h3>
+<p>Autonomous System， AS，自治系统内部运行的路由选择算法叫做<strong>自治系统内部路由选择协议</strong>（<strong>内部网关协议 IGP</strong>）。AS内部负责向在本AS之外的目的地转发分组的路由器被称为网关路由器。还有<strong>自治系统间路由选择协议</strong>（<strong>边界网关协议 BGP</strong>）。</p>
+<figure data-type="image" tabindex="19"><img src="https://sparkfengbo.github.io/post-images/1602496707645.png" alt="" loading="lazy"></figure>
+<h2 id="路由选择协议"><strong>路由选择协议</strong></h2>
+<h3 id="内部网关协议rip">内部网关协议：RIP</h3>
+<p>Routing Information Protocol 路由选择信息协议，<strong>基于Bellman-Ford算法，是一种距离向量协议</strong>，每隔30秒会与相邻的路由器交换子消息，以动态的创建路由表。</p>
+<p>可参考<a href="https://zh.wikipedia.org/zh-sg/%E8%B7%AF%E7%94%B1%E4%BF%A1%E6%81%AF%E5%8D%8F%E8%AE%AE">维基百科</a></p>
+<h3 id="内部网关协议ospf">内部网关协议：OSPF</h3>
+<p>Open Shortest Path First 开放最短路优先<br>
+可参考<a href="https://zh.wikipedia.org/wiki/%E5%BC%80%E6%94%BE%E5%BC%8F%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E4%BC%98%E5%85%88">维基百科</a></p>
+<p>OSPF是对链路状态路由协议的一种实现，运作于自治系统内部。它采用 <strong>Dijkstra算法</strong> 来计算最短路径树。</p>
+<h3 id="边界网关协议-bgp">边界网关协议： BGP</h3>
+<p>Border Gateway Protocol</p>
+<p>它通过维护IP路由表或‘前缀’表 <strong>(CDIR化的前缀)</strong> 来实现自治系统（AS）之间的可达性，属于矢量路由协议。</p>
+<p>可参考 <a href="https://zh.wikipedia.org/wiki/%E8%BE%B9%E7%95%8C%E7%BD%91%E5%85%B3%E5%8D%8F%E8%AE%AE">维基百科</a></p>
+<h1 id="广播和多播路由选择">广播和多播路由选择</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%96%AE%E6%92%AD">单播</a>
+<ul>
+<li>每次只有两个实体相互通信，发送端和接收端都是唯一确定的。</li>
+</ul>
+</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%BB%A3%E6%92%AD_(%E7%B6%B2%E8%B7%AF)">广播</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%9A%E6%92%AD">多播</a>
+<ul>
+<li>它把信息同时传递给一组目的计算机。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="20"><img src="https://sparkfengbo.github.io/post-images/1602496721195.png" alt="" loading="lazy"></figure>
+<h2 id="广播路由选择">广播路由选择</h2>
+<p>网络层提供一种源节点到网络中的所有其他结点交付分组</p>
+<p>N次单播</p>
+<ul>
+<li>
+<p>无控制洪泛</p>
+</li>
+<li>
+<p>受控洪泛</p>
+<ul>
+<li>反向路径转发 RPF</li>
+</ul>
+</li>
+<li>
+<p>生成树广播</p>
+</li>
+</ul>
+<h2 id="多播路由选择">多播路由选择</h2>
+<p>单个源节点到网络中的其他结点的一份子集交付分组</p>
+<ul>
+<li>IGMP</li>
+<li>DVMRP</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[3.0 运输层]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-30-yun-shu-ceng/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-30-yun-shu-ceng/">
+        </link>
+        <updated>2020-10-12T09:49:40.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="概述">概述</h1>
+<p><strong>功能：</strong> 运输层协议为运行在不同的主机上的应用进程提供了逻辑通信功能。网络层提供了主机之间的逻辑通信。</p>
+<h1 id="多路复用-多路分解">多路复用 多路分解</h1>
+<p><strong>多路分解</strong>：将运输层报文段中的数据交付到正确的套接字<br>
+<strong>多路复用</strong>：源主机从不同套接字中收集数据块，并为每个数据块封装首部信息生成报文段，传递到网络层，这些工作成为多路复用。</p>
+<h1 id="无连接运输udp">无连接运输：UDP</h1>
+<h2 id="特点">特点</h2>
+<ul>
+<li>
+<p><strong>无连接的</strong><br>
+发送方和接收方的运输层实体之间没有握手。不会引入建立连接的时延。</p>
+</li>
+<li>
+<p><strong>无连接状态</strong><br>
+TCP需要在端系统中维护连接状态，包括接收和发送给缓存、拥塞控制参数以及序号和确认号的参数。</p>
+</li>
+<li>
+<p><strong>分组首部开销小</strong></p>
+</li>
+<li>
+<p><strong>关于何时、发送什么数据的应用层控制更为精细</strong><br>
+UDP打包即发出，没有TCP的拥塞控制等限制，TCP可靠交付可能时延比较大。</p>
+</li>
+<li>
+<p>面向数据报</p>
+</li>
+</ul>
+<blockquote>
+<p>为什么说TCP报文段是面向字节流的，UDP是面向数据报的？</p>
+<p>面向报文的传输方式是应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。因此，应用程序必须选择合适大小的报文。若报文太长，则IP层需要分片，降低效率。若太短，会是IP太小。UDP对应用层交下来的报文，既不合并，也不拆分，而是保留这些报文的边界。这也就是说，应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。</p>
+<p>虽然应用程序和TCP的交互是一次一个数据块（大小不等），但TCP把应用程序看成是一连串的无结构的字节流。TCP有一个缓冲，当应用程序传送的数据块太长，TCP就可以把它划分短一些再传送。如果应用程序一次只发送一个字节，TCP也可以等待积累有足够多的字节后再构成报文段发送出去。</p>
+<p>在TCP建立连接前两次握手的SYN报文中选项字段的MSS值，通信双方商定通信的最大报文长度。如果应用层交付下来的数据过大，就会对数据分段，然后发送；否则通过滑动窗口协议来控制通信双发的数据。</p>
+</blockquote>
+<h2 id="报文">报文</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496197569.png" alt="" loading="lazy"></figure>
+<p>提供端到端的差错检测，但是对差错恢复无能为力，有点UDP的实现是丢弃受损的报文段，其他实现是将受损的报文段交给应用程序并给出警告。</p>
+<h2 id="udp和tcp的不同">UDP和TCP的不同</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496207934.jpeg" alt="" loading="lazy"></figure>
+<h1 id="面向连接的运输tcp">面向连接的运输：TCP</h1>
+<h2 id="特点-2">特点</h2>
+<ul>
+<li><strong>面向连接</strong>的<strong>可靠</strong>运输</li>
+<li><strong>全双工</strong>服务<br>
+进程A和B建立连接，应用层数据可在从进程B流向进程A的同时，也从进程A流向进程B。</li>
+<li>点对点<br>
+连接在单个发送方和单个接收方之间。</li>
+<li>面向字节流</li>
+</ul>
+<p><a href="https://zh.wikipedia.org/wiki/%E4%BC%A0%E8%BE%93%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE">维基百科TCP</a></p>
+<h2 id="mss">MSS</h2>
+<p>TCP三次握手初期设置发送缓存，TCP从发送缓存里取数据，从缓存取出并放到报文段的数据数量受限于 <strong>最大报文段长度（Maximum Segment Size, MSS）</strong>。</p>
+<p>MSS通常根据MTU设置。MSS保证一个TCP报文段适合MTU（报文+TCP/IP首部）。MSS典型值 1460字节。</p>
+<h2 id="报文-2">报文</h2>
+<p>TCP首部通常20字节。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496228383.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496236599.png" alt="" loading="lazy"></figure>
+<h2 id="连接管理">连接管理</h2>
+<h3 id="三次握手">三次握手</h3>
+<p>参考 <a href="https://blog.csdn.net/qzcsu/article/details/72861891">TCP的三次握手与四次挥手</a></p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496247132.png" alt="" loading="lazy"></figure>
+<ul>
+<li>TCP服务器进程先创建传输控制块TCB，时刻准备接受客户进程的连接请求，此时服务器就进入了LISTEN（监听）状态；</li>
+<li>TCP客户进程也是先创建传输控制块TCB，然后向服务器发出连接请求报文，这是报文首部中的同部位SYN=1，同时选择一个初始序列号 seq=x ，此时，TCP客户端进程进入了 SYN-SENT（同步已发送状态）状态。<strong>TCP规定，SYN报文段（SYN=1的报文段）不能携带数据，但需要消耗掉一个序号。</strong></li>
+<li>TCP服务器收到请求报文后，如果同意连接，则发出确认报文。确认报文中应该 ACK=1，SYN=1，确认号是ack=x+1，同时也要为自己初始化一个序列号 seq=y，此时，TCP服务器进程进入了SYN-RCVD（同步收到）状态。<strong>这个报文也不能携带数据，但是同样要消耗一个序号。</strong></li>
+<li>TCP客户进程收到确认后，还要向服务器给出确认。确认报文的ACK=1，ack=y+1，自己的序列号seq=x+1，此时，TCP连接建立，客户端进入ESTABLISHED（已建立连接）状态。<strong>TCP规定，ACK报文段可以携带数据，但是如果不携带数据则不消耗序号。</strong></li>
+<li>当服务器收到客户端的确认后也进入ESTABLISHED状态，此后双方就可以开始通信了。</li>
+</ul>
+<h4 id="为什么需要三次握手而不是两次握手">为什么需要三次握手而不是两次握手？</h4>
+<blockquote>
+<p>一句话，主要防止已经失效的连接请求报文突然又传送到了服务器，从而产生错误。</p>
+<p>如果使用的是两次握手建立连接，假设有这样一种场景，客户端发送了第一个请求连接并且没有丢失，只是因为在网络结点中滞留的时间太长了，由于TCP的客户端迟迟没有收到确认报文，以为服务器没有收到，此时重新向服务器发送这条报文，此后客户端和服务器经过两次握手完成连接，传输数据，然后关闭连接。此时此前滞留的那一次请求连接，网络通畅了到达了服务器，这个报文本该是失效的，但是，两次握手的机制将会让客户端和服务器再次建立连接，这将导致不必要的错误和资源的浪费。</p>
+<p>如果采用的是三次握手，就算是那一次失效的报文传送过来了，服务端接受到了那条失效报文并且回复了确认报文，但是客户端不会再次发出确认。由于服务器收不到确认，就知道客户端并没有请求连接。</p>
+</blockquote>
+<blockquote>
+<p>也可以这样理解，<br>
+第一次 只能确认发送方发送正常<br>
+第二次 能确认接收方发送接收正常，发送方发送正常，但还无法确认发送方接收正常<br>
+第三次 能确认双方接收发送都正常</p>
+</blockquote>
+<h3 id="四次挥手">四次挥手</h3>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602496259516.png" alt="" loading="lazy"></figure>
+<ul>
+<li>客户端进程发出连接释放报文，并且停止发送数据。释放数据报文首部，FIN=1，其序列号为seq=u（等于前面已经传送过来的数据的最后一个字节的序号加1），此时，客户端进入FIN-WAIT-1（终止等待1）状态。 <strong>TCP规定，FIN报文段即使不携带数据，也要消耗一个序号。</strong></li>
+<li>服务器收到连接释放报文，发出确认报文，ACK=1，ack=u+1，并且带上自己的序列号seq=v，此时，服务端就进入了CLOSE-WAIT（关闭等待）状态。<strong>TCP服务器通知高层的应用进程，客户端向服务器的方向就释放了，这时候处于半关闭状态，即客户端已经没有数据要发送了，但是服务器若发送数据，客户端依然要接受。这个状态还要持续一段时间，也就是整个CLOSE-WAIT状态持续的时间。</strong></li>
+<li>客户端收到服务器的确认请求后，此时，客户端就进入FIN-WAIT-2（终止等待2）状态，等待服务器发送连接释放报文 <strong>（在这之前还需要接受服务器发送的最后的数据）。</strong></li>
+<li>服务器将最后的数据发送完毕后，就向客户端发送连接释放报文，FIN=1，ack=u+1，由于在半关闭状态，服务器很可能又发送了一些数据，假定此时的序列号为seq=w，此时，服务器就进入了LAST-ACK（最后确认）状态，等待客户端的确认。</li>
+<li>客户端收到服务器的连接释放报文后，必须发出确认，ACK=1，ack=w+1，而自己的序列号是seq=u+1，此时，客户端就进入了TIME-WAIT（时间等待）状态。<strong>注意此时TCP连接还没有释放，必须经过2*MSL（最长报文段寿命）的时间后，当客户端撤销相应的TCB后，才进入CLOSED状态。</strong></li>
+<li>服务器只要收到了客户端发出的确认，立即进入CLOSED状态。同样，撤销TCB后，就结束了这次的TCP连接。<strong>可以看到，服务器结束TCP连接的时间要比客户端早一些。</strong></li>
+</ul>
+<h4 id="为什么客户端最后还要等待2msl">为什么客户端最后还要等待2MSL？</h4>
+<blockquote>
+<p>MSL（Maximum Segment Lifetime），TCP允许不同的实现可以设置不同的MSL值。</p>
+<p>第一，保证客户端发送的最后一个ACK报文能够到达服务器，因为这个ACK报文可能丢失，站在服务器的角度看来，我已经发送了FIN+ACK报文请求断开了，客户端还没有给我回应，应该是我发送的请求断开报文它没有收到，于是服务器又会重新发送一次，而客户端就能在这个2MSL时间段内收到这个重传的报文，接着给出回应报文，并且会重启2MSL计时器。</p>
+<p>第二，防止类似与“三次握手”中提到了的“已经失效的连接请求报文段”出现在本连接中。客户端发送完最后一个确认报文后，在这个2MSL时间中，就可以使本连接持续的时间内所产生的所有报文段都从网络中消失。这样新的连接中不会出现旧连接的请求报文。</p>
+</blockquote>
+<h3 id="为什么建立连接是三次握手关闭连接却是四次挥手呢">为什么建立连接是三次握手，关闭连接却是四次挥手呢？</h3>
+<blockquote>
+<p>建立连接的时候， 服务器在LISTEN状态下，收到建立连接请求的SYN报文后，把ACK和SYN放在一个报文里发送给客户端。<br>
+而关闭连接时，服务器收到对方的FIN报文时，仅仅表示对方不再发送数据了但是还能接收数据，而自己也未必全部数据都发送给对方了，所以己方可以立即关闭，也可以发送一些数据给对方后，再发送FIN报文给对方来表示同意现在关闭连接，因此，己方ACK和FIN一般都会分开发送，从而导致多了一次。</p>
+</blockquote>
+<h2 id="可靠性传输">可靠性传输</h2>
+<h3 id="arq">ARQ</h3>
+<p><strong>ARQ（Automatic Repeat reQuest）自动重传请求协议</strong> 是OSI模型数据链路层和运输层的错误纠正协议之一。通过<strong>确认</strong>和<strong>超时</strong>这两个机制，在不可靠服务的基础上实现可靠的信息传输。包括<strong>停止等待ARQ协议</strong>和<strong>连续ARQ协议</strong>。</p>
+<p><strong>TCP使用的是连续ARQ协议。</strong></p>
+<p><strong>ARQ协议包括这些机制</strong></p>
+<ul>
+<li>差错检测</li>
+<li>接收方反馈 肯定确认ACK、否定确认NCK
+<ul>
+<li><strong>累计确认：</strong> 接收方不必对收到的分组逐个发送确认。而是在收到几个分组后，对按序到达的最后一个分组发送确认。</li>
+</ul>
+</li>
+<li>重传 超时重传等</li>
+</ul>
+<p><strong>ARQ协议对错误纠正的方法是：</strong></p>
+<ul>
+<li>丢弃已经接收的含有错误的数据包。</li>
+<li>向发送点请求重新发送数据包。</li>
+</ul>
+<p>可参考<a href="https://zh.wikipedia.org/wiki/%E8%87%AA%E5%8A%A8%E9%87%8D%E4%BC%A0%E8%AF%B7%E6%B1%82">维基百科ARQ</a></p>
+<h4 id="连续arq">连续ARQ</h4>
+<p>为了克服停止并等待ARQ协议长时间等待ACK的缺点。这个协议会连续发送一组数据包（流水线传输），然后再等待这些数据包的ACK.</p>
+<p>流水线传输就是发送方可以连续发送多个分组，不必每发完一个分组就停下来等待对方确认。连续ARQ通常结合滑动窗口协议使用。</p>
+<p><strong>回退N重传(Go-Back-N)</strong></p>
+<ul>
+<li>接收点丢弃从第一个没有收到的数据包开始的所有数据包。</li>
+<li>发送点收到NACK后，从NACK中指明的数据包开始重新发送。
+<ul>
+<li>有缺点：不能正确的向发送方反映出接收方已经正确收到的所以分组的信息。</li>
+<li>
+<blockquote>
+<p>比如发送方发送了前5个分组，而中间的第3个分组丢失了，这时候接收方只能对前2个发出确认。而不知道后面3个分组的下落，因此只能把后面的3个分组都重传一次，</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>选择重传(Selective Repeat)</strong></p>
+<ul>
+<li>发送点连续发送数据包但对每个数据包都设有个一个计时器。</li>
+<li>当在一定时间内没有收到某个数据包的ACK时，发送点只重新发送那个没有ACK的数据包。</li>
+</ul>
+<h4 id="停止等待arq">停止等待ARQ</h4>
+<p>停止并等待协议的工作原理如下：</p>
+<ul>
+<li>发送点对接收点发送数据包，然后等待接收点回复ACK并且开始计时。</li>
+<li>在等待过程中，发送点停止发送新的数据包。</li>
+<li>当数据包没有成功被接收点接收时候，接收点不会发送ACK.这样发送点在等待一定时间后，重新发送数据包。</li>
+<li>反复以上步骤直到收到从接收点发送的ACK.</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>较长的等待时间导致低的数据传输速度</li>
+</ul>
+<h3 id="滑动窗口">滑动窗口</h3>
+<p>发送方维护发送窗口，接收方维护接收窗口。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602496289766.jpg" alt="" loading="lazy"></p>
+<p><strong>规则：</strong></p>
+<ul>
+<li>（1）凡是已经发送过的数据，在未收到确认之前，都必须暂时保留，以便在超时重传时使用。</li>
+<li>（2）只有当发送方A收到了接收方的确认报文段时，发送方窗口才可以向前滑动几个序号。</li>
+<li>（3）当发送方A发送的数据经过一段时间没有收到确认（由超时计时器控制），就要使用回退N步协议，回到最后接收到确认号的地方，重新发送这部分数据。</li>
+</ul>
+<p><strong>发送窗口中有四个概念</strong></p>
+<ul>
+<li>已发送并收到确认的数据（不在发送窗口和发送缓冲区之内）</li>
+<li>已发送但未收到确认的数据（位于发送窗口之内）</li>
+<li>允许发送但尚未发送的数据（位于发送窗口之内）</li>
+<li>发送窗口之外的缓冲区内暂时不允许发送的数据。</li>
+</ul>
+<p><strong>接收窗口中也有四个概念</strong></p>
+<ul>
+<li>已发送确认并交付主机的数据（不在接收窗口和接收缓冲区之内）</li>
+<li>未按序收到的数据（位于接收窗口之内）</li>
+<li>允许的数据（位于接收窗口之内）</li>
+<li>不允许接收的数据（位于发送窗口之内）。</li>
+</ul>
+<h2 id="流量控制">流量控制</h2>
+<p>一条TCP连接每一侧主机都为该连接设置了接受缓存。TCP连接收到正确、按序的字节后，它就将数据放入接收缓存。应用程序从该缓存读数据，但不是数据刚到就读取。为了防止发送方发送太多太快，导致接收缓存溢出，TCP提供<strong>流量控制服务（flow-control service）</strong></p>
+<p><strong>使用滑动窗口协议</strong></p>
+<p>发送方维护 <strong>接收窗口（rwnd）</strong> 的变量进行流量控制。</p>
+<p>把rwnd的值放在TCP报文 接收窗口字段。</p>
+<p>举例：</p>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602496301515.png" alt="" loading="lazy"></figure>
+<h2 id="拥塞控制-tcp-conggestion-control-algorithm">拥塞控制 (TCP conggestion control algorithm)</h2>
+<p>和流量控制相似，都是控制发送方发送的速度，但是目标不一样，流量控制是为了防止接收方接收缓存溢出，拥塞控制是因为网络发生拥堵而降低发送速度。</p>
+<p><strong>TCP的拥塞控制采用了四种算法，即 慢开始 、 拥塞避免 、快重传 和 快恢复。</strong></p>
+<p>可参考</p>
+<ul>
+<li><a href="https://www.cnblogs.com/wuchanming/p/4422779.html">TCP的拥塞控制</a></li>
+<li><a href="https://juejin.im/entry/5b7fcd13f265da4372473199?utm_medium=yw&amp;utm_source=weibo0825_1">浅谈 TCP 拥塞控制算法</a></li>
+</ul>
+<h3 id="慢开始">慢开始</h3>
+<blockquote>
+<p>发送方维持一个叫做 <strong>拥塞窗口cwnd（congestion window）</strong> 的状态变量。拥塞窗口的大小取决于网络的拥塞程度，并且动态地在变化。发送方让自己的发送窗口等于拥塞窗口，另外考虑到接受方的接收能力，发送窗口可能小于拥塞窗口。</p>
+</blockquote>
+<p>慢开始算法的思路就是，不要一开始就发送大量的数据，先探测一下网络的拥塞程度，也就是说由小到大逐渐增加拥塞窗口的大小 <strong>(乘法增长)</strong>。</p>
+<p>这里用报文段的个数的拥塞窗口大小举例说明慢开始算法，实时拥塞窗口大小是以字节为单位的。如下图：</p>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602496314016.jpeg" alt="" loading="lazy"></figure>
+<h3 id="拥塞避免">拥塞避免</h3>
+<p>为了防止cwnd增长过大引起网络拥塞，还需设置一个 <strong>慢开始门限ssthresh</strong>状态变量。ssthresh的用法如下：</p>
+<ul>
+<li>当cwnd &lt; ssthresh时，使用慢开始算法。</li>
+<li>当cwnd &gt; ssthresh时，改用拥塞避免算法。</li>
+<li>当cwnd = ssthresh时，慢开始与拥塞避免算法任意。</li>
+</ul>
+<p>无论是在慢开始阶段还是在拥塞避免阶段，只要发送方判断网络出现拥塞，就把 <strong>慢开始门限设置为出现拥塞时的发送窗口大小的一半</strong>。然后把拥塞窗口设置为1，执行慢开始算法。</p>
+<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602496323466.jpeg" alt="" loading="lazy"></figure>
+<h3 id="快重传-和-快恢复-frr-fast-retransmit-and-recovery">快重传 和 快恢复 （FRR, fast retransmit and recovery）</h3>
+<p>快重传要求接收方在收到一个失序的报文段后就立即发出重复确认（为的是使发送方及早知道有报文段没有到达对方）而不要等到自己发送数据时捎带确认。快重传算法规定，发送方只要一连收到三个重复确认就应当立即重传对方尚未收到的报文段，而不必继续等待设置的重传计时器时间到期(<strong>没有FRR，如果数据包丢失了，TCP 将会使用定时器来要求传输暂停。在暂停的这段时间内，没有新的或复制的数据包被发送</strong>)。</p>
+<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602496332515.jpeg" alt="" loading="lazy"></figure>
+<p>快重传配合使用的还有快恢复算法，有以下两个要点:</p>
+<ul>
+<li>①当发送方连续收到三个重复确认时，就执行“乘法减小”算法，把ssthresh门限减半。但是接下去并不执行慢开始算法。</li>
+<li>②考虑到如果网络出现拥塞的话就不会收到好几个重复的确认，所以发送方现在认为网络可能没有出现拥塞。所以此时不执行慢开始算法，而是将cwnd设置为ssthresh的大小，然后执行拥塞避免算法。</li>
+</ul>
+<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602496341797.jpeg" alt="" loading="lazy"></figure>
+<h1 id="应用层协议使用运输层协议一些分类">应用层协议使用运输层协议一些分类</h1>
+<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602496351981.png" alt="" loading="lazy"></figure>
+<ul>
+<li>SSH	<br>
+端口号22，TCP</li>
+<li>MYSQL<br>
+端口号 3306 TCP</li>
+</ul>
+<p>0~1023是周知端口号，受限制，给HTTP或者FTP这种预留使用的。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[2.3 加密算法、摘要、数字签名、CA证书]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-23-jia-mi-suan-fa-zhai-yao-shu-zi-qian-ming-ca-zheng-shu/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-23-jia-mi-suan-fa-zhai-yao-shu-zi-qian-ming-ca-zheng-shu/">
+        </link>
+        <updated>2020-10-12T09:48:35.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="1对称加密">1.对称加密</h1>
+<h2 id="11-含义">1.1 含义</h2>
+<blockquote>
+<p>加密和解密使用的是<strong>同样</strong>的密钥，加密和解密算法是公开的，密钥必须严格保存，如果密钥泄漏，就能使用密文+密钥还原成明文。</p>
+</blockquote>
+<h2 id="12-优缺点">1.2 优缺点</h2>
+<p>优点：算法公开、计算量小、加密速度快、效率高</p>
+<p>缺点：密钥管理和分发困难，不够安全</p>
+<h2 id="13-常见算法">1.3 常见算法</h2>
+<ul>
+<li>DES</li>
+<li>AES</li>
+<li>3DES</li>
+<li>RC2</li>
+<li>RC4</li>
+<li>RC5</li>
+<li>Blowfish</li>
+<li>ChaCha20-Poly1305</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496131619.png" alt="" loading="lazy"></figure>
+<h2 id="14-可参考文章">1.4 可参考文章</h2>
+<ul>
+<li><a href="http://blog.csdn.net/happylee6688/article/details/44455407">Java 加解密技术系列之 DES</a></li>
+<li><a href="https://www.cnblogs.com/txw1958/p/aes.html">AES对称加密算法原理</a></li>
+</ul>
+<h1 id="2非对称加密">2.非对称加密</h1>
+<h2 id="21-含义">2.1 含义</h2>
+<blockquote>
+<p>非对称加密需要两个密钥进行加密解密，这两个密钥分别是公钥和私钥。私钥只能由一方安全保管，不能外泄，而公钥则可以发给任何请求它的人。公开密钥与私有密钥是一对，如果用公开密钥对数据进行加密，只有用对应的私有密钥才能解密;如果用私有密钥对数据进行加密，那么只有用对应的公开密钥才能解密。</p>
+</blockquote>
+<blockquote>
+<p>两个用途<br>
+<strong>1.机密信息交换</strong>： 非对称加密算法实现机密信息交换的基本过程是：甲方生成一对密钥并将其中的一把作为公用密钥向其它方公开；得到该公用密钥的乙方使用该密钥对机密信息进行加密后再发送给甲方；甲方再用自己保存的另一把专用密钥对加密后的信息进行解密。(消息加密利用公钥加密，使用私钥来解密)<br>
+<strong>2.数字签名</strong>：甲方可以使用乙方的公钥对机密信息进行签名后再发送给乙方；乙方再用自己的私匙对数据进行验签。(数字签名,使用私钥加密，使用公钥来解密)</p>
+</blockquote>
+<h2 id="22-优缺点">2.2 优缺点</h2>
+<p>优点：安全性高，公钥是公开的，私钥是自己保存的。<br>
+缺点：加密和解密花费时间长、速度慢（非对称加密一般比对称加密慢2到3个数量级），只适合少量数据进行加密</p>
+<h2 id="23常见算法">2.3常见算法</h2>
+<ul>
+<li>RSA</li>
+<li>DSA</li>
+<li>Elgamal</li>
+<li>背包算法</li>
+<li>Rabin</li>
+<li>D-H</li>
+<li>ECC（椭圆曲线加密算法）</li>
+<li>ECDSA</li>
+<li>ECDHE。</li>
+</ul>
+<h2 id="24-可参考文章">2.4 可参考文章</h2>
+<ul>
+<li><a href="http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html">RSA算法原理（一）</a></li>
+</ul>
+<h1 id="3消息摘要">3.消息摘要</h1>
+<h2 id="31-含义">3.1 含义</h2>
+<blockquote>
+<p>将任意长度的信息转换为较短的固定长度的值，通常其长度要比信息小得多，且算法不可逆。</p>
+</blockquote>
+<ul>
+<li>函数必须是容易计算的</li>
+<li>输入可以是任意长度的数据</li>
+<li>输出必须是固定长度的</li>
+<li>函数是不可逆的（区别于加密算法）</li>
+<li>不同输入产生的碰撞冲突可能性要尽可能低</li>
+</ul>
+<h2 id="32常见算法">3.2常见算法</h2>
+<ul>
+<li>MD5(不安全)</li>
+<li>SHA-1（不安全）</li>
+<li>SHA-2</li>
+<li>SHA-256</li>
+</ul>
+<h1 id="4数字签名">4.数字签名</h1>
+<h2 id="41-含义">4.1 含义</h2>
+<blockquote>
+<p>签名就是在信息的后面再加上一段内容（信息经过hash后的值），可以证明信息没有被修改过。hash值一般都会加密后（也就是签名）再和信息一起发送，以保证这个hash值不被修改。</p>
+<p>签名在网络通讯中的应用称为数字签名，当服务器向客户端发送信息时，会将报文生成报文摘要，同时对报文摘要进行hash计算，得到hash值，然后对hash值进行加密，然后将加密的hash值放置在报文后面，这个加密后的hash值就称为签名。服务器将报文、签名和数字证书一同发送给客户端。客户端收到这些信息后，会首先验证签名，利用签名算法对签名进行解密，得到报文摘要的hash值，然后将得到的报文生成报文摘要并利用签名hash算法生成新的hash值，通过对比这两个hash值是否一致，就能判断信息是否完整，是否是由真正的服务器发送的。可知签名有两个作用确认消息发送方可靠，确认消息完整准确。</p>
+</blockquote>
+<h2 id="42-过程">4.2 过程</h2>
+<p><strong>一个具体的签名过程如下：</strong></p>
+<blockquote>
+<p>小明对外发布公钥，并声明对应的私钥在自己手上<br>
+小明对消息M计算摘要，得到摘要D<br>
+小明使用私钥对D进行签名，得到签名S<br>
+将M和S一起发送出去</p>
+</blockquote>
+<p><strong>验签证过程如下：</strong></p>
+<blockquote>
+<p>接收者首先对M计算摘要，得到D’<br>
+使用小明公钥对S进行解签，得到D<br>
+如果D和D’相同，那么证明M确实是小明发出的，并且没有被篡改过</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496147952.png" alt="" loading="lazy"></figure>
+<h2 id="43-应用">4.3 应用</h2>
+<ul>
+<li>网站认证</li>
+<li>代码签名</li>
+</ul>
+<h2 id="44-可参考文章">4.4 可参考文章</h2>
+<ul>
+<li><a href="https://blog.csdn.net/qmickecs/article/details/73696954">数字签名原理及其应用</a></li>
+<li><a href="https://blog.csdn.net/lycb_gz/article/details/78081536">数字签名工作原理</a></li>
+</ul>
+<h1 id="5ca证书">5.CA证书</h1>
+<h2 id="51-含义">5.1 含义</h2>
+<blockquote>
+<p>CA证书顾名思义就是由CA（Certification Authority）机构发布的数字证书</p>
+</blockquote>
+<blockquote>
+<p>数字证书无法保证公钥被篡改，可能有中间人攻击替换公钥<br>
+如何保证公钥不被人篡改？<br>
+将公钥放入数字证书中，只要证书是可信的，公钥就是可信的</p>
+</blockquote>
+<blockquote>
+<ul>
+<li>权威机构必须是存在的</li>
+<li>权威机构使用自己的私钥加密的内容是可信任的</li>
+<li>信任是可传递的，机构 A 的公钥由 A 的上一级权威使用自己的私钥加密签发，直到最高权威机构</li>
+<li>证书链成树状，最高处为根(root)证书，根证书和节点之间的叫中间证书</li>
+<li>权威证书链每个 client 端都会内置一份（操作系统、浏览器或者应用内部）</li>
+</ul>
+</blockquote>
+<p><strong>CA证书具体包括哪些内容：</strong></p>
+<ul>
+<li>颁发者</li>
+<li>使用者</li>
+<li>版本</li>
+<li>签名算法</li>
+<li>签名哈希算法</li>
+<li>使用者</li>
+<li>公钥</li>
+<li>指纹</li>
+<li>指纹算法</li>
+<li>……</li>
+</ul>
+<h2 id="52-校验过程">5.2 校验过程</h2>
+<blockquote>
+<p>以浏览器为例说明如下：<br>
+（1）首先浏览器读取证书中的证书所有者、有效期等信息进行一一校验<br>
+（2）浏览器开始查找操作系统中已内置的受信任的证书发布机构CA，与服务器发来的证书中的颁发者CA比对，用于校验证书是否为合法机构颁发<br>
+（3）如果找不到，浏览器就会报错，说明服务器发来的证书是不可信任的。<br>
+（4）如果找到，那么浏览器就会从操作系统中取出 颁发者CA 的公钥，然后对服务器发来的证书里面的签名进行解密<br>
+（5）浏览器使用相同的hash算法计算出服务器发来的证书的hash值，将这个计算的hash值与证书中签名做对比<br>
+（6）对比结果一致，则证明服务器发来的证书合法，没有被冒充<br>
+（7）此时浏览器就可以读取证书中的公钥，用于后续加密了</p>
+</blockquote>
+<h2 id="53-可参考文章">5.3 可参考文章</h2>
+<ul>
+<li><a href="CA%E8%AF%81%E4%B9%A6%E7%90%86%E8%A7%A3%EF%BC%9FCA%E8%AF%81%E4%B9%A6%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F">CA证书理解？CA证书的作用？</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[2.2 HTTPS]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-22-https/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-22-https/">
+        </link>
+        <updated>2020-10-12T09:46:39.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="概念">概念</h1>
+<p>HyperText Transfer Protocol over Secure Socket Layer。在 HTTPS 中，使用传输层安全性(TLS)或安全套接字层(SSL)对通信协议进行加密。也就是 HTTP + SSL(TLS) = HTTPS。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496015921.png" alt="" loading="lazy"></figure>
+<p>默认端口号443</p>
+<h2 id="ssl-tsl">SSL、TSL</h2>
+<p><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/%E7%BD%91%E7%BB%9C/SSL%E4%B8%8ETSL.md">很久之前的笔记</a></p>
+<blockquote>
+<p>1994年，NetScape公司设计了SSL协议1.0版，但是未发布<br>
+1995年，NetScape公司发布SSL 2.0版，很快发现有严重漏洞<br>
+1996年，SSL 3.0版问世，得到大规模应用，目前已被发现有安全漏洞<br>
+1999年，互联网标准化组织接替NetScape公司，在SSL3.0的基础上发布了TLS 1.0版<br>
+2006年和2008年，TLS进行了两次升级，分别为TLS 1.1版和TLS 1.2版。最新的变动是2018年TLS 1.3正式版发布</p>
+</blockquote>
+<h1 id="为什么会出现能够解决什么问题">为什么会出现，能够解决什么问题</h1>
+<p>主要为了解决HTTP不能解决的问题</p>
+<p>HTTPS 协议提供了三个关键的指标</p>
+<ul>
+<li>防窃听：数据加密(Encryption)</li>
+</ul>
+<blockquote>
+<p>HTTPS 通过对数据加密来使其免受窃听者对数据的监听，这就意味着当用户在浏览网站时，没有人能够监听他和网站之间的信息交换，或者跟踪用户的活动，访问记录等，从而窃取用户信息。</p>
+</blockquote>
+<ul>
+<li>防篡改：数据一致性(Data integrity)</li>
+</ul>
+<blockquote>
+<p>数据在传输的过程中不会被窃听者所修改，用户发送的数据会完整的传输到服务端，保证用户发的是什么，服务器接收的就是什么。</p>
+</blockquote>
+<ul>
+<li>防冒充：身份认证(Authentication)</li>
+</ul>
+<blockquote>
+<p>是指确认对方的真实身份，也就是证明你是你（可以比作人脸识别），它可以防止中间人攻击并建立用户信任。</p>
+</blockquote>
+<h1 id="加密算法">加密算法</h1>
+<p>参考<a href="">2.3 加密算法、摘要、数字签名、CA证书</a></p>
+<h1 id="https发展过程">HTTPS发展过程</h1>
+<h2 id="1内容为什么不使用对称加密">1.内容为什么不使用对称加密？</h2>
+<blockquote>
+<ul>
+<li>
+<p>不同的客户端、服务器数量庞大，所以双方都需要维护大量的密钥，维护成本很高</p>
+</li>
+<li>
+<p>因每个客户端、服务器的安全级别不同，密钥极易泄露</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="2内容为什么不使用非对称加密">2.内容为什么不使用非对称加密？</h2>
+<blockquote>
+<p>公钥是公开的（也就是黑客也会有公钥），如果被黑客截获，其可以使用公钥进行解密，获取其中的内容</p>
+</blockquote>
+<h2 id="3非对称加密和对称机密结合">3.非对称加密和对称机密结合</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496031486.png" alt="" loading="lazy"></figure>
+<p><strong>通过非对称加密 交换 对称加密的秘钥</strong><br>
+<strong>回话内容通过对称加密进行加密解密</strong></p>
+<p>问题：</p>
+<ul>
+<li>客户端如何获得公钥 (SSL证书)</li>
+<li>如何确认服务器是真实的而不是黑客(CA证书)</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496040769.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>以浏览器为例说明如下：<br>
+（1）首先浏览器读取证书中的证书所有者、有效期等信息进行一一校验<br>
+（2）浏览器开始查找操作系统中已内置的受信任的证书发布机构CA，与服务器发来的证书中的颁发者CA比对，用于校验证书是否为合法机构颁发<br>
+（3）如果找不到，浏览器就会报错，说明服务器发来的证书是不可信任的。<br>
+（4）如果找到，那么浏览器就会从操作系统中取出 颁发者CA 的公钥，然后对服务器发来的证书里面的签名进行解密<br>
+（5）浏览器使用相同的hash算法计算出服务器发来的证书的hash值，将这个计算的hash值与证书中签名做对比<br>
+（6）对比结果一致，则证明服务器发来的证书合法，没有被冒充<br>
+（7）此时浏览器就可以读取证书中的公钥，用于后续加密了</p>
+</blockquote>
+<p>此处也可以参考<a href="http://www.52im.net/thread-2866-1-1.html">即时通讯安全篇（八）：你知道，HTTPS用的是对称加密还是非对称加密？</a></p>
+<h1 id="https实现原理">HTTPS实现原理</h1>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496057019.png" alt="" loading="lazy"></figure>
+<p><strong>证书验证阶段：</strong></p>
+<ul>
+<li>1）浏览器发起 HTTPS 请求；</li>
+<li>2）服务端返回 HTTPS 证书；</li>
+<li>3）客户端验证证书是否合法，如果不合法则提示告警。</li>
+</ul>
+<p><strong>数据传输阶段：</strong></p>
+<ul>
+<li>1）当证书验证合法后，在本地生成随机数；</li>
+<li>2）通过公钥加密随机数，并把加密后的随机数传输到服务端；</li>
+<li>3）服务端通过私钥对随机数进行解密；</li>
+<li>4）服务端通过客户端传入的随机数构造对称加密算法，对返回结果内容进行加密后传输。</li>
+</ul>
+<h1 id="ssltsl握手过程">SSL/TSL握手过程</h1>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496068286.png" alt="" loading="lazy"></figure>
+<h2 id="client-hello">Client Hello</h2>
+<ul>
+<li>支持的协议版本，比如TLS 1.0版</li>
+<li>一个客户端生成的随机数，稍后用于生成&quot;对话密钥&quot;</li>
+<li>支持的加密方法</li>
+<li>支持的压缩方法，一般为 null</li>
+<li>SNI(Server Name Indication)支持</li>
+</ul>
+<h2 id="server-hello">Server Hello</h2>
+<ul>
+<li>确认使用的TLS协议版本，如果两端支持的版本不一致，服务器关闭加密通信</li>
+<li>一个服务器生成的随机数，稍后用于生成&quot;对话密钥&quot;</li>
+<li>确认使用的加密方法，比如RSA公钥加密</li>
+<li>服务器数字证书</li>
+<li>请求客户端发送证书[可选]</li>
+</ul>
+<h2 id="服务证书验证">服务证书验证</h2>
+<ul>
+<li>证书的签发机构是否权威(内置CA证书链)</li>
+<li>证书对应的域名是否正确</li>
+<li>证书是否过期</li>
+</ul>
+<h2 id="回应-server-hello">回应 Server Hello</h2>
+<ul>
+<li>服务端证书通过验证，从中取得公钥</li>
+<li>一个随机数，又称&quot;pre-master key”，该随机数用服务器公钥加密，防止被窃听</li>
+<li>编码改变通知，表示随后的信息都将用双方商定的加密方法和密钥发送</li>
+<li>客户端握手结束通知，表示客户端的握手阶段已经结束。这一项同时也是前面发送的所有内容的hash值，用来供服务器校验</li>
+</ul>
+<h2 id="ssltls-握手总结">SSL/TLS 握手总结</h2>
+<ul>
+<li>Server 端决定使用 TLS 版本及加密套件</li>
+<li>整个握手过程，client 端生成2个随机数，server 端生成1个随机数，一共3个随机数。前两个未加密，第三个使用服务端公钥加密。最终的会话密钥来自这3个随机数</li>
+<li>整个 SSL/TLS 握手过程几乎都是明文</li>
+</ul>
+<h2 id="可参考">可参考</h2>
+<ul>
+<li><a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/network/HTTPS%E4%B8%AD%E7%9A%84TLS.md#1-ssl-%E4%B8%8E-tls">HTTPS中的TLS.md</a></li>
+</ul>
+<h1 id="重要的问题">重要的问题</h1>
+<ul>
+<li>Q: HTTPS用的是对称加密还是非对称加密？</li>
+</ul>
+<blockquote>
+<p>HTTPS 在内容传输的加密上使用的是对称加密，非对称加密只作用在证书验证阶段。</p>
+</blockquote>
+<ul>
+<li>Q: 为什么需要证书？</li>
+</ul>
+<blockquote>
+<p>防止”中间人“攻击，同时可以为网站提供身份证明。</p>
+</blockquote>
+<ul>
+<li>Q: 使用 HTTPS 会被抓包吗？</li>
+</ul>
+<blockquote>
+<p>HTTPS 的数据是加密的，常规下抓包工具代理请求后抓到的包内容是加密状态，无法直接查看。<br>
+但是，正如前文所说，浏览器只会提示安全风险，如果用户授权仍然可以继续访问网站，完成请求。因此，只要客户端是我们自己的终端，我们授权的情况下，便可以组建中间人网络，而抓包工具便是作为中间人的代理。通常 HTTPS 抓包工具的使用方法是会生成一个证书，用户需要手动把证书安装到客户端中，然后终端发起的所有请求通过该证书完成与抓包工具的交互，然后抓包工具再转发请求到服务器，最后把服务器返回的结果在控制台输出后再返回给终端，从而完成整个请求的闭环。</p>
+<p>既然 HTTPS 不能防抓包，那 HTTPS 有什么意义？</p>
+<p>HTTPS 可以防止用户在不知情的情况下通信链路被监听，对于主动授信的抓包操作是不提供防护的，因为这个场景用户是已经对风险知情。要防止被抓包，需要采用应用级的安全防护，例如采用私有的对称加密，同时做好移动端的防反编译加固，防止本地算法被破解。</p>
+</blockquote>
+<ul>
+<li>Q: HTTPS 的传输过程是怎样的？</li>
+</ul>
+<blockquote>
+<p>A: 客户端发起 HTTPS 请求，服务端返回证书，客户端对证书进行验证，验证通过后本地生成用于改造对称加密算法的随机数，通过证书中的公钥对随机数进行加密传输到服务端，服务端接收后通过私钥解密得到随机数，之后的数据交互通过对称加密算法进行加解密。</p>
+</blockquote>
+<h1 id="参考文章">参考文章</h1>
+<ul>
+<li><a href="https://www.toutiao.com/i6803891048046133773/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501755&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202003181122340100140470311FC1C046&amp;group_id=6803891048046133773">这篇 HTTPS 把你不知道的所有都讲清楚了</a></li>
+<li><a href="http://www.52im.net/thread-2866-1-1.html">即时通讯安全篇（八）：你知道，HTTPS用的是对称加密还是非对称加密？</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27395037?tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">HTTPS系列干货（一）：HTTPS 原理详解</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[2.1 HTTP]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-21-http/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-21-http/">
+        </link>
+        <updated>2020-10-12T09:45:12.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="1简介">1.简介</h1>
+<p>端口号80，应用层协议</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602495937556.png" alt="" loading="lazy"></figure>
+<h2 id="方法">方法</h2>
+<ul>
+<li>GET ： 获取资源</li>
+<li>POST ： 传输实体主体</li>
+<li>PUT ： 传输文件</li>
+<li>HEAD ： 获得报文首部</li>
+<li>DELETE ： 删除文件</li>
+<li>OPTIONS ： 询问支持的方法</li>
+<li>TRACE ： 追踪路径</li>
+<li>CONNECT ： 要求使用隧道协议链接代理（使用SSL Secure Sockets Layer 安全套接层、或 TLS Transport Layer Security 传输层安全）</li>
+</ul>
+<p><strong>持久连接节省通信量 HTTP keep-alive或connection reuse，只要任意一方没有明确提出断开连接，则保持TCP状态</strong></p>
+<h1 id="2瓶颈和缺点">2.瓶颈和缺点</h1>
+<h2 id="缺点">缺点</h2>
+<ul>
+<li>明文传输 （容易窃听）</li>
+<li>缺乏服务认证手段 （容易被中间人攻击）</li>
+<li>缺乏完整性校验 （容易被篡改）</li>
+</ul>
+<h2 id="瓶颈">瓶颈</h2>
+<ul>
+<li>不保存状态</li>
+<li>一条连接上只能发送一个请求</li>
+<li>请求只能从客户端开发，客户端不能接收除响应外的指令</li>
+<li>请求、响应首部未经压缩就发送。首部信息越多延迟越长</li>
+<li>发送冗长的首部。每次互相发送相同的首部造成的浪费较多</li>
+<li>可任意选择数据压缩格式。非强制压缩发送</li>
+</ul>
+<h1 id="3版本区别">3.版本区别</h1>
+<p><a href="https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A?">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602495954703.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>影响一个 HTTP 网络请求的因素主要有两个：带宽和延迟。</p>
+<p>带宽：如果说我们还停留在拨号上网的阶段，带宽可能会成为一个比较严重影响请求的问题，但是现在网络基础建设已经使得带宽得到极大的提升，我们不再会担心由带宽而影响网速，那么就只剩下延迟了。</p>
+<p>延迟：</p>
+<ul>
+<li>
+<p>浏览器阻塞（HOL blocking）：浏览器会因为一些原因阻塞请求。浏览器对于同一个域名，同时只能有 4 个连接（这个根据浏览器内核不同可能会有所差异），超过浏览器最大连接数限制，后续请求就会被阻塞。</p>
+</li>
+<li>
+<p>DNS 查询（DNS Lookup）：浏览器需要知道目标服务器的 IP 才能建立连接。将域名解析为 IP 的这个系统就是 DNS。这个通常可以利用DNS缓存结果来达到减少这个时间的目的。</p>
+</li>
+<li>
+<p>建立连接（Initial connection）：HTTP 是基于 TCP 协议的，浏览器最快也要在第三次握手时才能捎带 HTTP 请求报文，达到真正的建立连接，但是这些连接无法复用会导致每次请求都经历三次握手和慢启动。三次握手在高延迟的场景下影响较明显，慢启动则对文件类大请求影响较大。</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="11-和-10和的区别">1.1 和 1.0和的区别</h2>
+<ul>
+<li>
+<p><strong>缓存处理</strong><br>
+在HTTP1.0中主要使用header里的If-Modified-Since,Expires来做为缓存判断的标准，HTTP1.1则引入了更多的缓存控制策略例如Entity tag，If-Unmodified-Since, If-Match, If-None-Match等更多可供选择的缓存头来控制缓存策略。</p>
+</li>
+<li>
+<p><strong>带宽优化及网络连接的使用</strong><br>
+HTTP1.0中，存在一些浪费带宽的现象，例如客户端只是需要某个对象的一部分，而服务器却将整个对象送过来了，并且不支持断点续传功能，HTTP1.1则在请求头引入了range头域，它允许只请求资源的某个部分，即返回码是206（Partial Content），这样就方便了开发者自由的选择以便于充分利用带宽和连接。</p>
+</li>
+<li>
+<p><strong>错误通知的管理</strong><br>
+在HTTP1.1中新增了24个错误状态响应码，如409（Conflict）表示请求的资源与资源的当前状态发生冲突；410（Gone）表示服务器上的某个资源被永久性的删除。</p>
+</li>
+<li>
+<p><strong>Host头处理</strong><br>
+在HTTP1.0中认为每台服务器都绑定一个唯一的IP地址，因此，请求消息中的URL并没有传递主机名（hostname）。但随着虚拟主机技术的发展，在一台物理服务器上可以存在多个虚拟主机（Multi-homed Web Servers），并且它们共享一个IP地址。HTTP1.1的请求消息和响应消息都应支持Host头域，且请求消息中如果没有Host头域会报告一个错误（400 Bad Request）。</p>
+</li>
+<li>
+<p><strong>长连接</strong><br>
+HTTP 1.1支持长连接（PersistentConnection）和请求的流水线（Pipelining）处理，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟，在HTTP1.1中默认开启Connection： keep-alive，一定程度上弥补了HTTP1.0每次请求都要创建连接的缺点。</p>
+</li>
+</ul>
+<p><strong>Pipelining会造成队头阻塞</strong></p>
+<blockquote>
+<p>队头阻塞是指当顺序发送的请求序列中的一个请求因为某种原因被阻塞时，在后面排队的所有请求也一并被阻塞，会导致客户端迟迟收不到数据。</p>
+<p>针对队头阻塞：</p>
+<p>1.将同一页面的资源分散到不同域名下，提升连接上限。虽然能公用一个 TCP 管道，但是在一个管道中同一时刻只能处理一个请求，在当前的请求没有结束之前，其他的请求只能处于阻塞状态。<br>
+2.减少请求数量<br>
+3.内联一些资源：css、base64 图片等<br>
+4.合并小文件减少资源数</p>
+</blockquote>
+<h2 id="spdy-http1x的优化">SPDY: HTTP1.x的优化</h2>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602495966953.webp" alt="" loading="lazy"></figure>
+<blockquote>
+<p>SPDY位于HTTP之下，TCP和SSL之上，这样可以轻松兼容老版本的HTTP协议(将HTTP1.x的内容封装成一种新的frame格式)，同时可以使用已有的SSL功能。</p>
+</blockquote>
+<ul>
+<li>
+<p><strong>降低延迟</strong><br>
+针对HTTP高延迟的问题，SPDY优雅的采取了<strong>多路复用（multiplexing）</strong>。多路复用通过多个请求stream共享一个tcp连接的方式，解决了HOL blocking的问题，降低了延迟同时提高了带宽的利用率。</p>
+</li>
+<li>
+<p><strong>请求优先级（request prioritization）</strong><br>
+多路复用带来一个新的问题是，在连接共享的基础之上有可能会导致关键请求被阻塞。SPDY允许给每个request设置优先级，这样重要的请求就会优先得到响应。比如浏览器加载首页，首页的html内容应该优先展示，之后才是各种静态资源文件，脚本文件等加载，这样可以保证用户能第一时间看到网页内容。</p>
+</li>
+<li>
+<p><strong>header压缩</strong><br>
+前面提到HTTP1.x的header很多时候都是重复多余的。选择合适的压缩算法可以减小包的大小和数量。</p>
+</li>
+<li>
+<p><strong>基于HTTPS的加密协议传输</strong><br>
+大大提高了传输数据的可靠性。</p>
+</li>
+<li>
+<p><strong>服务端推送（server push）</strong><br>
+采用了SPDY的网页，例如我的网页有一个style.css的请求，在客户端收到style.css数据的同时，服务端会将style.js的文件推送给客户端，当客户端再次尝试获取style.js时就可以直接从缓存中获取到，不用再发请求了。</p>
+</li>
+</ul>
+<h2 id="20-和-spdy-的区别">2.0 和 SPDY 的区别</h2>
+<ul>
+<li>HTTP2.0 支持明文 HTTP 传输，而 SPDY 强制使用 HTTPS</li>
+<li>HTTP2.0 消息头的压缩算法采用 <a href="http://http2.github.io/http2-spec/compression.html">HPACK</a>，而非 SPDY 采用的 <a href="http://zh.wikipedia.org/wiki/DEFLATE">DEFLATE</a></li>
+</ul>
+<h2 id="20-和-1x-的区别">2.0 和 1.X 的区别</h2>
+<ul>
+<li>
+<p>新的二进制格式（Binary Format），HTTP1.x的解析是基于文本。基于文本协议的格式解析存在天然缺陷，文本的表现形式有多样性，要做到健壮性考虑的场景必然很多，二进制则不同，只认0和1的组合。基于这种考虑HTTP2.0的协议解析决定采用二进制格式，实现方便且健壮。</p>
+</li>
+<li>
+<p>多路复用（MultiPlexing），即连接共享，即每一个request都是是用作连接共享机制的。一个request对应一个id，这样一个连接上可以有多个request，每个连接的request可以随机的混杂在一起，接收方可以根据request的 id将request再归属到各自不同的服务端请求里面。</p>
+</li>
+<li>
+<p>header压缩，如上文中所言，对前面提到过HTTP1.x的header带有大量信息，而且每次都要重复发送，HTTP2.0使用encoder来减少需要传输的header大小，通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小。</p>
+</li>
+<li>
+<p>服务端推送（server push），同SPDY一样，HTTP2.0也具有server push功能。</p>
+</li>
+</ul>
+<h1 id="4状态码">4.状态码</h1>
+<h2 id="类别">类别</h2>
+<ul>
+<li>1XX：信息性状态码（接收的请求正在处理）</li>
+<li>2XX：成功状态码 （请求正常处理完毕）</li>
+<li>3XX：重定向状态码 （需要进行附加操作以完成请求）</li>
+<li>4XX：客户端错误状态码 （服务器无法处理请求）</li>
+<li>5XX：服务端错误状态码 （服务器处理请求出错）</li>
+</ul>
+<h2 id="摘要">摘要</h2>
+<ul>
+<li>
+<p>200 OK，请求被正常处理</p>
+</li>
+<li>
+<p>204 Not Content 响应报文不包含注意部分</p>
+</li>
+<li>
+<p>206 Partial Content 客户端进行了范围请求</p>
+</li>
+<li>
+<p>301 Moved Permanently 永久重定向</p>
+</li>
+<li>
+<p>302 Found 临时重定向，请求的资源被分配了新的URI，希望用户能使用新的URI访问</p>
+</li>
+<li>
+<p>303 See Other</p>
+</li>
+<li>
+<p>304 Not Modified 与请求报文包含If-Match、If-Modified-Since等对应，返回304状态码的报文不包含主体部分</p>
+</li>
+<li>
+<p>307 Temporary Redirect 临时重定向</p>
+</li>
+<li>
+<p>400 Bad Request 请求报文中存在语法错误</p>
+</li>
+<li>
+<p>401 Unauthorized 需要有通过HTTP认证的认证信息</p>
+</li>
+<li>
+<p>403 Forbidden 对请求资源的访问被拒绝</p>
+</li>
+<li>
+<p>404 Not Found 服务器无法找到请求的资源</p>
+</li>
+<li>
+<p>500 Internal Server Error，服务器执行请求时出错</p>
+</li>
+<li>
+<p>503 Service Unavailable，服务器暂时处于超负载或正在停机维护，无法处理请求</p>
+</li>
+</ul>
+<h1 id="5参考文章">5.参考文章</h1>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A?">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></li>
+<li><a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/network/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C.md">JavaGuid/计算机网络.md</a></li>
+<li><a href="https://www.toutiao.com/i6799544609371324932/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501771&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202003181122500100140400932AA62FFD&amp;group_id=6799544609371324932">一文读懂 HTTP/1、HTTP/2、HTTP/3</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[2.0 应用层]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-20-ying-yong-ceng/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-20-ying-yong-ceng/">
+        </link>
+        <updated>2020-10-12T09:42:01.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="概述">概述</h1>
+<p><strong>体系结构</strong></p>
+<p>CS结构、P2P体系结构</p>
+<p><strong>进程寻址</strong></p>
+<p>IP地址、端口号</p>
+<p><strong>可靠数据传输、吞吐量、定时、安全性</strong></p>
+<p><strong>应用层协议定义了：</strong></p>
+<ul>
+<li>交换的报文类型，例如请求报文和响应报文</li>
+<li>报文类型的语法，如各个字段和这些字段是如何额描述的</li>
+<li>字段的语义</li>
+<li>一个进程何时以及如何发送报文，对报文进行响应的规则</li>
+</ul>
+<p>RTT(Round0Trip Time)包括分组传播时延、分组在中间路由器和交换机上的排队时延以及分组处理时延。</p>
+<h1 id="http">HTTP</h1>
+<p>详见</p>
+<ul>
+<li><a href="">2.1 HTTP</a></li>
+<li><a href="">2.2 HTTPS</a></li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602495760738.png" alt="" loading="lazy"></figure>
+<h2 id="请求报文">请求报文</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602495772288.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602495781388.png" alt="" loading="lazy"></figure>
+<h2 id="响应报文">响应报文</h2>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602495791638.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602495800504.png" alt="" loading="lazy"></figure>
+<h2 id="cookie">cookie</h2>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602495816155.png" alt="" loading="lazy"></figure>
+<h2 id="web缓存">Web缓存</h2>
+<p>Web缓存器（Web cache）也叫代理服务器 （proxy server）</p>
+<p>CDN（内容分发网络  Content Distribution Network）</p>
+<h1 id="dns">DNS</h1>
+<h2 id="介绍">介绍</h2>
+<p>Domain Name System  域名系统，提供主机名到IP地址的转换服务。</p>
+<p><strong>DNS运行在UDP之上，端口号53</strong></p>
+<p>DNS是</p>
+<ul>
+<li>一个由分层的DNS服务器实现的分布式数据库</li>
+<li>一个使得主机能够查询分布式数据库的应用层协议</li>
+</ul>
+<p>还提供</p>
+<ul>
+<li>主机别名</li>
+<li>邮件服务器别名</li>
+<li><strong>负载分配</strong><br>
+例如 cnn.com冗余分布在多台服务器上，每个都有不同的IP地址</li>
+</ul>
+<h2 id="实现">实现</h2>
+<h3 id="分布式-层次数据库">分布式、层次数据库</h3>
+<ul>
+<li>根DNS服务器</li>
+<li>顶级域（Top-Level Domain， TLD）DNS服务器</li>
+<li>权威DNS服务器</li>
+<li>本地DNS服务器（严格的说不属于DNS服务器的层次结构）
+<blockquote>
+<p>DHCP</p>
+</blockquote>
+</li>
+</ul>
+<p><img src="https://sparkfengbo.github.io/post-images/1602495837438.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602495846921.png" alt="" loading="lazy"></p>
+<blockquote>
+<p>DNS服务器存储了资源记录（Resource Record， RR）<br>
+每个RR是一个四元组<br>
+（Name， Value， Type， TTL）<br>
+TTL是该记录的生存时间</p>
+</blockquote>
+<h3 id="dns缓存">DNS缓存</h3>
+<h3 id="报文">报文</h3>
+<p>DNS只有查询报文和回答报文，并且格式相同</p>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602495854987.png" alt="" loading="lazy"></figure>
+<h1 id="ftp">FTP</h1>
+<p>FTP使用两个并行的TCP连接，一个是<strong>控制连接</strong>，一个是<strong>数据连接</strong></p>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602495864487.png" alt="" loading="lazy"></figure>
+<p>控制连接贯穿整个用户会话期间，但是每一次文件传输都需要新建数据连接（数据连接是非持续的）</p>
+<p>FTP服务器必须在整个会话期间保留用户的状态。</p>
+<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602495872120.png" alt="" loading="lazy"></figure>
+<h1 id="smtp">SMTP</h1>
+<ul>
+<li>用户代理</li>
+<li>邮件服务器</li>
+<li>简单邮件传输协议 Simple Mail Transfer Protocol SMTP</li>
+</ul>
+<p><strong>端口号25</strong><br>
+<img src="https://sparkfengbo.github.io/post-images/1602495880754.png" alt="" loading="lazy"></p>
+<h2 id="邮件报文格式">邮件报文格式</h2>
+<p>暂无</p>
+<h2 id="邮件访问协议">邮件访问协议</h2>
+<ul>
+<li>第三版的邮局协议 Post Office Protocol-Version 3 POP3
+<blockquote>
+<p>极简的邮件访问协议</p>
+</blockquote>
+</li>
+<li>因特网邮件访问协议 Internet Mail Access Protocol IMAP
+<blockquote>
+<p>POP3用户不能创建远程文件夹，并为报文指派文件夹<br>
+IMAP 比 POP3复杂的多<br>
+IMAP 提供 创建文件夹以及将邮件从一个文件夹移动到另一个文件夹<br>
+IMAP 还提供了 在远程文件夹按指定的条件查询邮件的命令<br>
+IMAP 允许用户代理获取报文组件的命令，例如，只读取一个报文的报文首部</p>
+</blockquote>
+</li>
+<li>HTTP<br>
+基于Web的电子邮件</li>
+</ul>
+<h1 id="p2p">P2P</h1>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[1.计算机网络整体概要]]></title>
         <id>https://sparkfengbo.github.io/post/jsjwl-1ji-suan-ji-wang-luo-zheng-ti-gai-yao/</id>

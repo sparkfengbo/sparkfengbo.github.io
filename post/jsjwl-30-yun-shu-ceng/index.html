@@ -1,0 +1,453 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3.0 运输层 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602496952509">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="3.0 运输层 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+概述
+功能： 运输层协议为运行在不同的主机上的应用进程提供了逻辑通信功能。网络层提供了主机之间的逻辑通信。
+多路复用 多路分解
+多路分解：将运输层报文段中的数据交付到正确的套接字
+多路复用：源主机从不同套接字中收集数据块，并为每..." />
+    <meta name="keywords" content="计算机网络" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602496952509" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              3.0 运输层
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                17 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/w6k1syZt4/" class="post-tag">
+                  # 计算机网络
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="概述">概述</h1>
+<p><strong>功能：</strong> 运输层协议为运行在不同的主机上的应用进程提供了逻辑通信功能。网络层提供了主机之间的逻辑通信。</p>
+<h1 id="多路复用-多路分解">多路复用 多路分解</h1>
+<p><strong>多路分解</strong>：将运输层报文段中的数据交付到正确的套接字<br>
+<strong>多路复用</strong>：源主机从不同套接字中收集数据块，并为每个数据块封装首部信息生成报文段，传递到网络层，这些工作成为多路复用。</p>
+<h1 id="无连接运输udp">无连接运输：UDP</h1>
+<h2 id="特点">特点</h2>
+<ul>
+<li>
+<p><strong>无连接的</strong><br>
+发送方和接收方的运输层实体之间没有握手。不会引入建立连接的时延。</p>
+</li>
+<li>
+<p><strong>无连接状态</strong><br>
+TCP需要在端系统中维护连接状态，包括接收和发送给缓存、拥塞控制参数以及序号和确认号的参数。</p>
+</li>
+<li>
+<p><strong>分组首部开销小</strong></p>
+</li>
+<li>
+<p><strong>关于何时、发送什么数据的应用层控制更为精细</strong><br>
+UDP打包即发出，没有TCP的拥塞控制等限制，TCP可靠交付可能时延比较大。</p>
+</li>
+<li>
+<p>面向数据报</p>
+</li>
+</ul>
+<blockquote>
+<p>为什么说TCP报文段是面向字节流的，UDP是面向数据报的？</p>
+<p>面向报文的传输方式是应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。因此，应用程序必须选择合适大小的报文。若报文太长，则IP层需要分片，降低效率。若太短，会是IP太小。UDP对应用层交下来的报文，既不合并，也不拆分，而是保留这些报文的边界。这也就是说，应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。</p>
+<p>虽然应用程序和TCP的交互是一次一个数据块（大小不等），但TCP把应用程序看成是一连串的无结构的字节流。TCP有一个缓冲，当应用程序传送的数据块太长，TCP就可以把它划分短一些再传送。如果应用程序一次只发送一个字节，TCP也可以等待积累有足够多的字节后再构成报文段发送出去。</p>
+<p>在TCP建立连接前两次握手的SYN报文中选项字段的MSS值，通信双方商定通信的最大报文长度。如果应用层交付下来的数据过大，就会对数据分段，然后发送；否则通过滑动窗口协议来控制通信双发的数据。</p>
+</blockquote>
+<h2 id="报文">报文</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496197569.png" alt="" loading="lazy"></figure>
+<p>提供端到端的差错检测，但是对差错恢复无能为力，有点UDP的实现是丢弃受损的报文段，其他实现是将受损的报文段交给应用程序并给出警告。</p>
+<h2 id="udp和tcp的不同">UDP和TCP的不同</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496207934.jpeg" alt="" loading="lazy"></figure>
+<h1 id="面向连接的运输tcp">面向连接的运输：TCP</h1>
+<h2 id="特点-2">特点</h2>
+<ul>
+<li><strong>面向连接</strong>的<strong>可靠</strong>运输</li>
+<li><strong>全双工</strong>服务<br>
+进程A和B建立连接，应用层数据可在从进程B流向进程A的同时，也从进程A流向进程B。</li>
+<li>点对点<br>
+连接在单个发送方和单个接收方之间。</li>
+<li>面向字节流</li>
+</ul>
+<p><a href="https://zh.wikipedia.org/wiki/%E4%BC%A0%E8%BE%93%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE">维基百科TCP</a></p>
+<h2 id="mss">MSS</h2>
+<p>TCP三次握手初期设置发送缓存，TCP从发送缓存里取数据，从缓存取出并放到报文段的数据数量受限于 <strong>最大报文段长度（Maximum Segment Size, MSS）</strong>。</p>
+<p>MSS通常根据MTU设置。MSS保证一个TCP报文段适合MTU（报文+TCP/IP首部）。MSS典型值 1460字节。</p>
+<h2 id="报文-2">报文</h2>
+<p>TCP首部通常20字节。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496228383.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496236599.png" alt="" loading="lazy"></figure>
+<h2 id="连接管理">连接管理</h2>
+<h3 id="三次握手">三次握手</h3>
+<p>参考 <a href="https://blog.csdn.net/qzcsu/article/details/72861891">TCP的三次握手与四次挥手</a></p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496247132.png" alt="" loading="lazy"></figure>
+<ul>
+<li>TCP服务器进程先创建传输控制块TCB，时刻准备接受客户进程的连接请求，此时服务器就进入了LISTEN（监听）状态；</li>
+<li>TCP客户进程也是先创建传输控制块TCB，然后向服务器发出连接请求报文，这是报文首部中的同部位SYN=1，同时选择一个初始序列号 seq=x ，此时，TCP客户端进程进入了 SYN-SENT（同步已发送状态）状态。<strong>TCP规定，SYN报文段（SYN=1的报文段）不能携带数据，但需要消耗掉一个序号。</strong></li>
+<li>TCP服务器收到请求报文后，如果同意连接，则发出确认报文。确认报文中应该 ACK=1，SYN=1，确认号是ack=x+1，同时也要为自己初始化一个序列号 seq=y，此时，TCP服务器进程进入了SYN-RCVD（同步收到）状态。<strong>这个报文也不能携带数据，但是同样要消耗一个序号。</strong></li>
+<li>TCP客户进程收到确认后，还要向服务器给出确认。确认报文的ACK=1，ack=y+1，自己的序列号seq=x+1，此时，TCP连接建立，客户端进入ESTABLISHED（已建立连接）状态。<strong>TCP规定，ACK报文段可以携带数据，但是如果不携带数据则不消耗序号。</strong></li>
+<li>当服务器收到客户端的确认后也进入ESTABLISHED状态，此后双方就可以开始通信了。</li>
+</ul>
+<h4 id="为什么需要三次握手而不是两次握手">为什么需要三次握手而不是两次握手？</h4>
+<blockquote>
+<p>一句话，主要防止已经失效的连接请求报文突然又传送到了服务器，从而产生错误。</p>
+<p>如果使用的是两次握手建立连接，假设有这样一种场景，客户端发送了第一个请求连接并且没有丢失，只是因为在网络结点中滞留的时间太长了，由于TCP的客户端迟迟没有收到确认报文，以为服务器没有收到，此时重新向服务器发送这条报文，此后客户端和服务器经过两次握手完成连接，传输数据，然后关闭连接。此时此前滞留的那一次请求连接，网络通畅了到达了服务器，这个报文本该是失效的，但是，两次握手的机制将会让客户端和服务器再次建立连接，这将导致不必要的错误和资源的浪费。</p>
+<p>如果采用的是三次握手，就算是那一次失效的报文传送过来了，服务端接受到了那条失效报文并且回复了确认报文，但是客户端不会再次发出确认。由于服务器收不到确认，就知道客户端并没有请求连接。</p>
+</blockquote>
+<blockquote>
+<p>也可以这样理解，<br>
+第一次 只能确认发送方发送正常<br>
+第二次 能确认接收方发送接收正常，发送方发送正常，但还无法确认发送方接收正常<br>
+第三次 能确认双方接收发送都正常</p>
+</blockquote>
+<h3 id="四次挥手">四次挥手</h3>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602496259516.png" alt="" loading="lazy"></figure>
+<ul>
+<li>客户端进程发出连接释放报文，并且停止发送数据。释放数据报文首部，FIN=1，其序列号为seq=u（等于前面已经传送过来的数据的最后一个字节的序号加1），此时，客户端进入FIN-WAIT-1（终止等待1）状态。 <strong>TCP规定，FIN报文段即使不携带数据，也要消耗一个序号。</strong></li>
+<li>服务器收到连接释放报文，发出确认报文，ACK=1，ack=u+1，并且带上自己的序列号seq=v，此时，服务端就进入了CLOSE-WAIT（关闭等待）状态。<strong>TCP服务器通知高层的应用进程，客户端向服务器的方向就释放了，这时候处于半关闭状态，即客户端已经没有数据要发送了，但是服务器若发送数据，客户端依然要接受。这个状态还要持续一段时间，也就是整个CLOSE-WAIT状态持续的时间。</strong></li>
+<li>客户端收到服务器的确认请求后，此时，客户端就进入FIN-WAIT-2（终止等待2）状态，等待服务器发送连接释放报文 <strong>（在这之前还需要接受服务器发送的最后的数据）。</strong></li>
+<li>服务器将最后的数据发送完毕后，就向客户端发送连接释放报文，FIN=1，ack=u+1，由于在半关闭状态，服务器很可能又发送了一些数据，假定此时的序列号为seq=w，此时，服务器就进入了LAST-ACK（最后确认）状态，等待客户端的确认。</li>
+<li>客户端收到服务器的连接释放报文后，必须发出确认，ACK=1，ack=w+1，而自己的序列号是seq=u+1，此时，客户端就进入了TIME-WAIT（时间等待）状态。<strong>注意此时TCP连接还没有释放，必须经过2*MSL（最长报文段寿命）的时间后，当客户端撤销相应的TCB后，才进入CLOSED状态。</strong></li>
+<li>服务器只要收到了客户端发出的确认，立即进入CLOSED状态。同样，撤销TCB后，就结束了这次的TCP连接。<strong>可以看到，服务器结束TCP连接的时间要比客户端早一些。</strong></li>
+</ul>
+<h4 id="为什么客户端最后还要等待2msl">为什么客户端最后还要等待2MSL？</h4>
+<blockquote>
+<p>MSL（Maximum Segment Lifetime），TCP允许不同的实现可以设置不同的MSL值。</p>
+<p>第一，保证客户端发送的最后一个ACK报文能够到达服务器，因为这个ACK报文可能丢失，站在服务器的角度看来，我已经发送了FIN+ACK报文请求断开了，客户端还没有给我回应，应该是我发送的请求断开报文它没有收到，于是服务器又会重新发送一次，而客户端就能在这个2MSL时间段内收到这个重传的报文，接着给出回应报文，并且会重启2MSL计时器。</p>
+<p>第二，防止类似与“三次握手”中提到了的“已经失效的连接请求报文段”出现在本连接中。客户端发送完最后一个确认报文后，在这个2MSL时间中，就可以使本连接持续的时间内所产生的所有报文段都从网络中消失。这样新的连接中不会出现旧连接的请求报文。</p>
+</blockquote>
+<h3 id="为什么建立连接是三次握手关闭连接却是四次挥手呢">为什么建立连接是三次握手，关闭连接却是四次挥手呢？</h3>
+<blockquote>
+<p>建立连接的时候， 服务器在LISTEN状态下，收到建立连接请求的SYN报文后，把ACK和SYN放在一个报文里发送给客户端。<br>
+而关闭连接时，服务器收到对方的FIN报文时，仅仅表示对方不再发送数据了但是还能接收数据，而自己也未必全部数据都发送给对方了，所以己方可以立即关闭，也可以发送一些数据给对方后，再发送FIN报文给对方来表示同意现在关闭连接，因此，己方ACK和FIN一般都会分开发送，从而导致多了一次。</p>
+</blockquote>
+<h2 id="可靠性传输">可靠性传输</h2>
+<h3 id="arq">ARQ</h3>
+<p><strong>ARQ（Automatic Repeat reQuest）自动重传请求协议</strong> 是OSI模型数据链路层和运输层的错误纠正协议之一。通过<strong>确认</strong>和<strong>超时</strong>这两个机制，在不可靠服务的基础上实现可靠的信息传输。包括<strong>停止等待ARQ协议</strong>和<strong>连续ARQ协议</strong>。</p>
+<p><strong>TCP使用的是连续ARQ协议。</strong></p>
+<p><strong>ARQ协议包括这些机制</strong></p>
+<ul>
+<li>差错检测</li>
+<li>接收方反馈 肯定确认ACK、否定确认NCK
+<ul>
+<li><strong>累计确认：</strong> 接收方不必对收到的分组逐个发送确认。而是在收到几个分组后，对按序到达的最后一个分组发送确认。</li>
+</ul>
+</li>
+<li>重传 超时重传等</li>
+</ul>
+<p><strong>ARQ协议对错误纠正的方法是：</strong></p>
+<ul>
+<li>丢弃已经接收的含有错误的数据包。</li>
+<li>向发送点请求重新发送数据包。</li>
+</ul>
+<p>可参考<a href="https://zh.wikipedia.org/wiki/%E8%87%AA%E5%8A%A8%E9%87%8D%E4%BC%A0%E8%AF%B7%E6%B1%82">维基百科ARQ</a></p>
+<h4 id="连续arq">连续ARQ</h4>
+<p>为了克服停止并等待ARQ协议长时间等待ACK的缺点。这个协议会连续发送一组数据包（流水线传输），然后再等待这些数据包的ACK.</p>
+<p>流水线传输就是发送方可以连续发送多个分组，不必每发完一个分组就停下来等待对方确认。连续ARQ通常结合滑动窗口协议使用。</p>
+<p><strong>回退N重传(Go-Back-N)</strong></p>
+<ul>
+<li>接收点丢弃从第一个没有收到的数据包开始的所有数据包。</li>
+<li>发送点收到NACK后，从NACK中指明的数据包开始重新发送。
+<ul>
+<li>有缺点：不能正确的向发送方反映出接收方已经正确收到的所以分组的信息。</li>
+<li>
+<blockquote>
+<p>比如发送方发送了前5个分组，而中间的第3个分组丢失了，这时候接收方只能对前2个发出确认。而不知道后面3个分组的下落，因此只能把后面的3个分组都重传一次，</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>选择重传(Selective Repeat)</strong></p>
+<ul>
+<li>发送点连续发送数据包但对每个数据包都设有个一个计时器。</li>
+<li>当在一定时间内没有收到某个数据包的ACK时，发送点只重新发送那个没有ACK的数据包。</li>
+</ul>
+<h4 id="停止等待arq">停止等待ARQ</h4>
+<p>停止并等待协议的工作原理如下：</p>
+<ul>
+<li>发送点对接收点发送数据包，然后等待接收点回复ACK并且开始计时。</li>
+<li>在等待过程中，发送点停止发送新的数据包。</li>
+<li>当数据包没有成功被接收点接收时候，接收点不会发送ACK.这样发送点在等待一定时间后，重新发送数据包。</li>
+<li>反复以上步骤直到收到从接收点发送的ACK.</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>较长的等待时间导致低的数据传输速度</li>
+</ul>
+<h3 id="滑动窗口">滑动窗口</h3>
+<p>发送方维护发送窗口，接收方维护接收窗口。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602496289766.jpg" alt="" loading="lazy"></p>
+<p><strong>规则：</strong></p>
+<ul>
+<li>（1）凡是已经发送过的数据，在未收到确认之前，都必须暂时保留，以便在超时重传时使用。</li>
+<li>（2）只有当发送方A收到了接收方的确认报文段时，发送方窗口才可以向前滑动几个序号。</li>
+<li>（3）当发送方A发送的数据经过一段时间没有收到确认（由超时计时器控制），就要使用回退N步协议，回到最后接收到确认号的地方，重新发送这部分数据。</li>
+</ul>
+<p><strong>发送窗口中有四个概念</strong></p>
+<ul>
+<li>已发送并收到确认的数据（不在发送窗口和发送缓冲区之内）</li>
+<li>已发送但未收到确认的数据（位于发送窗口之内）</li>
+<li>允许发送但尚未发送的数据（位于发送窗口之内）</li>
+<li>发送窗口之外的缓冲区内暂时不允许发送的数据。</li>
+</ul>
+<p><strong>接收窗口中也有四个概念</strong></p>
+<ul>
+<li>已发送确认并交付主机的数据（不在接收窗口和接收缓冲区之内）</li>
+<li>未按序收到的数据（位于接收窗口之内）</li>
+<li>允许的数据（位于接收窗口之内）</li>
+<li>不允许接收的数据（位于发送窗口之内）。</li>
+</ul>
+<h2 id="流量控制">流量控制</h2>
+<p>一条TCP连接每一侧主机都为该连接设置了接受缓存。TCP连接收到正确、按序的字节后，它就将数据放入接收缓存。应用程序从该缓存读数据，但不是数据刚到就读取。为了防止发送方发送太多太快，导致接收缓存溢出，TCP提供<strong>流量控制服务（flow-control service）</strong></p>
+<p><strong>使用滑动窗口协议</strong></p>
+<p>发送方维护 <strong>接收窗口（rwnd）</strong> 的变量进行流量控制。</p>
+<p>把rwnd的值放在TCP报文 接收窗口字段。</p>
+<p>举例：</p>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602496301515.png" alt="" loading="lazy"></figure>
+<h2 id="拥塞控制-tcp-conggestion-control-algorithm">拥塞控制 (TCP conggestion control algorithm)</h2>
+<p>和流量控制相似，都是控制发送方发送的速度，但是目标不一样，流量控制是为了防止接收方接收缓存溢出，拥塞控制是因为网络发生拥堵而降低发送速度。</p>
+<p><strong>TCP的拥塞控制采用了四种算法，即 慢开始 、 拥塞避免 、快重传 和 快恢复。</strong></p>
+<p>可参考</p>
+<ul>
+<li><a href="https://www.cnblogs.com/wuchanming/p/4422779.html">TCP的拥塞控制</a></li>
+<li><a href="https://juejin.im/entry/5b7fcd13f265da4372473199?utm_medium=yw&amp;utm_source=weibo0825_1">浅谈 TCP 拥塞控制算法</a></li>
+</ul>
+<h3 id="慢开始">慢开始</h3>
+<blockquote>
+<p>发送方维持一个叫做 <strong>拥塞窗口cwnd（congestion window）</strong> 的状态变量。拥塞窗口的大小取决于网络的拥塞程度，并且动态地在变化。发送方让自己的发送窗口等于拥塞窗口，另外考虑到接受方的接收能力，发送窗口可能小于拥塞窗口。</p>
+</blockquote>
+<p>慢开始算法的思路就是，不要一开始就发送大量的数据，先探测一下网络的拥塞程度，也就是说由小到大逐渐增加拥塞窗口的大小 <strong>(乘法增长)</strong>。</p>
+<p>这里用报文段的个数的拥塞窗口大小举例说明慢开始算法，实时拥塞窗口大小是以字节为单位的。如下图：</p>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602496314016.jpeg" alt="" loading="lazy"></figure>
+<h3 id="拥塞避免">拥塞避免</h3>
+<p>为了防止cwnd增长过大引起网络拥塞，还需设置一个 <strong>慢开始门限ssthresh</strong>状态变量。ssthresh的用法如下：</p>
+<ul>
+<li>当cwnd &lt; ssthresh时，使用慢开始算法。</li>
+<li>当cwnd &gt; ssthresh时，改用拥塞避免算法。</li>
+<li>当cwnd = ssthresh时，慢开始与拥塞避免算法任意。</li>
+</ul>
+<p>无论是在慢开始阶段还是在拥塞避免阶段，只要发送方判断网络出现拥塞，就把 <strong>慢开始门限设置为出现拥塞时的发送窗口大小的一半</strong>。然后把拥塞窗口设置为1，执行慢开始算法。</p>
+<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602496323466.jpeg" alt="" loading="lazy"></figure>
+<h3 id="快重传-和-快恢复-frr-fast-retransmit-and-recovery">快重传 和 快恢复 （FRR, fast retransmit and recovery）</h3>
+<p>快重传要求接收方在收到一个失序的报文段后就立即发出重复确认（为的是使发送方及早知道有报文段没有到达对方）而不要等到自己发送数据时捎带确认。快重传算法规定，发送方只要一连收到三个重复确认就应当立即重传对方尚未收到的报文段，而不必继续等待设置的重传计时器时间到期(<strong>没有FRR，如果数据包丢失了，TCP 将会使用定时器来要求传输暂停。在暂停的这段时间内，没有新的或复制的数据包被发送</strong>)。</p>
+<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602496332515.jpeg" alt="" loading="lazy"></figure>
+<p>快重传配合使用的还有快恢复算法，有以下两个要点:</p>
+<ul>
+<li>①当发送方连续收到三个重复确认时，就执行“乘法减小”算法，把ssthresh门限减半。但是接下去并不执行慢开始算法。</li>
+<li>②考虑到如果网络出现拥塞的话就不会收到好几个重复的确认，所以发送方现在认为网络可能没有出现拥塞。所以此时不执行慢开始算法，而是将cwnd设置为ssthresh的大小，然后执行拥塞避免算法。</li>
+</ul>
+<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602496341797.jpeg" alt="" loading="lazy"></figure>
+<h1 id="应用层协议使用运输层协议一些分类">应用层协议使用运输层协议一些分类</h1>
+<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602496351981.png" alt="" loading="lazy"></figure>
+<ul>
+<li>SSH	<br>
+端口号22，TCP</li>
+<li>MYSQL<br>
+端口号 3306 TCP</li>
+</ul>
+<p>0~1023是周知端口号，受限制，给HTTP或者FTP这种预留使用的。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%A6%82%E8%BF%B0">概述</a></li>
+<li><a href="#%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8-%E5%A4%9A%E8%B7%AF%E5%88%86%E8%A7%A3">多路复用 多路分解</a></li>
+<li><a href="#%E6%97%A0%E8%BF%9E%E6%8E%A5%E8%BF%90%E8%BE%93udp">无连接运输：UDP</a>
+<ul>
+<li><a href="#%E7%89%B9%E7%82%B9">特点</a></li>
+<li><a href="#%E6%8A%A5%E6%96%87">报文</a></li>
+<li><a href="#udp%E5%92%8Ctcp%E7%9A%84%E4%B8%8D%E5%90%8C">UDP和TCP的不同</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9D%A2%E5%90%91%E8%BF%9E%E6%8E%A5%E7%9A%84%E8%BF%90%E8%BE%93tcp">面向连接的运输：TCP</a>
+<ul>
+<li><a href="#%E7%89%B9%E7%82%B9-2">特点</a></li>
+<li><a href="#mss">MSS</a></li>
+<li><a href="#%E6%8A%A5%E6%96%87-2">报文</a></li>
+<li><a href="#%E8%BF%9E%E6%8E%A5%E7%AE%A1%E7%90%86">连接管理</a>
+<ul>
+<li><a href="#%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B">三次握手</a>
+<ul>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E8%80%8C%E4%B8%8D%E6%98%AF%E4%B8%A4%E6%AC%A1%E6%8F%A1%E6%89%8B">为什么需要三次握手而不是两次握手？</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B">四次挥手</a>
+<ul>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%9C%80%E5%90%8E%E8%BF%98%E8%A6%81%E7%AD%89%E5%BE%852msl">为什么客户端最后还要等待2MSL？</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E5%BB%BA%E7%AB%8B%E8%BF%9E%E6%8E%A5%E6%98%AF%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%E5%85%B3%E9%97%AD%E8%BF%9E%E6%8E%A5%E5%8D%B4%E6%98%AF%E5%9B%9B%E6%AC%A1%E6%8C%A5%E6%89%8B%E5%91%A2">为什么建立连接是三次握手，关闭连接却是四次挥手呢？</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%AF%E9%9D%A0%E6%80%A7%E4%BC%A0%E8%BE%93">可靠性传输</a>
+<ul>
+<li><a href="#arq">ARQ</a>
+<ul>
+<li><a href="#%E8%BF%9E%E7%BB%ADarq">连续ARQ</a></li>
+<li><a href="#%E5%81%9C%E6%AD%A2%E7%AD%89%E5%BE%85arq">停止等待ARQ</a></li>
+</ul>
+</li>
+<li><a href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3">滑动窗口</a></li>
+</ul>
+</li>
+<li><a href="#%E6%B5%81%E9%87%8F%E6%8E%A7%E5%88%B6">流量控制</a></li>
+<li><a href="#%E6%8B%A5%E5%A1%9E%E6%8E%A7%E5%88%B6-tcp-conggestion-control-algorithm">拥塞控制 (TCP conggestion control algorithm)</a>
+<ul>
+<li><a href="#%E6%85%A2%E5%BC%80%E5%A7%8B">慢开始</a></li>
+<li><a href="#%E6%8B%A5%E5%A1%9E%E9%81%BF%E5%85%8D">拥塞避免</a></li>
+<li><a href="#%E5%BF%AB%E9%87%8D%E4%BC%A0-%E5%92%8C-%E5%BF%AB%E6%81%A2%E5%A4%8D-frr-fast-retransmit-and-recovery">快重传 和 快恢复 （FRR, fast retransmit and recovery）</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%BA%94%E7%94%A8%E5%B1%82%E5%8D%8F%E8%AE%AE%E4%BD%BF%E7%94%A8%E8%BF%90%E8%BE%93%E5%B1%82%E5%8D%8F%E8%AE%AE%E4%B8%80%E4%BA%9B%E5%88%86%E7%B1%BB">应用层协议使用运输层协议一些分类</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/jsjwl-23-jia-mi-suan-fa-zhai-yao-shu-zi-qian-ming-ca-zheng-shu/">
+              <h3 class="post-title">
+                2.3 加密算法、摘要、数字签名、CA证书
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

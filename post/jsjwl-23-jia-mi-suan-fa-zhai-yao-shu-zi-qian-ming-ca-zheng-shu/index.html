@@ -1,0 +1,367 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2.3 加密算法、摘要、数字签名、CA证书 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602496952509">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="2.3 加密算法、摘要、数字签名、CA证书 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+1.对称加密
+1.1 含义
+
+加密和解密使用的是同样的密钥，加密和解密算法是公开的，密钥必须严格保存，如果密钥泄漏，就能使用密文+密钥还原成明文。
+
+1.2 优缺点
+优点：算法公开、计算量小、加密速度快、效率高
+缺点：密钥管理和..." />
+    <meta name="keywords" content="计算机网络" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602496952509" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              2.3 加密算法、摘要、数字签名、CA证书
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/w6k1syZt4/" class="post-tag">
+                  # 计算机网络
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="1对称加密">1.对称加密</h1>
+<h2 id="11-含义">1.1 含义</h2>
+<blockquote>
+<p>加密和解密使用的是<strong>同样</strong>的密钥，加密和解密算法是公开的，密钥必须严格保存，如果密钥泄漏，就能使用密文+密钥还原成明文。</p>
+</blockquote>
+<h2 id="12-优缺点">1.2 优缺点</h2>
+<p>优点：算法公开、计算量小、加密速度快、效率高</p>
+<p>缺点：密钥管理和分发困难，不够安全</p>
+<h2 id="13-常见算法">1.3 常见算法</h2>
+<ul>
+<li>DES</li>
+<li>AES</li>
+<li>3DES</li>
+<li>RC2</li>
+<li>RC4</li>
+<li>RC5</li>
+<li>Blowfish</li>
+<li>ChaCha20-Poly1305</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496131619.png" alt="" loading="lazy"></figure>
+<h2 id="14-可参考文章">1.4 可参考文章</h2>
+<ul>
+<li><a href="http://blog.csdn.net/happylee6688/article/details/44455407">Java 加解密技术系列之 DES</a></li>
+<li><a href="https://www.cnblogs.com/txw1958/p/aes.html">AES对称加密算法原理</a></li>
+</ul>
+<h1 id="2非对称加密">2.非对称加密</h1>
+<h2 id="21-含义">2.1 含义</h2>
+<blockquote>
+<p>非对称加密需要两个密钥进行加密解密，这两个密钥分别是公钥和私钥。私钥只能由一方安全保管，不能外泄，而公钥则可以发给任何请求它的人。公开密钥与私有密钥是一对，如果用公开密钥对数据进行加密，只有用对应的私有密钥才能解密;如果用私有密钥对数据进行加密，那么只有用对应的公开密钥才能解密。</p>
+</blockquote>
+<blockquote>
+<p>两个用途<br>
+<strong>1.机密信息交换</strong>： 非对称加密算法实现机密信息交换的基本过程是：甲方生成一对密钥并将其中的一把作为公用密钥向其它方公开；得到该公用密钥的乙方使用该密钥对机密信息进行加密后再发送给甲方；甲方再用自己保存的另一把专用密钥对加密后的信息进行解密。(消息加密利用公钥加密，使用私钥来解密)<br>
+<strong>2.数字签名</strong>：甲方可以使用乙方的公钥对机密信息进行签名后再发送给乙方；乙方再用自己的私匙对数据进行验签。(数字签名,使用私钥加密，使用公钥来解密)</p>
+</blockquote>
+<h2 id="22-优缺点">2.2 优缺点</h2>
+<p>优点：安全性高，公钥是公开的，私钥是自己保存的。<br>
+缺点：加密和解密花费时间长、速度慢（非对称加密一般比对称加密慢2到3个数量级），只适合少量数据进行加密</p>
+<h2 id="23常见算法">2.3常见算法</h2>
+<ul>
+<li>RSA</li>
+<li>DSA</li>
+<li>Elgamal</li>
+<li>背包算法</li>
+<li>Rabin</li>
+<li>D-H</li>
+<li>ECC（椭圆曲线加密算法）</li>
+<li>ECDSA</li>
+<li>ECDHE。</li>
+</ul>
+<h2 id="24-可参考文章">2.4 可参考文章</h2>
+<ul>
+<li><a href="http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html">RSA算法原理（一）</a></li>
+</ul>
+<h1 id="3消息摘要">3.消息摘要</h1>
+<h2 id="31-含义">3.1 含义</h2>
+<blockquote>
+<p>将任意长度的信息转换为较短的固定长度的值，通常其长度要比信息小得多，且算法不可逆。</p>
+</blockquote>
+<ul>
+<li>函数必须是容易计算的</li>
+<li>输入可以是任意长度的数据</li>
+<li>输出必须是固定长度的</li>
+<li>函数是不可逆的（区别于加密算法）</li>
+<li>不同输入产生的碰撞冲突可能性要尽可能低</li>
+</ul>
+<h2 id="32常见算法">3.2常见算法</h2>
+<ul>
+<li>MD5(不安全)</li>
+<li>SHA-1（不安全）</li>
+<li>SHA-2</li>
+<li>SHA-256</li>
+</ul>
+<h1 id="4数字签名">4.数字签名</h1>
+<h2 id="41-含义">4.1 含义</h2>
+<blockquote>
+<p>签名就是在信息的后面再加上一段内容（信息经过hash后的值），可以证明信息没有被修改过。hash值一般都会加密后（也就是签名）再和信息一起发送，以保证这个hash值不被修改。</p>
+<p>签名在网络通讯中的应用称为数字签名，当服务器向客户端发送信息时，会将报文生成报文摘要，同时对报文摘要进行hash计算，得到hash值，然后对hash值进行加密，然后将加密的hash值放置在报文后面，这个加密后的hash值就称为签名。服务器将报文、签名和数字证书一同发送给客户端。客户端收到这些信息后，会首先验证签名，利用签名算法对签名进行解密，得到报文摘要的hash值，然后将得到的报文生成报文摘要并利用签名hash算法生成新的hash值，通过对比这两个hash值是否一致，就能判断信息是否完整，是否是由真正的服务器发送的。可知签名有两个作用确认消息发送方可靠，确认消息完整准确。</p>
+</blockquote>
+<h2 id="42-过程">4.2 过程</h2>
+<p><strong>一个具体的签名过程如下：</strong></p>
+<blockquote>
+<p>小明对外发布公钥，并声明对应的私钥在自己手上<br>
+小明对消息M计算摘要，得到摘要D<br>
+小明使用私钥对D进行签名，得到签名S<br>
+将M和S一起发送出去</p>
+</blockquote>
+<p><strong>验签证过程如下：</strong></p>
+<blockquote>
+<p>接收者首先对M计算摘要，得到D’<br>
+使用小明公钥对S进行解签，得到D<br>
+如果D和D’相同，那么证明M确实是小明发出的，并且没有被篡改过</p>
+</blockquote>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496147952.png" alt="" loading="lazy"></figure>
+<h2 id="43-应用">4.3 应用</h2>
+<ul>
+<li>网站认证</li>
+<li>代码签名</li>
+</ul>
+<h2 id="44-可参考文章">4.4 可参考文章</h2>
+<ul>
+<li><a href="https://blog.csdn.net/qmickecs/article/details/73696954">数字签名原理及其应用</a></li>
+<li><a href="https://blog.csdn.net/lycb_gz/article/details/78081536">数字签名工作原理</a></li>
+</ul>
+<h1 id="5ca证书">5.CA证书</h1>
+<h2 id="51-含义">5.1 含义</h2>
+<blockquote>
+<p>CA证书顾名思义就是由CA（Certification Authority）机构发布的数字证书</p>
+</blockquote>
+<blockquote>
+<p>数字证书无法保证公钥被篡改，可能有中间人攻击替换公钥<br>
+如何保证公钥不被人篡改？<br>
+将公钥放入数字证书中，只要证书是可信的，公钥就是可信的</p>
+</blockquote>
+<blockquote>
+<ul>
+<li>权威机构必须是存在的</li>
+<li>权威机构使用自己的私钥加密的内容是可信任的</li>
+<li>信任是可传递的，机构 A 的公钥由 A 的上一级权威使用自己的私钥加密签发，直到最高权威机构</li>
+<li>证书链成树状，最高处为根(root)证书，根证书和节点之间的叫中间证书</li>
+<li>权威证书链每个 client 端都会内置一份（操作系统、浏览器或者应用内部）</li>
+</ul>
+</blockquote>
+<p><strong>CA证书具体包括哪些内容：</strong></p>
+<ul>
+<li>颁发者</li>
+<li>使用者</li>
+<li>版本</li>
+<li>签名算法</li>
+<li>签名哈希算法</li>
+<li>使用者</li>
+<li>公钥</li>
+<li>指纹</li>
+<li>指纹算法</li>
+<li>……</li>
+</ul>
+<h2 id="52-校验过程">5.2 校验过程</h2>
+<blockquote>
+<p>以浏览器为例说明如下：<br>
+（1）首先浏览器读取证书中的证书所有者、有效期等信息进行一一校验<br>
+（2）浏览器开始查找操作系统中已内置的受信任的证书发布机构CA，与服务器发来的证书中的颁发者CA比对，用于校验证书是否为合法机构颁发<br>
+（3）如果找不到，浏览器就会报错，说明服务器发来的证书是不可信任的。<br>
+（4）如果找到，那么浏览器就会从操作系统中取出 颁发者CA 的公钥，然后对服务器发来的证书里面的签名进行解密<br>
+（5）浏览器使用相同的hash算法计算出服务器发来的证书的hash值，将这个计算的hash值与证书中签名做对比<br>
+（6）对比结果一致，则证明服务器发来的证书合法，没有被冒充<br>
+（7）此时浏览器就可以读取证书中的公钥，用于后续加密了</p>
+</blockquote>
+<h2 id="53-可参考文章">5.3 可参考文章</h2>
+<ul>
+<li><a href="CA%E8%AF%81%E4%B9%A6%E7%90%86%E8%A7%A3%EF%BC%9FCA%E8%AF%81%E4%B9%A6%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F">CA证书理解？CA证书的作用？</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">1.对称加密</a>
+<ul>
+<li><a href="#11-%E5%90%AB%E4%B9%89">1.1 含义</a></li>
+<li><a href="#12-%E4%BC%98%E7%BC%BA%E7%82%B9">1.2 优缺点</a></li>
+<li><a href="#13-%E5%B8%B8%E8%A7%81%E7%AE%97%E6%B3%95">1.3 常见算法</a></li>
+<li><a href="#14-%E5%8F%AF%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">1.4 可参考文章</a></li>
+</ul>
+</li>
+<li><a href="#2%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">2.非对称加密</a>
+<ul>
+<li><a href="#21-%E5%90%AB%E4%B9%89">2.1 含义</a></li>
+<li><a href="#22-%E4%BC%98%E7%BC%BA%E7%82%B9">2.2 优缺点</a></li>
+<li><a href="#23%E5%B8%B8%E8%A7%81%E7%AE%97%E6%B3%95">2.3常见算法</a></li>
+<li><a href="#24-%E5%8F%AF%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">2.4 可参考文章</a></li>
+</ul>
+</li>
+<li><a href="#3%E6%B6%88%E6%81%AF%E6%91%98%E8%A6%81">3.消息摘要</a>
+<ul>
+<li><a href="#31-%E5%90%AB%E4%B9%89">3.1 含义</a></li>
+<li><a href="#32%E5%B8%B8%E8%A7%81%E7%AE%97%E6%B3%95">3.2常见算法</a></li>
+</ul>
+</li>
+<li><a href="#4%E6%95%B0%E5%AD%97%E7%AD%BE%E5%90%8D">4.数字签名</a>
+<ul>
+<li><a href="#41-%E5%90%AB%E4%B9%89">4.1 含义</a></li>
+<li><a href="#42-%E8%BF%87%E7%A8%8B">4.2 过程</a></li>
+<li><a href="#43-%E5%BA%94%E7%94%A8">4.3 应用</a></li>
+<li><a href="#44-%E5%8F%AF%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">4.4 可参考文章</a></li>
+</ul>
+</li>
+<li><a href="#5ca%E8%AF%81%E4%B9%A6">5.CA证书</a>
+<ul>
+<li><a href="#51-%E5%90%AB%E4%B9%89">5.1 含义</a></li>
+<li><a href="#52-%E6%A0%A1%E9%AA%8C%E8%BF%87%E7%A8%8B">5.2 校验过程</a></li>
+<li><a href="#53-%E5%8F%AF%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">5.3 可参考文章</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/jsjwl-22-https/">
+              <h3 class="post-title">
+                2.2 HTTPS
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

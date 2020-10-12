@@ -1,0 +1,273 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>5.链路层 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602496952509">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="5.链路层 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+概述
+提供的服务
+
+总结
+
+可靠交付
+差错检测和纠正
+部分功能是硬件实现的
+
+网络适配器
+
+
+
+比特级差错检测和纠正
+奇偶校验
+思想
+
+出现偶数个比特差错会失效。
+进阶：二维奇偶校验
+d个比特被划分为i行j列，产生i+j+1奇偶..." />
+    <meta name="keywords" content="计算机网络" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602496952509" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              5.链路层
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/w6k1syZt4/" class="post-tag">
+                  # 计算机网络
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="概述">概述</h1>
+<h2 id="提供的服务">提供的服务</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496804763.png" alt="" loading="lazy"></figure>
+<h2 id="总结">总结</h2>
+<ul>
+<li>可靠交付</li>
+<li>差错检测和纠正</li>
+<li>部分功能是硬件实现的
+<ul>
+<li>网络适配器</li>
+</ul>
+</li>
+</ul>
+<h1 id="比特级差错检测和纠正">比特级差错检测和纠正</h1>
+<h2 id="奇偶校验">奇偶校验</h2>
+<h3 id="思想">思想</h3>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496812959.png" alt="" loading="lazy"></figure>
+<p>出现偶数个比特差错会失效。</p>
+<h3 id="进阶二维奇偶校验">进阶：二维奇偶校验</h3>
+<p>d个比特被划分为i行j列，产生i+j+1奇偶比特作为帧的差错检测比特。</p>
+<p>不仅可以识别，还可以<strong>纠正</strong></p>
+<p>接收方检测和纠正差错的能力称为<strong>前向纠错（FEC，Forward Error Correction）</strong></p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496867343.png" alt="" loading="lazy"></figure>
+<h2 id="检验和方法">检验和方法</h2>
+<p>通常多用于运输层</p>
+<p><strong>因特网检验和（Internet checksum）<strong>基于这种方法，即数据的字节作为16比特的整数对待并</strong>求和</strong>。将<strong>和的反码</strong>放在报文段首部作为<strong>因特网检验和</strong>。</p>
+<p>接收方通过对接受的数据（包括检验和）<strong>计算和并取反码</strong>，检测结构<strong>是否全部为1</strong>。有0就有差错。（TCP、UDP的检验和只用了16比特，降低分组开销）</p>
+<h2 id="循环冗余检测-crc">循环冗余检测  CRC</h2>
+<p>通常多应用在适配器中的链路层</p>
+<p>Cyclic Redundancy Check,CRC编码也称为多项式编码</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602496875809.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602496880524.png" alt="" loading="lazy"></p>
+<h1 id="多路访问协议">多路访问协议</h1>
+<ul>
+<li>信道划分协议
+<ul>
+<li>时分多路复用 TDM</li>
+<li>频分多路复用 FDM</li>
+<li>码分多址 CDMA</li>
+</ul>
+</li>
+<li>随机接入协议
+<ul>
+<li>ALOHA</li>
+<li>CSMA</li>
+</ul>
+</li>
+<li>轮流协议</li>
+</ul>
+<h1 id="链路层寻址和arp"><strong>链路层寻址和ARP</strong></h1>
+<h2 id="mac地址">MAC地址</h2>
+<p>链路层地址，LAN地址、物理地址、MAC地址，都可以</p>
+<p>长度 6字节</p>
+<h2 id="arp-地址解析协议">ARP 地址解析协议</h2>
+<p>Address Resolution Protocol，IP地址和MAC地址的转换</p>
+<p>DNS为因特网中任何地方的主机解析主机名，ARP只为在同一个子网的主机和路由器解析IP地址。</p>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496889894.png" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%A6%82%E8%BF%B0">概述</a>
+<ul>
+<li><a href="#%E6%8F%90%E4%BE%9B%E7%9A%84%E6%9C%8D%E5%8A%A1">提供的服务</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+<li><a href="#%E6%AF%94%E7%89%B9%E7%BA%A7%E5%B7%AE%E9%94%99%E6%A3%80%E6%B5%8B%E5%92%8C%E7%BA%A0%E6%AD%A3">比特级差错检测和纠正</a>
+<ul>
+<li><a href="#%E5%A5%87%E5%81%B6%E6%A0%A1%E9%AA%8C">奇偶校验</a>
+<ul>
+<li><a href="#%E6%80%9D%E6%83%B3">思想</a></li>
+<li><a href="#%E8%BF%9B%E9%98%B6%E4%BA%8C%E7%BB%B4%E5%A5%87%E5%81%B6%E6%A0%A1%E9%AA%8C">进阶：二维奇偶校验</a></li>
+</ul>
+</li>
+<li><a href="#%E6%A3%80%E9%AA%8C%E5%92%8C%E6%96%B9%E6%B3%95">检验和方法</a></li>
+<li><a href="#%E5%BE%AA%E7%8E%AF%E5%86%97%E4%BD%99%E6%A3%80%E6%B5%8B-crc">循环冗余检测  CRC</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A4%9A%E8%B7%AF%E8%AE%BF%E9%97%AE%E5%8D%8F%E8%AE%AE">多路访问协议</a></li>
+<li><a href="#%E9%93%BE%E8%B7%AF%E5%B1%82%E5%AF%BB%E5%9D%80%E5%92%8Carp"><strong>链路层寻址和ARP</strong></a>
+<ul>
+<li><a href="#mac%E5%9C%B0%E5%9D%80">MAC地址</a></li>
+<li><a href="#arp-%E5%9C%B0%E5%9D%80%E8%A7%A3%E6%9E%90%E5%8D%8F%E8%AE%AE">ARP 地址解析协议</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/jsjwl-4wang-luo-ceng/">
+              <h3 class="post-title">
+                4.网络层
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

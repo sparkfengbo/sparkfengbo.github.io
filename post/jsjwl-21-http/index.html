@@ -1,0 +1,398 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2.1 HTTP | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602496952509">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="2.1 HTTP | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+1.简介
+端口号80，应用层协议
+
+方法
+
+GET ： 获取资源
+POST ： 传输实体主体
+PUT ： 传输文件
+HEAD ： 获得报文首部
+DELETE ： 删除文件
+OPTIONS ： 询问支持的方法
+TRACE ： 追踪..." />
+    <meta name="keywords" content="计算机网络" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602496952509" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              2.1 HTTP
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/w6k1syZt4/" class="post-tag">
+                  # 计算机网络
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="1简介">1.简介</h1>
+<p>端口号80，应用层协议</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602495937556.png" alt="" loading="lazy"></figure>
+<h2 id="方法">方法</h2>
+<ul>
+<li>GET ： 获取资源</li>
+<li>POST ： 传输实体主体</li>
+<li>PUT ： 传输文件</li>
+<li>HEAD ： 获得报文首部</li>
+<li>DELETE ： 删除文件</li>
+<li>OPTIONS ： 询问支持的方法</li>
+<li>TRACE ： 追踪路径</li>
+<li>CONNECT ： 要求使用隧道协议链接代理（使用SSL Secure Sockets Layer 安全套接层、或 TLS Transport Layer Security 传输层安全）</li>
+</ul>
+<p><strong>持久连接节省通信量 HTTP keep-alive或connection reuse，只要任意一方没有明确提出断开连接，则保持TCP状态</strong></p>
+<h1 id="2瓶颈和缺点">2.瓶颈和缺点</h1>
+<h2 id="缺点">缺点</h2>
+<ul>
+<li>明文传输 （容易窃听）</li>
+<li>缺乏服务认证手段 （容易被中间人攻击）</li>
+<li>缺乏完整性校验 （容易被篡改）</li>
+</ul>
+<h2 id="瓶颈">瓶颈</h2>
+<ul>
+<li>不保存状态</li>
+<li>一条连接上只能发送一个请求</li>
+<li>请求只能从客户端开发，客户端不能接收除响应外的指令</li>
+<li>请求、响应首部未经压缩就发送。首部信息越多延迟越长</li>
+<li>发送冗长的首部。每次互相发送相同的首部造成的浪费较多</li>
+<li>可任意选择数据压缩格式。非强制压缩发送</li>
+</ul>
+<h1 id="3版本区别">3.版本区别</h1>
+<p><a href="https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A?">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602495954703.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>影响一个 HTTP 网络请求的因素主要有两个：带宽和延迟。</p>
+<p>带宽：如果说我们还停留在拨号上网的阶段，带宽可能会成为一个比较严重影响请求的问题，但是现在网络基础建设已经使得带宽得到极大的提升，我们不再会担心由带宽而影响网速，那么就只剩下延迟了。</p>
+<p>延迟：</p>
+<ul>
+<li>
+<p>浏览器阻塞（HOL blocking）：浏览器会因为一些原因阻塞请求。浏览器对于同一个域名，同时只能有 4 个连接（这个根据浏览器内核不同可能会有所差异），超过浏览器最大连接数限制，后续请求就会被阻塞。</p>
+</li>
+<li>
+<p>DNS 查询（DNS Lookup）：浏览器需要知道目标服务器的 IP 才能建立连接。将域名解析为 IP 的这个系统就是 DNS。这个通常可以利用DNS缓存结果来达到减少这个时间的目的。</p>
+</li>
+<li>
+<p>建立连接（Initial connection）：HTTP 是基于 TCP 协议的，浏览器最快也要在第三次握手时才能捎带 HTTP 请求报文，达到真正的建立连接，但是这些连接无法复用会导致每次请求都经历三次握手和慢启动。三次握手在高延迟的场景下影响较明显，慢启动则对文件类大请求影响较大。</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="11-和-10和的区别">1.1 和 1.0和的区别</h2>
+<ul>
+<li>
+<p><strong>缓存处理</strong><br>
+在HTTP1.0中主要使用header里的If-Modified-Since,Expires来做为缓存判断的标准，HTTP1.1则引入了更多的缓存控制策略例如Entity tag，If-Unmodified-Since, If-Match, If-None-Match等更多可供选择的缓存头来控制缓存策略。</p>
+</li>
+<li>
+<p><strong>带宽优化及网络连接的使用</strong><br>
+HTTP1.0中，存在一些浪费带宽的现象，例如客户端只是需要某个对象的一部分，而服务器却将整个对象送过来了，并且不支持断点续传功能，HTTP1.1则在请求头引入了range头域，它允许只请求资源的某个部分，即返回码是206（Partial Content），这样就方便了开发者自由的选择以便于充分利用带宽和连接。</p>
+</li>
+<li>
+<p><strong>错误通知的管理</strong><br>
+在HTTP1.1中新增了24个错误状态响应码，如409（Conflict）表示请求的资源与资源的当前状态发生冲突；410（Gone）表示服务器上的某个资源被永久性的删除。</p>
+</li>
+<li>
+<p><strong>Host头处理</strong><br>
+在HTTP1.0中认为每台服务器都绑定一个唯一的IP地址，因此，请求消息中的URL并没有传递主机名（hostname）。但随着虚拟主机技术的发展，在一台物理服务器上可以存在多个虚拟主机（Multi-homed Web Servers），并且它们共享一个IP地址。HTTP1.1的请求消息和响应消息都应支持Host头域，且请求消息中如果没有Host头域会报告一个错误（400 Bad Request）。</p>
+</li>
+<li>
+<p><strong>长连接</strong><br>
+HTTP 1.1支持长连接（PersistentConnection）和请求的流水线（Pipelining）处理，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟，在HTTP1.1中默认开启Connection： keep-alive，一定程度上弥补了HTTP1.0每次请求都要创建连接的缺点。</p>
+</li>
+</ul>
+<p><strong>Pipelining会造成队头阻塞</strong></p>
+<blockquote>
+<p>队头阻塞是指当顺序发送的请求序列中的一个请求因为某种原因被阻塞时，在后面排队的所有请求也一并被阻塞，会导致客户端迟迟收不到数据。</p>
+<p>针对队头阻塞：</p>
+<p>1.将同一页面的资源分散到不同域名下，提升连接上限。虽然能公用一个 TCP 管道，但是在一个管道中同一时刻只能处理一个请求，在当前的请求没有结束之前，其他的请求只能处于阻塞状态。<br>
+2.减少请求数量<br>
+3.内联一些资源：css、base64 图片等<br>
+4.合并小文件减少资源数</p>
+</blockquote>
+<h2 id="spdy-http1x的优化">SPDY: HTTP1.x的优化</h2>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602495966953.webp" alt="" loading="lazy"></figure>
+<blockquote>
+<p>SPDY位于HTTP之下，TCP和SSL之上，这样可以轻松兼容老版本的HTTP协议(将HTTP1.x的内容封装成一种新的frame格式)，同时可以使用已有的SSL功能。</p>
+</blockquote>
+<ul>
+<li>
+<p><strong>降低延迟</strong><br>
+针对HTTP高延迟的问题，SPDY优雅的采取了<strong>多路复用（multiplexing）</strong>。多路复用通过多个请求stream共享一个tcp连接的方式，解决了HOL blocking的问题，降低了延迟同时提高了带宽的利用率。</p>
+</li>
+<li>
+<p><strong>请求优先级（request prioritization）</strong><br>
+多路复用带来一个新的问题是，在连接共享的基础之上有可能会导致关键请求被阻塞。SPDY允许给每个request设置优先级，这样重要的请求就会优先得到响应。比如浏览器加载首页，首页的html内容应该优先展示，之后才是各种静态资源文件，脚本文件等加载，这样可以保证用户能第一时间看到网页内容。</p>
+</li>
+<li>
+<p><strong>header压缩</strong><br>
+前面提到HTTP1.x的header很多时候都是重复多余的。选择合适的压缩算法可以减小包的大小和数量。</p>
+</li>
+<li>
+<p><strong>基于HTTPS的加密协议传输</strong><br>
+大大提高了传输数据的可靠性。</p>
+</li>
+<li>
+<p><strong>服务端推送（server push）</strong><br>
+采用了SPDY的网页，例如我的网页有一个style.css的请求，在客户端收到style.css数据的同时，服务端会将style.js的文件推送给客户端，当客户端再次尝试获取style.js时就可以直接从缓存中获取到，不用再发请求了。</p>
+</li>
+</ul>
+<h2 id="20-和-spdy-的区别">2.0 和 SPDY 的区别</h2>
+<ul>
+<li>HTTP2.0 支持明文 HTTP 传输，而 SPDY 强制使用 HTTPS</li>
+<li>HTTP2.0 消息头的压缩算法采用 <a href="http://http2.github.io/http2-spec/compression.html">HPACK</a>，而非 SPDY 采用的 <a href="http://zh.wikipedia.org/wiki/DEFLATE">DEFLATE</a></li>
+</ul>
+<h2 id="20-和-1x-的区别">2.0 和 1.X 的区别</h2>
+<ul>
+<li>
+<p>新的二进制格式（Binary Format），HTTP1.x的解析是基于文本。基于文本协议的格式解析存在天然缺陷，文本的表现形式有多样性，要做到健壮性考虑的场景必然很多，二进制则不同，只认0和1的组合。基于这种考虑HTTP2.0的协议解析决定采用二进制格式，实现方便且健壮。</p>
+</li>
+<li>
+<p>多路复用（MultiPlexing），即连接共享，即每一个request都是是用作连接共享机制的。一个request对应一个id，这样一个连接上可以有多个request，每个连接的request可以随机的混杂在一起，接收方可以根据request的 id将request再归属到各自不同的服务端请求里面。</p>
+</li>
+<li>
+<p>header压缩，如上文中所言，对前面提到过HTTP1.x的header带有大量信息，而且每次都要重复发送，HTTP2.0使用encoder来减少需要传输的header大小，通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小。</p>
+</li>
+<li>
+<p>服务端推送（server push），同SPDY一样，HTTP2.0也具有server push功能。</p>
+</li>
+</ul>
+<h1 id="4状态码">4.状态码</h1>
+<h2 id="类别">类别</h2>
+<ul>
+<li>1XX：信息性状态码（接收的请求正在处理）</li>
+<li>2XX：成功状态码 （请求正常处理完毕）</li>
+<li>3XX：重定向状态码 （需要进行附加操作以完成请求）</li>
+<li>4XX：客户端错误状态码 （服务器无法处理请求）</li>
+<li>5XX：服务端错误状态码 （服务器处理请求出错）</li>
+</ul>
+<h2 id="摘要">摘要</h2>
+<ul>
+<li>
+<p>200 OK，请求被正常处理</p>
+</li>
+<li>
+<p>204 Not Content 响应报文不包含注意部分</p>
+</li>
+<li>
+<p>206 Partial Content 客户端进行了范围请求</p>
+</li>
+<li>
+<p>301 Moved Permanently 永久重定向</p>
+</li>
+<li>
+<p>302 Found 临时重定向，请求的资源被分配了新的URI，希望用户能使用新的URI访问</p>
+</li>
+<li>
+<p>303 See Other</p>
+</li>
+<li>
+<p>304 Not Modified 与请求报文包含If-Match、If-Modified-Since等对应，返回304状态码的报文不包含主体部分</p>
+</li>
+<li>
+<p>307 Temporary Redirect 临时重定向</p>
+</li>
+<li>
+<p>400 Bad Request 请求报文中存在语法错误</p>
+</li>
+<li>
+<p>401 Unauthorized 需要有通过HTTP认证的认证信息</p>
+</li>
+<li>
+<p>403 Forbidden 对请求资源的访问被拒绝</p>
+</li>
+<li>
+<p>404 Not Found 服务器无法找到请求的资源</p>
+</li>
+<li>
+<p>500 Internal Server Error，服务器执行请求时出错</p>
+</li>
+<li>
+<p>503 Service Unavailable，服务器暂时处于超负载或正在停机维护，无法处理请求</p>
+</li>
+</ul>
+<h1 id="5参考文章">5.参考文章</h1>
+<ul>
+<li><a href="https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A?">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></li>
+<li><a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/network/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C.md">JavaGuid/计算机网络.md</a></li>
+<li><a href="https://www.toutiao.com/i6799544609371324932/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501771&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202003181122500100140400932AA62FFD&amp;group_id=6799544609371324932">一文读懂 HTTP/1、HTTP/2、HTTP/3</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E7%AE%80%E4%BB%8B">1.简介</a>
+<ul>
+<li><a href="#%E6%96%B9%E6%B3%95">方法</a></li>
+</ul>
+</li>
+<li><a href="#2%E7%93%B6%E9%A2%88%E5%92%8C%E7%BC%BA%E7%82%B9">2.瓶颈和缺点</a>
+<ul>
+<li><a href="#%E7%BC%BA%E7%82%B9">缺点</a></li>
+<li><a href="#%E7%93%B6%E9%A2%88">瓶颈</a></li>
+</ul>
+</li>
+<li><a href="#3%E7%89%88%E6%9C%AC%E5%8C%BA%E5%88%AB">3.版本区别</a>
+<ul>
+<li><a href="#11-%E5%92%8C-10%E5%92%8C%E7%9A%84%E5%8C%BA%E5%88%AB">1.1 和 1.0和的区别</a></li>
+<li><a href="#spdy-http1x%E7%9A%84%E4%BC%98%E5%8C%96">SPDY: HTTP1.x的优化</a></li>
+<li><a href="#20-%E5%92%8C-spdy-%E7%9A%84%E5%8C%BA%E5%88%AB">2.0 和 SPDY 的区别</a></li>
+<li><a href="#20-%E5%92%8C-1x-%E7%9A%84%E5%8C%BA%E5%88%AB">2.0 和 1.X 的区别</a></li>
+</ul>
+</li>
+<li><a href="#4%E7%8A%B6%E6%80%81%E7%A0%81">4.状态码</a>
+<ul>
+<li><a href="#%E7%B1%BB%E5%88%AB">类别</a></li>
+<li><a href="#%E6%91%98%E8%A6%81">摘要</a></li>
+</ul>
+</li>
+<li><a href="#5%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">5.参考文章</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/jsjwl-20-ying-yong-ceng/">
+              <h3 class="post-title">
+                2.0 应用层
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

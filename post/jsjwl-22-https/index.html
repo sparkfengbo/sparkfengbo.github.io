@@ -1,0 +1,363 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2.2 HTTPS | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602496952509">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="2.2 HTTPS | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+概念
+HyperText Transfer Protocol over Secure Socket Layer。在 HTTPS 中，使用传输层安全性(TLS)或安全套接字层(SSL)对通信协议进行加密。也就是 HTTP + SS..." />
+    <meta name="keywords" content="计算机网络" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602496952509" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              2.2 HTTPS
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/w6k1syZt4/" class="post-tag">
+                  # 计算机网络
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="概念">概念</h1>
+<p>HyperText Transfer Protocol over Secure Socket Layer。在 HTTPS 中，使用传输层安全性(TLS)或安全套接字层(SSL)对通信协议进行加密。也就是 HTTP + SSL(TLS) = HTTPS。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496015921.png" alt="" loading="lazy"></figure>
+<p>默认端口号443</p>
+<h2 id="ssl-tsl">SSL、TSL</h2>
+<p><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/%E7%BD%91%E7%BB%9C/SSL%E4%B8%8ETSL.md">很久之前的笔记</a></p>
+<blockquote>
+<p>1994年，NetScape公司设计了SSL协议1.0版，但是未发布<br>
+1995年，NetScape公司发布SSL 2.0版，很快发现有严重漏洞<br>
+1996年，SSL 3.0版问世，得到大规模应用，目前已被发现有安全漏洞<br>
+1999年，互联网标准化组织接替NetScape公司，在SSL3.0的基础上发布了TLS 1.0版<br>
+2006年和2008年，TLS进行了两次升级，分别为TLS 1.1版和TLS 1.2版。最新的变动是2018年TLS 1.3正式版发布</p>
+</blockquote>
+<h1 id="为什么会出现能够解决什么问题">为什么会出现，能够解决什么问题</h1>
+<p>主要为了解决HTTP不能解决的问题</p>
+<p>HTTPS 协议提供了三个关键的指标</p>
+<ul>
+<li>防窃听：数据加密(Encryption)</li>
+</ul>
+<blockquote>
+<p>HTTPS 通过对数据加密来使其免受窃听者对数据的监听，这就意味着当用户在浏览网站时，没有人能够监听他和网站之间的信息交换，或者跟踪用户的活动，访问记录等，从而窃取用户信息。</p>
+</blockquote>
+<ul>
+<li>防篡改：数据一致性(Data integrity)</li>
+</ul>
+<blockquote>
+<p>数据在传输的过程中不会被窃听者所修改，用户发送的数据会完整的传输到服务端，保证用户发的是什么，服务器接收的就是什么。</p>
+</blockquote>
+<ul>
+<li>防冒充：身份认证(Authentication)</li>
+</ul>
+<blockquote>
+<p>是指确认对方的真实身份，也就是证明你是你（可以比作人脸识别），它可以防止中间人攻击并建立用户信任。</p>
+</blockquote>
+<h1 id="加密算法">加密算法</h1>
+<p>参考<a href="">2.3 加密算法、摘要、数字签名、CA证书</a></p>
+<h1 id="https发展过程">HTTPS发展过程</h1>
+<h2 id="1内容为什么不使用对称加密">1.内容为什么不使用对称加密？</h2>
+<blockquote>
+<ul>
+<li>
+<p>不同的客户端、服务器数量庞大，所以双方都需要维护大量的密钥，维护成本很高</p>
+</li>
+<li>
+<p>因每个客户端、服务器的安全级别不同，密钥极易泄露</p>
+</li>
+</ul>
+</blockquote>
+<h2 id="2内容为什么不使用非对称加密">2.内容为什么不使用非对称加密？</h2>
+<blockquote>
+<p>公钥是公开的（也就是黑客也会有公钥），如果被黑客截获，其可以使用公钥进行解密，获取其中的内容</p>
+</blockquote>
+<h2 id="3非对称加密和对称机密结合">3.非对称加密和对称机密结合</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496031486.png" alt="" loading="lazy"></figure>
+<p><strong>通过非对称加密 交换 对称加密的秘钥</strong><br>
+<strong>回话内容通过对称加密进行加密解密</strong></p>
+<p>问题：</p>
+<ul>
+<li>客户端如何获得公钥 (SSL证书)</li>
+<li>如何确认服务器是真实的而不是黑客(CA证书)</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496040769.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>以浏览器为例说明如下：<br>
+（1）首先浏览器读取证书中的证书所有者、有效期等信息进行一一校验<br>
+（2）浏览器开始查找操作系统中已内置的受信任的证书发布机构CA，与服务器发来的证书中的颁发者CA比对，用于校验证书是否为合法机构颁发<br>
+（3）如果找不到，浏览器就会报错，说明服务器发来的证书是不可信任的。<br>
+（4）如果找到，那么浏览器就会从操作系统中取出 颁发者CA 的公钥，然后对服务器发来的证书里面的签名进行解密<br>
+（5）浏览器使用相同的hash算法计算出服务器发来的证书的hash值，将这个计算的hash值与证书中签名做对比<br>
+（6）对比结果一致，则证明服务器发来的证书合法，没有被冒充<br>
+（7）此时浏览器就可以读取证书中的公钥，用于后续加密了</p>
+</blockquote>
+<p>此处也可以参考<a href="http://www.52im.net/thread-2866-1-1.html">即时通讯安全篇（八）：你知道，HTTPS用的是对称加密还是非对称加密？</a></p>
+<h1 id="https实现原理">HTTPS实现原理</h1>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496057019.png" alt="" loading="lazy"></figure>
+<p><strong>证书验证阶段：</strong></p>
+<ul>
+<li>1）浏览器发起 HTTPS 请求；</li>
+<li>2）服务端返回 HTTPS 证书；</li>
+<li>3）客户端验证证书是否合法，如果不合法则提示告警。</li>
+</ul>
+<p><strong>数据传输阶段：</strong></p>
+<ul>
+<li>1）当证书验证合法后，在本地生成随机数；</li>
+<li>2）通过公钥加密随机数，并把加密后的随机数传输到服务端；</li>
+<li>3）服务端通过私钥对随机数进行解密；</li>
+<li>4）服务端通过客户端传入的随机数构造对称加密算法，对返回结果内容进行加密后传输。</li>
+</ul>
+<h1 id="ssltsl握手过程">SSL/TSL握手过程</h1>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496068286.png" alt="" loading="lazy"></figure>
+<h2 id="client-hello">Client Hello</h2>
+<ul>
+<li>支持的协议版本，比如TLS 1.0版</li>
+<li>一个客户端生成的随机数，稍后用于生成&quot;对话密钥&quot;</li>
+<li>支持的加密方法</li>
+<li>支持的压缩方法，一般为 null</li>
+<li>SNI(Server Name Indication)支持</li>
+</ul>
+<h2 id="server-hello">Server Hello</h2>
+<ul>
+<li>确认使用的TLS协议版本，如果两端支持的版本不一致，服务器关闭加密通信</li>
+<li>一个服务器生成的随机数，稍后用于生成&quot;对话密钥&quot;</li>
+<li>确认使用的加密方法，比如RSA公钥加密</li>
+<li>服务器数字证书</li>
+<li>请求客户端发送证书[可选]</li>
+</ul>
+<h2 id="服务证书验证">服务证书验证</h2>
+<ul>
+<li>证书的签发机构是否权威(内置CA证书链)</li>
+<li>证书对应的域名是否正确</li>
+<li>证书是否过期</li>
+</ul>
+<h2 id="回应-server-hello">回应 Server Hello</h2>
+<ul>
+<li>服务端证书通过验证，从中取得公钥</li>
+<li>一个随机数，又称&quot;pre-master key”，该随机数用服务器公钥加密，防止被窃听</li>
+<li>编码改变通知，表示随后的信息都将用双方商定的加密方法和密钥发送</li>
+<li>客户端握手结束通知，表示客户端的握手阶段已经结束。这一项同时也是前面发送的所有内容的hash值，用来供服务器校验</li>
+</ul>
+<h2 id="ssltls-握手总结">SSL/TLS 握手总结</h2>
+<ul>
+<li>Server 端决定使用 TLS 版本及加密套件</li>
+<li>整个握手过程，client 端生成2个随机数，server 端生成1个随机数，一共3个随机数。前两个未加密，第三个使用服务端公钥加密。最终的会话密钥来自这3个随机数</li>
+<li>整个 SSL/TLS 握手过程几乎都是明文</li>
+</ul>
+<h2 id="可参考">可参考</h2>
+<ul>
+<li><a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/network/HTTPS%E4%B8%AD%E7%9A%84TLS.md#1-ssl-%E4%B8%8E-tls">HTTPS中的TLS.md</a></li>
+</ul>
+<h1 id="重要的问题">重要的问题</h1>
+<ul>
+<li>Q: HTTPS用的是对称加密还是非对称加密？</li>
+</ul>
+<blockquote>
+<p>HTTPS 在内容传输的加密上使用的是对称加密，非对称加密只作用在证书验证阶段。</p>
+</blockquote>
+<ul>
+<li>Q: 为什么需要证书？</li>
+</ul>
+<blockquote>
+<p>防止”中间人“攻击，同时可以为网站提供身份证明。</p>
+</blockquote>
+<ul>
+<li>Q: 使用 HTTPS 会被抓包吗？</li>
+</ul>
+<blockquote>
+<p>HTTPS 的数据是加密的，常规下抓包工具代理请求后抓到的包内容是加密状态，无法直接查看。<br>
+但是，正如前文所说，浏览器只会提示安全风险，如果用户授权仍然可以继续访问网站，完成请求。因此，只要客户端是我们自己的终端，我们授权的情况下，便可以组建中间人网络，而抓包工具便是作为中间人的代理。通常 HTTPS 抓包工具的使用方法是会生成一个证书，用户需要手动把证书安装到客户端中，然后终端发起的所有请求通过该证书完成与抓包工具的交互，然后抓包工具再转发请求到服务器，最后把服务器返回的结果在控制台输出后再返回给终端，从而完成整个请求的闭环。</p>
+<p>既然 HTTPS 不能防抓包，那 HTTPS 有什么意义？</p>
+<p>HTTPS 可以防止用户在不知情的情况下通信链路被监听，对于主动授信的抓包操作是不提供防护的，因为这个场景用户是已经对风险知情。要防止被抓包，需要采用应用级的安全防护，例如采用私有的对称加密，同时做好移动端的防反编译加固，防止本地算法被破解。</p>
+</blockquote>
+<ul>
+<li>Q: HTTPS 的传输过程是怎样的？</li>
+</ul>
+<blockquote>
+<p>A: 客户端发起 HTTPS 请求，服务端返回证书，客户端对证书进行验证，验证通过后本地生成用于改造对称加密算法的随机数，通过证书中的公钥对随机数进行加密传输到服务端，服务端接收后通过私钥解密得到随机数，之后的数据交互通过对称加密算法进行加解密。</p>
+</blockquote>
+<h1 id="参考文章">参考文章</h1>
+<ul>
+<li><a href="https://www.toutiao.com/i6803891048046133773/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501755&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202003181122340100140470311FC1C046&amp;group_id=6803891048046133773">这篇 HTTPS 把你不知道的所有都讲清楚了</a></li>
+<li><a href="http://www.52im.net/thread-2866-1-1.html">即时通讯安全篇（八）：你知道，HTTPS用的是对称加密还是非对称加密？</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27395037?tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">HTTPS系列干货（一）：HTTPS 原理详解</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%A6%82%E5%BF%B5">概念</a>
+<ul>
+<li><a href="#ssl-tsl">SSL、TSL</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BC%9A%E5%87%BA%E7%8E%B0%E8%83%BD%E5%A4%9F%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98">为什么会出现，能够解决什么问题</a></li>
+<li><a href="#%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95">加密算法</a></li>
+<li><a href="#https%E5%8F%91%E5%B1%95%E8%BF%87%E7%A8%8B">HTTPS发展过程</a>
+<ul>
+<li><a href="#1%E5%86%85%E5%AE%B9%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E4%BD%BF%E7%94%A8%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">1.内容为什么不使用对称加密？</a></li>
+<li><a href="#2%E5%86%85%E5%AE%B9%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E4%BD%BF%E7%94%A8%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">2.内容为什么不使用非对称加密？</a></li>
+<li><a href="#3%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%92%8C%E5%AF%B9%E7%A7%B0%E6%9C%BA%E5%AF%86%E7%BB%93%E5%90%88">3.非对称加密和对称机密结合</a></li>
+</ul>
+</li>
+<li><a href="#https%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86">HTTPS实现原理</a></li>
+<li><a href="#ssltsl%E6%8F%A1%E6%89%8B%E8%BF%87%E7%A8%8B">SSL/TSL握手过程</a>
+<ul>
+<li><a href="#client-hello">Client Hello</a></li>
+<li><a href="#server-hello">Server Hello</a></li>
+<li><a href="#%E6%9C%8D%E5%8A%A1%E8%AF%81%E4%B9%A6%E9%AA%8C%E8%AF%81">服务证书验证</a></li>
+<li><a href="#%E5%9B%9E%E5%BA%94-server-hello">回应 Server Hello</a></li>
+<li><a href="#ssltls-%E6%8F%A1%E6%89%8B%E6%80%BB%E7%BB%93">SSL/TLS 握手总结</a></li>
+<li><a href="#%E5%8F%AF%E5%8F%82%E8%80%83">可参考</a></li>
+</ul>
+</li>
+<li><a href="#%E9%87%8D%E8%A6%81%E7%9A%84%E9%97%AE%E9%A2%98">重要的问题</a></li>
+<li><a href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0">参考文章</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/jsjwl-21-http/">
+              <h3 class="post-title">
+                2.1 HTTP
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
