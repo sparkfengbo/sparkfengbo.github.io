@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-12T09:06:11.517Z</updated>
+    <updated>2020-10-12T09:09:13.691Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -10,6 +10,15 @@
     <logo>https://sparkfengbo.github.io/images/avatar.png</logo>
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, FengBo`s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[大纲]]></title>
+        <id>https://sparkfengbo.github.io/post/da-gang/</id>
+        <link href="https://sparkfengbo.github.io/post/da-gang/">
+        </link>
+        <updated>2020-10-12T09:06:58.000Z</updated>
+        <content type="html"><![CDATA[<p>大萨达所</p>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[计算机网络-0.大纲]]></title>
         <id>https://sparkfengbo.github.io/post/ji-suan-ji-wang-luo-0da-gang/</id>
