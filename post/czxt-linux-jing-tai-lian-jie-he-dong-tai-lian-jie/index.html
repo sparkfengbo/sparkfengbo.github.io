@@ -1,0 +1,299 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Linux 静态链接和动态链接 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602498897275">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Linux 静态链接和动态链接 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="
+C程序的编译过程
+静态链接与动态链接
+
+C程序编译过程
+
+1.预处理（Preprpcessing）
+使用预处理器把源文件test.c经过预处理生成test.i文件，预处理用于将所有的#include头文件以及宏定义替换成其真正的内容。
+g..." />
+    <meta name="keywords" content="操作系统" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602498897275" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Linux 静态链接和动态链接
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/IK7I4uoJQ/" class="post-tag">
+                  # 操作系统
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <ul>
+<li><a href="https://www.toutiao.com/i6792927363316318723/?group_id=6792927363316318723">C程序的编译过程</a></li>
+<li><a href="https://www.toutiao.com/i6793307776551485959/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501857&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=2020031811241601001404707704B74596&amp;group_id=6793307776551485959">静态链接与动态链接</a></li>
+</ul>
+<h1 id="c程序编译过程">C程序编译过程</h1>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498662494.jpeg" alt="" loading="lazy"></figure>
+<h2 id="1预处理preprpcessing">1.预处理（Preprpcessing）</h2>
+<p><strong>使用预处理器把源文件test.c经过预处理生成test.i文件，预处理用于将所有的#include头文件以及宏定义替换成其真正的内容。</strong></p>
+<pre><code>gcc -E test.c -o test.i
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498670125.png" alt="" loading="lazy"></figure>
+<h2 id="2编译compilation">2.编译（Compilation）</h2>
+<p><strong>使用编译器将预处理文件test.i编译成汇编文件test.s。</strong></p>
+<pre><code>gcc -S test.i -o test.s
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498677324.png" alt="" loading="lazy"></figure>
+<h2 id="3汇编assemble">3.汇编（Assemble）</h2>
+<p><strong>使用汇编器将汇编文件test.s转换成目标文件test.o。</strong></p>
+<pre><code>gcc -c test.s -o test.o
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498684007.png" alt="" loading="lazy"></figure>
+<h2 id="4链接linking">4.链接（Linking）</h2>
+<p><strong>链接过程使用链接器将该目标文件与其他目标文件、库文件、启动文件等链接起来生成可执行文件。</strong></p>
+<pre><code>gcc test.o -o test.exe
+</code></pre>
+<hr>
+<h1 id="静态-动态链接">静态、动态链接？</h1>
+<ul>
+<li>1、什么是静态链接？</li>
+</ul>
+<p>静态链接是由链接器在链接时将库的内容加入到可执行程序中的做法。链接器是一个独立程序，将一个或多个库或目标文件（先前由编译器或汇编器生成）链接到一块生成可执行程序。这里的库指的是静态链接库，Windows下以.lib为后缀，Linux下以.a为后缀。</p>
+<ul>
+<li>2、什么是动态链接？</li>
+</ul>
+<p>动态链接（Dynamic Linking），把链接这个过程推迟到了运行时再进行，在可执行文件装载时或运行时，由操作系统的装载程序加载库。这里的库指的是动态链接库，Windows下以.dll为后缀，Linux下以.so为后缀。值得一提的是，在Windows下的动态链接也可以用到.lib为后缀的文件，但这里的.lib文件叫做导入库，是由.dll文件生成的。</p>
+<h2 id="实验">实验</h2>
+<p>文件1（main.c）：</p>
+<pre><code>#include &quot;test.h&quot;
+
+int main(void)
+{
+    print_hello();
+    system(&quot;pause&quot;);
+    return 0;
+}
+</code></pre>
+<p>文件2（test.c）：</p>
+<pre><code>#include &quot;test.h&quot;
+
+void print_hello(void)
+{
+    printf(&quot;hello world\n&quot;);
+}
+</code></pre>
+<p>文件3（test.h）：</p>
+<pre><code>#ifndef __TEST_H
+#define __TEST_H
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+void print_hello(void);
+
+#endif
+</code></pre>
+<h3 id="静态链接实验">静态链接实验</h3>
+<ul>
+<li>
+<p>编译</p>
+<pre><code>gcc -c test.c main.c
+</code></pre>
+<p>多出了test.o和main.o文件</p>
+</li>
+<li>
+<p>静态链接库<br>
+接下来使用ar工具把test.o和main.o打包成一个静态库文件lib_test.lib</p>
+<pre><code>ar rv lib_test.lib test.o main.o
+</code></pre>
+</li>
+<li>
+<p>链接<br>
+把这个静态库链接成可执行文件lib_test.exe</p>
+<pre><code>gcc lib_test.lib -o lib_test.exe
+</code></pre>
+</li>
+</ul>
+<p>可以直接执行lib_test.exe</p>
+<h3 id="动态链接实验">动态链接实验</h3>
+<ul>
+<li>
+<p>动态链接库</p>
+<pre><code>gcc test.c -shared -o dll_test.dll 
+</code></pre>
+<pre><code>  多出了动态库文件dll_test.dll
+</code></pre>
+</li>
+<li>
+<p>生成可执行文件<br>
+用该动态库文件dll_test.dll与main.c一起编译生成可执行文件dll_test.exe</p>
+<pre><code>gcc dll_test.dll main.c -o dll_test.exe
+</code></pre>
+</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#c%E7%A8%8B%E5%BA%8F%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B">C程序编译过程</a>
+<ul>
+<li><a href="#1%E9%A2%84%E5%A4%84%E7%90%86preprpcessing">1.预处理（Preprpcessing）</a></li>
+<li><a href="#2%E7%BC%96%E8%AF%91compilation">2.编译（Compilation）</a></li>
+<li><a href="#3%E6%B1%87%E7%BC%96assemble">3.汇编（Assemble）</a></li>
+<li><a href="#4%E9%93%BE%E6%8E%A5linking">4.链接（Linking）</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9D%99%E6%80%81-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5">静态、动态链接？</a>
+<ul>
+<li><a href="#%E5%AE%9E%E9%AA%8C">实验</a>
+<ul>
+<li><a href="#%E9%9D%99%E6%80%81%E9%93%BE%E6%8E%A5%E5%AE%9E%E9%AA%8C">静态链接实验</a></li>
+<li><a href="#%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%E5%AE%9E%E9%AA%8C">动态链接实验</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/czxt-linux-guan-dao/">
+              <h3 class="post-title">
+                Linux 管道
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

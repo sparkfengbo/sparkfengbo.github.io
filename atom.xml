@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-12T10:23:29.612Z</updated>
+    <updated>2020-10-12T10:34:59.917Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -10,6 +10,600 @@
     <logo>https://sparkfengbo.github.io/images/avatar.png</logo>
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, FengBo`s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Linux IO模型简介和IO多路复用]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-linux-io-mo-xing-jian-jie-he-io-duo-lu-fu-yong/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-linux-io-mo-xing-jian-jie-he-io-duo-lu-fu-yong/">
+        </link>
+        <updated>2020-10-12T10:33:34.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>
+<p><a href="https://www.jianshu.com/p/f8bc7199bb8e">Linux IO模型：阻塞/非阻塞/IO复用 同步/异步 Select/Epoll/AIO</a></p>
+</li>
+<li>
+<p><a href="https://mp.weixin.qq.com/s?__biz=Mzg3MjA4MTExMw==&amp;mid=2247484746&amp;idx=1&amp;sn=c0a7f9129d780786cabfcac0a8aa6bb7&amp;source=41#wechat_redirect">漫话：如何给女朋友解释什么是Linux的五种IO模型？</a></p>
+</li>
+<li>
+<p><a href="https://www.jianshu.com/p/dfd940e7fca2">聊聊IO多路复用之select、poll、epoll详解</a></p>
+</li>
+<li>
+<p><a href="https://ring0.me/2014/11/sync-async-blocked/">大话同步/异步、阻塞/非阻塞</a></p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/historyasamirror/article/details/5778378">IO - 同步，异步，阻塞，非阻塞 （亡羊补牢篇）</a></p>
+</li>
+<li>
+<p>这篇文章图是中文的  <a href="https://www.jianshu.com/p/02f76566fd90">怎样理解阻塞非阻塞与同步异步的区别？</a></p>
+</li>
+</ul>
+<h1 id="linux-io模型">Linux IO模型</h1>
+<ul>
+<li>1.阻塞IO</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498833576.jpg" alt="" loading="lazy"></figure>
+<p>标红的这部分过程就是阻塞，直到阻塞结束recvfrom才能返回。</p>
+<ul>
+<li>2.非阻塞IO</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498843741.jpg" alt="" loading="lazy"></figure>
+<p>可以看出recvfrom总是立即返回。</p>
+<ul>
+<li>3.IO多路复用</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498851907.jpg" alt="" loading="lazy"></figure>
+<ul>
+<li>4.信号驱动异步I/O模型</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498859440.jpg" alt="" loading="lazy"></figure>
+<ul>
+<li>5.异步IO</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498867473.jpg" alt="" loading="lazy"></figure>
+<ul>
+<li>五种模型对比</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498874255.jpeg" alt="" loading="lazy"></figure>
+<blockquote>
+<p>同步非阻塞方式相比同步阻塞方式：<br>
+优点是能够在等待任务完成的时间里干其他活了（包括提交其他任务，也就是 “后台” 可以有多个任务在同时执行）。<br>
+缺点是任务完成的响应延迟增大了，因为每过一段时间才去轮询一次，而任务可能在两次轮询之间的任意时间完成。<br>
+由于同步非阻塞方式需要不断轮询，而 “后台” 可能有多个任务在同时进行，人们就想到了循环查询多个任务的完成状态，只要有任何一个任务完成，就去处理它。这就是所谓的 “I/O 多路复用”。UNIX/Linux 下的 select、poll、epoll 就是干这个的（epoll 比 poll、select 效率高，做的事情是一样的）。Windows 下则有 WaitForMultipleObjects 和 IO Completion Ports API 与之对应（Windows API 的命名简直甩 POSIX API 几条街有木有！）</p>
+</blockquote>
+<h1 id="io多路复用">IO多路复用</h1>
+<blockquote>
+<p>目前支持I/O复用的系统调用有<strong>select、pselect、poll、epoll</strong>，下面几小结分别来学习一下select和epoll的使用。<br>
+Linux 2.6之前是select、poll，2.6之后是epoll，Windows是IOCP。</p>
+</blockquote>
+<p>其实，epoll与select原理类似，只不过，epoll作出了一些重大改进，即：</p>
+<ul>
+<li>1.支持一个进程打开大数目的socket描述符(FD)</li>
+</ul>
+<blockquote>
+<p>select 最不能忍受的是一个进程所打开的FD是有一定限制的，由FD_SETSIZE设置，默认值是2048。对于那些需要支持的上万连接数目的IM服务器来说显然太少了。这时候你一是可以选择修改这个宏然后重新编译内核，不过资料也同时指出这样会带来网络效率的下降，二是可以选择多进程的解决方案(传统的 Apache方案)，不过虽然linux上面创建进程的代价比较小，但仍旧是不可忽视的，加上进程间数据同步远比不上线程间同步的高效，所以也不是一种完美的方案。不过 epoll则没有这个限制，它所支持的FD上限是最大可以打开文件的数目，这个数字一般远大于2048,举个例子,在1GB内存的机器上大约是10万左右，具体数目可以cat /proc/sys/fs/file-max察看,一般来说这个数目和系统内存关系很大。</p>
+</blockquote>
+<ul>
+<li>2.IO效率不随FD数目增加而线性下降</li>
+</ul>
+<blockquote>
+<p>传统的select/poll另一个致命弱点就是当你拥有一个很大的socket集合，不过由于网络延时，任一时间只有部分的socket是&quot;活跃&quot;的，但是select/poll每次调用都会线性扫描全部的集合，导致效率呈现线性下降。但是epoll不存在这个问题，它只会对&quot;活跃&quot;的socket进行操作---这是因为在内核实现中epoll是根据每个fd上面的callback函数实现的。那么，只有&quot;活跃&quot;的socket才会主动的去调用 callback函数，其他idle状态socket则不会，在这点上，epoll实现了一个&quot;伪&quot;AIO，因为这时候推动力在os内核。在一些 benchmark中，如果所有的socket基本上都是活跃的---比如一个高速LAN环境，epoll并不比select/poll有什么效率，相反，如果过多使用epoll_ctl,效率相比还有稍微的下降。但是一旦使用idle connections模拟WAN环境,epoll的效率就远在select/poll之上了。</p>
+</blockquote>
+<ul>
+<li>3.使用mmap加速内核与用户空间的消息传递。</li>
+</ul>
+<blockquote>
+<p>这点实际上涉及到epoll的具体实现了。无论是select,poll还是epoll都需要内核把FD消息通知给用户空间，如何避免不必要的内存拷贝就很重要，在这点上，epoll是通过内核于用户空间mmap同一块内存实现的。</p>
+</blockquote>
+<ul>
+<li>4.内核微调</li>
+</ul>
+<blockquote>
+<p>这一点其实不算epoll的优点了，而是整个linux平台的优点。也许你可以怀疑linux平台，但是你无法回避linux平台赋予你微调内核的能力。比如，内核TCP/IP协议栈使用内存池管理sk_buff结构，那么可以在运行时期动态调整这个内存pool(skb_head_pool)的大小 --- 通过echo XXXX&gt;/proc/sys/net/core/hot_list_length完成。再比如listen函数的第2个参数(TCP完成3次握手的数据包队列长度)，也可以根据你平台内存大小动态调整。更甚至在一个数据包面数目巨大但同时每个数据包本身大小却很小的特殊系统上尝试最新的NAPI网卡驱动架构。</p>
+</blockquote>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Linux 硬链接软链接]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-linux-ying-lian-jie-ruan-lian-jie/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-linux-ying-lian-jie-ruan-lian-jie/">
+        </link>
+        <updated>2020-10-12T10:32:12.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li><a href="https://www.toutiao.com/i6753065098199171587/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584238470&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=2020031510142901001404707528B359F1&amp;group_id=6753065098199171587">面试 | Linux 下软链接和硬链接的区别</a></li>
+</ul>
+<h1 id="硬链接">硬链接</h1>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498757010.png" alt="" loading="lazy"></figure>
+<p>硬链接，inode节点指向的是同一个文件块<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498766032.jpeg" alt="" loading="lazy"></p>
+<p>硬链接的作用是允许一个文件拥有多个有效路径名，这样用户就可以建立硬链接到重要文件,以防止“误删”的功能，由于对应该目录的索引节点有一个以上的连接，假设我们删除了原始的 foo.txt 文件：<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498773307.jpeg" alt="" loading="lazy"></p>
+<p>此时文件的内容依然存在，所以只删除一个连接并不影响索引节点本身和其它的连接，只有当最后一个链接被删除后，文件的数据块及目录的连接才会被释放，也就是说，文件才会被真正删除。</p>
+<h1 id="软链接">软链接</h1>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498779655.jpeg" alt="" loading="lazy"></figure>
+<p>软链接又叫符号链接，这个文件包含了另一个文件的路径名，例如在上图中，foo.txt 就是 bar.txt 的软连接，bar.txt 是实际的文件，foo.txt 包含的是对于 bar.txt 的 inode 的记录。</p>
+<p>软连接可以是任意文件或目录，可以链接不同文件系统的文件，在对符号文件进行读或写操作的时候，系统会自动把该操作转换为对源文件的操作，但删除链接文件时，系统仅仅删除链接文件，而不删除源文件本身，这一点类似于 Windows 操作系统下的快捷方式。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498790074.jpeg" alt="" loading="lazy"></p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Linux 信号]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-linux-xin-hao/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-linux-xin-hao/">
+        </link>
+        <updated>2020-10-12T10:31:50.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li><a href="https://blog.csdn.net/colzer/article/details/8135542">linux基础编程：进程通信之信号</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Linux 静态链接和动态链接]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-linux-jing-tai-lian-jie-he-dong-tai-lian-jie/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-linux-jing-tai-lian-jie-he-dong-tai-lian-jie/">
+        </link>
+        <updated>2020-10-12T10:30:43.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li><a href="https://www.toutiao.com/i6792927363316318723/?group_id=6792927363316318723">C程序的编译过程</a></li>
+<li><a href="https://www.toutiao.com/i6793307776551485959/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501857&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=2020031811241601001404707704B74596&amp;group_id=6793307776551485959">静态链接与动态链接</a></li>
+</ul>
+<h1 id="c程序编译过程">C程序编译过程</h1>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498662494.jpeg" alt="" loading="lazy"></figure>
+<h2 id="1预处理preprpcessing">1.预处理（Preprpcessing）</h2>
+<p><strong>使用预处理器把源文件test.c经过预处理生成test.i文件，预处理用于将所有的#include头文件以及宏定义替换成其真正的内容。</strong></p>
+<pre><code>gcc -E test.c -o test.i
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498670125.png" alt="" loading="lazy"></figure>
+<h2 id="2编译compilation">2.编译（Compilation）</h2>
+<p><strong>使用编译器将预处理文件test.i编译成汇编文件test.s。</strong></p>
+<pre><code>gcc -S test.i -o test.s
+</code></pre>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498677324.png" alt="" loading="lazy"></figure>
+<h2 id="3汇编assemble">3.汇编（Assemble）</h2>
+<p><strong>使用汇编器将汇编文件test.s转换成目标文件test.o。</strong></p>
+<pre><code>gcc -c test.s -o test.o
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498684007.png" alt="" loading="lazy"></figure>
+<h2 id="4链接linking">4.链接（Linking）</h2>
+<p><strong>链接过程使用链接器将该目标文件与其他目标文件、库文件、启动文件等链接起来生成可执行文件。</strong></p>
+<pre><code>gcc test.o -o test.exe
+</code></pre>
+<hr>
+<h1 id="静态-动态链接">静态、动态链接？</h1>
+<ul>
+<li>1、什么是静态链接？</li>
+</ul>
+<p>静态链接是由链接器在链接时将库的内容加入到可执行程序中的做法。链接器是一个独立程序，将一个或多个库或目标文件（先前由编译器或汇编器生成）链接到一块生成可执行程序。这里的库指的是静态链接库，Windows下以.lib为后缀，Linux下以.a为后缀。</p>
+<ul>
+<li>2、什么是动态链接？</li>
+</ul>
+<p>动态链接（Dynamic Linking），把链接这个过程推迟到了运行时再进行，在可执行文件装载时或运行时，由操作系统的装载程序加载库。这里的库指的是动态链接库，Windows下以.dll为后缀，Linux下以.so为后缀。值得一提的是，在Windows下的动态链接也可以用到.lib为后缀的文件，但这里的.lib文件叫做导入库，是由.dll文件生成的。</p>
+<h2 id="实验">实验</h2>
+<p>文件1（main.c）：</p>
+<pre><code>#include &quot;test.h&quot;
+
+int main(void)
+{
+    print_hello();
+    system(&quot;pause&quot;);
+    return 0;
+}
+</code></pre>
+<p>文件2（test.c）：</p>
+<pre><code>#include &quot;test.h&quot;
+
+void print_hello(void)
+{
+    printf(&quot;hello world\n&quot;);
+}
+</code></pre>
+<p>文件3（test.h）：</p>
+<pre><code>#ifndef __TEST_H
+#define __TEST_H
+
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+void print_hello(void);
+
+#endif
+</code></pre>
+<h3 id="静态链接实验">静态链接实验</h3>
+<ul>
+<li>
+<p>编译</p>
+<pre><code>gcc -c test.c main.c
+</code></pre>
+<p>多出了test.o和main.o文件</p>
+</li>
+<li>
+<p>静态链接库<br>
+接下来使用ar工具把test.o和main.o打包成一个静态库文件lib_test.lib</p>
+<pre><code>ar rv lib_test.lib test.o main.o
+</code></pre>
+</li>
+<li>
+<p>链接<br>
+把这个静态库链接成可执行文件lib_test.exe</p>
+<pre><code>gcc lib_test.lib -o lib_test.exe
+</code></pre>
+</li>
+</ul>
+<p>可以直接执行lib_test.exe</p>
+<h3 id="动态链接实验">动态链接实验</h3>
+<ul>
+<li>
+<p>动态链接库</p>
+<pre><code>gcc test.c -shared -o dll_test.dll 
+</code></pre>
+<pre><code>  多出了动态库文件dll_test.dll
+</code></pre>
+</li>
+<li>
+<p>生成可执行文件<br>
+用该动态库文件dll_test.dll与main.c一起编译生成可执行文件dll_test.exe</p>
+<pre><code>gcc dll_test.dll main.c -o dll_test.exe
+</code></pre>
+</li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Linux 管道]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-linux-guan-dao/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-linux-guan-dao/">
+        </link>
+        <updated>2020-10-12T10:30:17.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li><a href="https://oilbeater.com/linux/2012/05/29/linux_pipe.html">linux管道机制简介</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[6.安全]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-6an-quan/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-6an-quan/">
+        </link>
+        <updated>2020-10-12T10:29:46.000Z</updated>
+        <content type="html"><![CDATA[<p>这一部分的内容和HTTPS重合</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[5.1.mmap内存映射]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-51mmap-nei-cun-ying-she/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-51mmap-nei-cun-ying-she/">
+        </link>
+        <updated>2020-10-12T10:28:54.000Z</updated>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[5.0输入输出和IO(包含零拷贝)]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-50-shu-ru-shu-chu-he-iobao-han-ling-kao-bei/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-50-shu-ru-shu-chu-he-iobao-han-ling-kao-bei/">
+        </link>
+        <updated>2020-10-12T10:26:00.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="1io硬件">1.IO硬件</h1>
+<h2 id="分类">分类</h2>
+<ul>
+<li>块设备 block device
+<ul>
+<li>块设备把信息存储在固定大小的块中，每个块有自己的地址</li>
+<li>CR-ROM、USB</li>
+</ul>
+</li>
+<li>字符设备 character device
+<ul>
+<li>字符设备以字符为单位发送或接收一个字符流，而不考虑任何块结构。字符设备是不可寻址的，也没有任何寻道操作。</li>
+<li>打印机</li>
+<li>网络接口</li>
+<li>鼠标（用作指点设备）</li>
+<li>以及大多数与磁盘不同的设备都可看作是字符设备。</li>
+</ul>
+</li>
+</ul>
+<h2 id="设备控制器">设备控制器</h2>
+<h2 id="内存映射io">内存映射IO</h2>
+<p>优点：</p>
+<ul>
+<li>对于内存映射I/O，I/O设备驱动程序可以完全用C语言编写。如果不使用内存映射I/O，就要用到某些汇编代码。</li>
+<li>不需要特殊的保护机制来阻止用户进程执行I/O操作</li>
+<li>可以引用内存的每一条指令也可以引用控制寄存器。</li>
+</ul>
+<hr>
+<h1 id="2io软件">2.IO软件</h1>
+<h2 id="程序控制io">程序控制IO</h2>
+<p>CPU要不断地查询设备以了解它是否就绪准备接收另一个字符。这一行为经常称为轮询（polling）或忙等待（busy waiting）。</p>
+<p>十分简单但是有缺点，即直到全部I/O完成之前要占用CPU的全部时间。</p>
+<h2 id="中断驱动io">中断驱动IO</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498378648.png" alt="" loading="lazy"></figure>
+<p>中断驱动I/O的一个明显缺点是中断发生在每个字符上。中断要花费时间，所以这一方法将浪费一定数量的CPU时间。</p>
+<h2 id="中断io">中断IO</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498388360.png" alt="" loading="lazy"></figure>
+<ul>
+<li>用户进程向 CPU 发起 read 系统调用读取数据，由用户态切换为内核态，然后一直阻塞等待数据的返回。</li>
+<li>CPU 在接收到指令以后对磁盘发起 I/O 请求，将磁盘数据先放入磁盘控制器缓冲区。<br>
+数据准备完成以后，磁盘向 CPU 发起 I/O 中断。</li>
+<li>CPU 收到 I/O 中断以后将磁盘缓冲区中的数据拷贝到内核缓冲区，然后再从内核缓冲区拷贝到用户缓冲区。</li>
+<li>用户进程由内核态切换回用户态，解除阻塞状态，然后等待 CPU 的下一个执行时间钟。</li>
+</ul>
+<p><strong>2次上下文切换、2次拷贝</strong></p>
+<h2 id="使用dma的io">使用DMA的IO</h2>
+<p>DMA重大的成功是将中断的次数从打印每个字符一次减少到打印每个缓冲区一次。如果有许多字符并且中断十分缓慢，那么采用DMA可能是重要的改进。另一方面，DMA控制器通常比主CPU要慢很多。如果DMA控制器不能以全速驱动设备，或者CPU在等待DMA中断的同时没有其他事情要做，那么采用中断驱动I/O甚至采用程序控制I/O也许更好。</p>
+<h2 id="直接存储器存取-dma">直接存储器存取 DMA</h2>
+<p>Direct Memory Access，直接内存存取</p>
+<p>无论DMA控制器在物理上处于什么地方，它都能够独立于CPU而访问系统总线</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498401543.png" alt="" loading="lazy"></figure>
+<p>工作原理：</p>
+<ul>
+<li>没有DMA</li>
+</ul>
+<blockquote>
+<p>“我们首先看一下没有使用DMA时磁盘如何读。首先，控制器从磁盘驱动器串行地、一位一位地读一个块（一个或多个扇区），直到将整块信息放入控制器的内部缓冲区中。接着，它计算校验和，以保证没有读错误发生。然后控制器产生一个中断。当操作系统开始运行时，它重复地从控制器的缓冲区中一次一个字节或一个字地读取该块的信息，并将其存入内存中。”</p>
+</blockquote>
+<ul>
+<li>有DMA</li>
+</ul>
+<blockquote>
+<p>首先，CPU通过设置DMA控制器的寄存器对它进行编程，所以DMA控制器知道将什么数据传送到什么地方（图5-4中的第1步）。DMA控制器还要向磁盘控制器发出一个命令，通知它从磁盘读数据到其内部的缓冲区中，并且对校验和进行检验。如果磁盘控制器的缓冲区中的数据是有效的，那么DMA就可以开始了。</p>
+<p>DMA控制器通过在总线上发出一个读请求到磁盘控制器而发起DMA传送（第2步）。这一读请求看起来与任何其他读请求是一样的，并且磁盘控制器并不知道或者并不关心它是来自CPU还是来自DMA控制器。一般情况下，要写的内存地址在总线的地址线上，所以当磁盘控制器从其内部缓冲区中读取下一个字的时候，它知道将该字写到什么地方。写到内存是另一个标准总线周期（第3步）。当写操作完成时，磁盘控制器在总线上发出一个应答信号到DMA控制器（第4步）。于是，DMA控制器步增要使用的内存地址，并且步减字节计数。如果字节计数仍然大于0，则重复第2步到第4步，直到字节计数到达0。此时，DMA控制器将中断CPU以便让CPU知道传送现在已经完成了。当操作系统开始工作时，用不着将磁盘块复制到内存中，因为它已经在内存中了。</p>
+</blockquote>
+<blockquote>
+<p>普通中断方式是在数据缓冲寄存器满后，发中断请求，CPU进行中断处理<br>
+DMA方式则是以数据块为单位传输的,在所要求传送的数据块全部传送结束时要求CPU进行中断处理,大大减少了CPU进行中断处理的次数<br>
+总结:DMA方式不需CPU干预传送操作,仅仅是开始和结尾借用CPU一点时间,其余不占用CPU任何资源，中断方式是程序切换,每次操作需要保护和恢复现场</p>
+<p>中断控制方式虽然在某种程度上解决了上述问题，但由于中断次数多，因而CPU仍需要花较多的时间处理中断，而且能够并行操作的设备台数也受到中断处理时间的限制，中断次数增多导致数据丢失。</p>
+<p>DMA方式和通道方式较好地解决了上述问题。这两种方式采用了外设和内存直接交换数据的方式。只有在一段数据传送结束时，这两种方式才发出中断信号要求CPU做善后处理，从而大大减少了CPU的工作负担。中断控制方式虽然在某种程度上解决了上述问题，但由于中断次数多，因而CPU仍需要花较多的时间处理中断，而且能够并行操作的设备台数也受到中断处理时间的限制，中断次数增多导致数据丢失。DMA方式和通道方式较好地解决了上述问题。这两种方式采用了外设和内存直接交换数据的方式。只有在一段数据传送结束时，这两种方式才发出中断信号要求CPU做善后处理，从而大大减少了CPU的工作负担。</p>
+</blockquote>
+<p>参考文章</p>
+<ul>
+<li><a href="https://byte.baike.com/cwiki/DMA&amp;fr=toutiao?isPreloadWebView=1">DMA-字节百科</a></li>
+</ul>
+<blockquote>
+<p>DMA 传输将数据从一个地址空间复制到另外一个地址空间。当CPU 初始化这个传输动作，传输动作本身是由 DMA 控制器来实行和完成。典型的例子就是移动一个外部内存的区块到芯片内部更快的内存区。像是这样的操作并没有让处理器工作拖延，反而可以被重新排程去处理其他的工作。DMA 传输对于高效能 嵌入式系统算法和网络是很重要的。</p>
+<p>在实现DMA传输时，是由DMA控制器直接掌管总线，因此，存在着一个总线控制权转移问题。即DMA传输前，CPU要把总线控制权交给DMA控制器，而在结束DMA传输后，DMA控制器应立即把总线控制权再交回给CPU。一个完整的DMA传输过程必须经过DMA请求、DMA响应、DMA传输、DMA结束4个步骤。</p>
+<ul>
+<li>请求
+<ul>
+<li>CPU对DMA控制器初始化，并向I/O接口发出操作命令，I/O接口提出DMA请求。</li>
+</ul>
+</li>
+<li>响应
+<ul>
+<li>DMA控制器对DMA请求判别优先级及屏蔽，向总线裁决逻辑提出总线请求。当CPU执行完当前总线周期即可释放总线控制权。此时，总线裁决逻辑输出总线应答，表示DMA已经响应，通过DMA控制器通知I/O接口开始DMA传输。</li>
+</ul>
+</li>
+<li>传输
+<ul>
+<li>DMA控制器获得总线控制权后，CPU即刻挂起或只执行内部操作，由DMA控制器输出读写命令，直接控制RAM与I/O接口进行DMA传输。</li>
+<li>在DMA控制器的控制下，在存储器和外部设备之间直接进行数据传送，在传送过程中不需要中央处理器的参与。开始时需提供要传送的数据的起始位置和数据长度。</li>
+</ul>
+</li>
+<li>结束
+<ul>
+<li>当完成规定的成批数据传送后，DMA控制器即释放总线控制权，并向I/O接口发出结束信号。当I/O接口收到结束信号后，一方面停 止I/O设备的工作，另一方面向CPU提出中断请求，使CPU从不介入的状态解脱，并执行一段检查本次DMA传输操作正确性的代码。最后，带着本次操作结果及状态继续执行原来的程序。</li>
+</ul>
+</li>
+</ul>
+<p>由此可见，DMA传输方式无需CPU直接控制传输，也没有中断处理方式那样保留现场和恢复现场的过程，通过硬件为RAM与I/O设备开辟一条直接传送数据的通路，使CPU的效率大为提高。</p>
+<p>DMA控制器与CPU怎样分时使用内存呢?通常采用以下三种方法：(1)停止CPU访内存；(2)周期挪用；(3)DMA与CPU交替访问内存。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498415009.png" alt="" loading="lazy"></figure>
+<ul>
+<li>用户进程向 CPU 发起 read 系统调用读取数据，由用户态切换为内核态，然后一直阻塞等待数据的返回。</li>
+<li>CPU 在接收到指令以后对 DMA 磁盘控制器发起调度指令。</li>
+<li>DMA 磁盘控制器对磁盘发起 I/O 请求，将磁盘数据先放入磁盘控制器缓冲区，CPU 全程不参与此过程。</li>
+<li>数据读取完成后，DMA 磁盘控制器会接受到磁盘的通知，将数据从磁盘控制器缓冲区拷贝到内核缓冲区。</li>
+<li>DMA 磁盘控制器向 CPU 发出数据读完的信号，由 CPU 负责将数据从内核缓冲区拷贝到用户缓冲区。</li>
+<li>用户进程由内核态切换回用户态，解除阻塞状态，然后等待 CPU 的下一个执行时间钟。</li>
+</ul>
+<p><strong>2次上下文切换，2次拷贝</strong></p>
+<h2 id="零拷贝">零拷贝</h2>
+<ul>
+<li><a href="https://www.toutiao.com/i6802161744752935436/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1583802979&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_android&amp;req_id=202003100916180100260771961F64434A&amp;group_id=6802161744752935436">深入剖析神秘的“零拷贝”「转」</a></li>
+<li>强烈推荐这篇文章 <a href="https://juejin.im/post/5d84bd1f6fb9a06b2d780df7">深入剖析Linux IO原理和几种零拷贝机制的实现</a></li>
+</ul>
+<h3 id="传统io">传统IO</h3>
+<h4 id="1传统读写">1.传统读写</h4>
+<pre><code>read(file_fd, tmp_buf, len);
+write(socket_fd, tmp_buf, len);
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498425858.png" alt="" loading="lazy"></figure>
+<p><strong>整个过程涉及 2 次 CPU 拷贝、2 次 DMA 拷贝总共 4 次拷贝，以及 4 次上下文切换</strong></p>
+<ul>
+<li>上下文切换：当用户程序向内核发起系统调用时，CPU 将用户进程从用户态切换到内核态；当系统调用返回时，CPU 将用户进程从内核态切换回用户态。</li>
+<li>CPU拷贝：由 CPU 直接处理数据的传送，数据拷贝时会一直占用 CPU 的资源。</li>
+<li>DMA拷贝：由 CPU 向DMA磁盘控制器下达指令，让 DMA 控制器来处理数据的传送，数据传送完毕再把信息反馈给 CPU，从而减轻了 CPU 资源的占有率。</li>
+</ul>
+<h4 id="2传统读">2.传统读</h4>
+<pre><code>read(file_fd, tmp_buf, len);
+</code></pre>
+<p><strong>2 次上下文切换，1 次 DMA 拷贝和 1 次 CPU 拷贝</strong></p>
+<ul>
+<li>用户进程通过 read() 函数向内核（kernel）发起系统调用，上下文从用户态（user space）切换为内核态（kernel space）。</li>
+<li>CPU利用DMA控制器将数据从主存或硬盘拷贝到内核空间（kernel space）的读缓冲区（read buffer）。</li>
+<li>CPU将读缓冲区（read buffer）中的数据拷贝到用户空间（user space）的用户缓冲区（user buffer）。</li>
+<li>上下文从内核态（kernel space）切换回用户态（user space），read 调用执行返回。</li>
+</ul>
+<h4 id="3传统写">3.传统写</h4>
+<pre><code>write(socket_fd, tmp_buf, len);
+</code></pre>
+<p><strong>2 次上下文切换，1 次 CPU 拷贝和 1 次 DMA 拷贝</strong></p>
+<ul>
+<li>户进程通过 write() 函数向内核（kernel）发起系统调用，上下文从用户态（user space）切换为内核态（kernel space）。</li>
+<li>CPU 将用户缓冲区（user buffer）中的数据拷贝到内核空间（kernel space）的网络缓冲区（socket buffer）。</li>
+<li>CPU 利用 DMA 控制器将数据从网络缓冲区（socket buffer）拷贝到网卡进行数据传输。</li>
+<li>上下文从内核态（kernel space）切换回用户态（user space），write 系统调用执行返回。</li>
+</ul>
+<h3 id="零拷贝-2">零拷贝</h3>
+<p>在 Linux 中零拷贝技术主要有 3 个实现思路：用户态直接 I/O、减少数据拷贝次数以及写时复制技术。</p>
+<ul>
+<li>用户态直接 I/O：应用程序可以直接访问硬件存储，操作系统内核只是辅助数据传输。这种方式依旧存在用户空间和内核空间的上下文切换，硬件上的数据直接拷贝至了用户空间，不经过内核空间。因此，直接 I/O 不存在内核空间缓冲区和用户空间缓冲区之间的数据拷贝。</li>
+<li>减少数据拷贝次数：在数据传输过程中，避免数据在用户空间缓冲区和系统内核空间缓冲区之间的CPU拷贝，以及数据在系统内核空间内的CPU拷贝，这也是当前主流零拷贝技术的实现思路。</li>
+<li>写时复制技术：写时复制指的是当多个进程共享同一块数据时，如果其中一个进程需要对这份数据进行修改，那么将其拷贝到自己的进程地址空间中，如果只是数据读取操作则不需要进行拷贝操作。</li>
+</ul>
+<h4 id="用户态直接-io">用户态直接 I/O</h4>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498439992.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>用户态直接 I/O 只能适用于不需要内核缓冲区处理的应用程序，这些应用程序通常在进程地址空间有自己的数据缓存机制，称为自缓存应用程序，如数据库管理系统就是一个代表。其次，这种零拷贝机制会直接操作磁盘 I/O，由于 CPU 和磁盘 I/O 之间的执行时间差距，会造成大量资源的浪费，解决方案是配合异步 I/O 使用。</p>
+</blockquote>
+<h4 id="mmap-write">mmap + write</h4>
+<p><strong>减少了 1 次 CPU 拷贝操作</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498449207.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498455475.png" alt="" loading="lazy"></p>
+<h4 id="sendfile">sendfile</h4>
+<p><strong>sendfile 系统调用在 Linux 内核版本 2.1 中被引入，目的是简化通过网络在两个通道之间进行的数据传输过程。sendfile 系统调用的引入，不仅减少了 CPU 拷贝的次数，还减少了上下文切换的次数</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498461791.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498466238.png" alt="" loading="lazy"></p>
+<h4 id="sendfile-dma-gather-copy">sendfile + DMA gather copy</h4>
+<p><strong>Linux 2.4 版本的内核对 sendfile 系统调用进行修改，为  DMA 拷贝引入了 gather 操作。它将内核空间（kernel space）的读缓冲区（read buffer）中对应的数据描述信息（内存地址、地址偏移量）记录到相应的网络缓冲区（ socket  buffer）中，由 DMA 根据内存地址、地址偏移量将数据批量地从读缓冲区（read buffer）拷贝到网卡设备中，这样就省去了内核空间中仅剩的 1 次 CPU 拷贝操作s</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498477091.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498482857.png" alt="" loading="lazy"></p>
+<h4 id="splice">splice</h4>
+<p><strong>sendfile 只适用于将数据从文件拷贝到 socket 套接字上，同时需要硬件的支持，这也限定了它的使用范围。Linux 在 2.6.17 版本引入 splice 系统调用，不仅不需要硬件支持，还实现了两个文件描述符之间的数据零拷贝。</strong></p>
+<pre><code>splice(fd_in, off_in, fd_out, off_out, len, flags);
+</code></pre>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498489058.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498497440.png" alt="" loading="lazy"></p>
+<h4 id="写时复制">写时复制</h4>
+<blockquote>
+<p>在某些情况下，内核缓冲区可能被多个进程所共享，如果某个进程想要这个共享区进行 write 操作，由于 write 不提供任何的锁操作，那么就会对共享区中的数据造成破坏，写时复制的引入就是 Linux 用来保护数据的。<br>
+写时复制指的是当多个进程共享同一块数据时，如果其中一个进程需要对这份数据进行修改，那么就需要将其拷贝到自己的进程地址空间中。这样做并不影响其他进程对这块数据的操作，每个进程要修改的时候才会进行拷贝，所以叫写时拷贝。这种方法在某种程度上能够降低系统开销，如果某个进程永远不会对所访问的数据进行更改，那么也就永远不需要拷贝。</p>
+</blockquote>
+<h4 id="linux零拷贝对比">Linux零拷贝对比</h4>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602498504843.png" alt="" loading="lazy"></figure>
+<hr>
+<h1 id="3io软件层级">3.IO软件层级</h1>
+<h1 id="4盘">4.盘</h1>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[4.存储和文件]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-4cun-chu-he-wen-jian/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-4cun-chu-he-wen-jian/">
+        </link>
+        <updated>2020-10-12T10:23:50.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="1文件">1.文件</h1>
+<h2 id="文件命名"><s>文件命名</s></h2>
+<h2 id="文件结构"><s>文件结构</s></h2>
+<h2 id="文件类型">文件类型</h2>
+<ul>
+<li>
+<p>普通文件</p>
+<ul>
+<li>普通文件一般分为ASCII文件和二进制文件。ASCII文件由多行正文组成。在某些系统中，每行用回车符结束，其他系统则用换行符结束。有些系统还同时采用回车符和换行符（如MS-DOS）。文件中各行的长度不一定相同。</li>
+<li>ASCII文件的最大优势是可以显示和打印，还可以用任何文本编辑器进行编辑。</li>
+<li>其他与ASCII文件不同的是二进制文件。打印出来的二进制文件是无法理解的、充满混乱字符的一张表。通常，二进制文件有一定的内部结构，使用该文件的程序才了解这种结构。</li>
+</ul>
+</li>
+<li>
+<p>目录</p>
+</li>
+<li>
+<p>字符特殊文件</p>
+<ul>
+<li>和输入/输出有关，用于串行I/O类设备，如终端、打印机、网络等。</li>
+</ul>
+</li>
+<li>
+<p>块特殊文件</p>
+<ul>
+<li>用于磁盘类设备。</li>
+</ul>
+</li>
+</ul>
+<h2 id="文件读取">文件读取</h2>
+<ul>
+<li><s>顺序存取</s></li>
+<li>随机存取</li>
+</ul>
+<h2 id="文件属性">文件属性</h2>
+<blockquote>
+<p>文件都有文件名和数据。另外，所有的操作系统还会保存其他与文件相关的信息，如文件创建的日期和时间、文件大小等。这些附加信息称为文件属性（attribute），有些人称之为元数据（metadata）。文件的属性在不同系统中差别很大。一些常用的属性在图4-4中列出，但还存在其他的属性。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498249545.png" alt="" loading="lazy"></figure>
+<h1 id="2目录">2.目录</h1>
+<h2 id="结构">结构</h2>
+<ul>
+<li>一级目录系统</li>
+<li>层次目录系统</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498258561.png" alt="" loading="lazy"></figure>
+<h2 id="路径名">路径名</h2>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498267327.png" alt="" loading="lazy"></figure>
+<h1 id="3文件系统的实现">3.文件系统的实现</h1>
+<h2 id="文件系统布局">文件系统布局</h2>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498275229.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>多数磁盘划分为一个或多个分区，每个分区中有一个独立的文件系统。磁盘的0号扇区称为主引导记录（Master Boot Record，MBR），用来引导计算机。在MBR的结尾是分区表。该表给出了每个分区的起始和结束地址。表中的一个分区被标记为活动分区。</p>
+</blockquote>
+<blockquote>
+<p>在计算机被引导时，BIOS读入并执行MBR。MBR做的第一件事是确定活动分区，读入它的第一个块，称为引导块（boot block），并执行之。引导块中的程序将装载该分区中的操作系统。为统一起见，每个分区都从一个启动块开始，即使它不含有一个可启动的操作系统。</p>
+</blockquote>
+<h2 id="文件的实现">文件的实现</h2>
+<ul>
+<li>连续分配
+<ul>
+<li>把每个文件作为一连串连续数据块存储在磁盘上</li>
+<li>实现简单，记录第一块的磁盘地址和文件的块数即可</li>
+<li>读操作更好</li>
+<li>缺点： 磁盘碎片</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498286294.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>链表分配</p>
+<ul>
+<li>没有磁盘碎片</li>
+</ul>
+<blockquote>
+<p>与连续分配方案不同，这一方法可以充分利用每个磁盘块。不会因为磁盘碎片（除了最后一块中的内部碎片）而浪费存储空间。同样，在目录项中，只需要存放第一块的磁盘地址，文件的其他块就可以从这个首块地址查找到。</p>
+</blockquote>
+<ul>
+<li>随机存取缓慢，需要链表查找</li>
+<li>指针占去了一些字节<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498300227.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>
+<p>在内存中采用表的链表分配</p>
+<ul>
+<li><strong>如果取出每个磁盘块的指针字，把它放在内存的一个表中，就可以解决上述链表的两个不足。</strong></li>
+<li>内存中的这样一个表格称为<strong>文件分配表（File Allocation Table，FAT）</strong>。</li>
+<li>保留所有磁盘块的链接表的表大小正比于磁盘自身的大小，磁盘越大，这个表可能很大。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498310160.png" alt="" loading="lazy"></figure>
+<ul>
+<li>i节点
+<ul>
+<li>给每个文件赋予一个称为i节点（index-node）的数据结构，其中列出了文件属性和文件块的磁盘地址。</li>
+<li><strong>只有在对应文件打开时，其i节点才在内存中</strong></li>
+<li>i节点机制需要在内存中有一个数组，其大小正比于可能要同时打开的最大文件个数。它与磁盘无关</li>
+<li>相对于在内存中采用表的方式而言，这种机制具有很大的优势，即只有在对应文件打开时，其i节点才在内存中<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498320660.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+</ul>
+<h2 id="目录的实现">目录的实现</h2>
+<p>所有目录项大小一样的实现<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498329477.png" alt="" loading="lazy"></p>
+<p>非-所有目录项大小一样的实现</p>
+<p>“有三个文件，project-budget、personnel和foo”<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498337576.png" alt="" loading="lazy"></p>
+<h2 id="实现">实现</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/NTFS">NTFS</a></li>
+<li>FAT</li>
+<li>EXT2
+<ul>
+<li>https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/59.html</li>
+</ul>
+</li>
+<li>HFS （苹果）</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[3.内存]]></title>
         <id>https://sparkfengbo.github.io/post/czxt-3nei-cun/</id>
@@ -169,1213 +763,6 @@
 <img src="https://sparkfengbo.github.io/post-images/1602498156978.png" alt="" loading="lazy"></p>
 <p><strong>为什么不用分段？</strong></p>
 <p>因为分段粒度太大，以程序的单位，内存不足都是换入换出整个程序，有大量的磁盘访问操作，效率比分页低，实际上分页是从分段发展而来。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[2.进程]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-2jin-cheng/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-2jin-cheng/">
-        </link>
-        <updated>2020-10-12T10:16:47.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="1进程">1.进程</h1>
-<h2 id="状态">状态</h2>
-<ul>
-<li>1)运行态（该时刻进程实际占用CPU）。</li>
-<li>2)就绪态（可运行，但因为其他进程正在运行而暂时停止）。</li>
-<li>3)阻塞态（除非某种外部事件发生，否则进程不能运行）。</li>
-</ul>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497825302.png" alt="" loading="lazy"></figure>
-<p>转换2和3是由进程调度程序引起的，进程调度程序是操作系统的一部分，进程甚至感觉不到调度程序的存在。</p>
-<h2 id="pcb">PCB</h2>
-<p>每个进程在操作系统内用进程控制块（PCB）表示。</p>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602497835899.png" alt="" loading="lazy"></figure>
-<ul>
-<li>进程状态 新建、就绪、停止、运行、等待</li>
-<li>程序计数器</li>
-<li>CPU寄存器</li>
-<li>CPU调度信息
-<ul>
-<li>进程优先级、调度队列指针、调度参数</li>
-</ul>
-</li>
-<li>内存管理信息
-<ul>
-<li>基址、界限寄存器的值、页表、段表</li>
-</ul>
-</li>
-<li>I/O状态信息
-<ul>
-<li>IO设备列表、打开的文件列表等</li>
-</ul>
-</li>
-</ul>
-<h1 id="2线程">2.线程</h1>
-<blockquote>
-<p><strong>进程和线程的区别?</strong></p>
-<p>进程是资源分配的最小单位，线程是程序执行的最小单位。</p>
-<p>进程有自己的独立地址空间。线程是共享进程中的数据的，使用相同的地址空间，因此CPU切换一个线程的花费远比进程要小很多，同时创建一个线程的开销也比进程要小很多。</p>
-<p>线程之间的通信更方便，同一进程下的线程共享全局变量、静态变量等数据，而进程之间的通信需要以通信的方式（IPC)进行。不过如何处理好同步与互斥是编写多线程程序的难点。<br>
-但是多进程程序更健壮，多线程程序只要有一个线程死掉，整个进程也死掉了，而一个进程死掉并不会对另外一个进程造成影响，因为进程有自己独立的地址空间。</p>
-</blockquote>
-<h2 id="线程访问权限">线程访问权限</h2>
-<p>私有的存储空间：</p>
-<ul>
-<li>栈</li>
-<li>线程局部存储（Thread Local Storage）</li>
-<li>寄存器</li>
-</ul>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602497852100.png" alt="" loading="lazy"></figure>
-<h2 id="并发与并行">并发与并行</h2>
-<blockquote>
-<p>并发的关键是你有处理多个任务的能力，不一定要同时。<br>
-并行的关键是你有同时处理多个任务的能力。</p>
-<p>所以我认为它们最关键的点就是：是否是『同时』。</p>
-</blockquote>
-<h2 id="实现">实现</h2>
-<h3 id="在用户空间中">在用户空间中</h3>
-<ul>
-<li>优点：
-<ul>
-<li>用户级线程包可以在不支持线程的操作系统上实现</li>
-<li>它允许每个进程有自己定制的调度算法</li>
-</ul>
-</li>
-<li>缺点：
-<ul>
-<li>如果一个线程开始运行，那么在该进程中的其他线程就不能运行，除非第一个线程自动放弃CPU。在一个单独的进程内部，没有时钟中断，所以不可能用轮转调度（轮流）的方式调度进程</li>
-<li>阻塞系统调用，进程会被阻塞</li>
-</ul>
-</li>
-</ul>
-<p><strong>多对一模型</strong>，例如Green thread、GNU Portable thread</p>
-<blockquote>
-<p>线程管理由线程库在用户空间进行，效率高。但是如果一个线程执行了阻塞系统调用，任意时刻只有一个线程能够访问内核，多个线程不能并行的运行在多处理器上，所以整个进程会被阻塞。</p>
-</blockquote>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602497866182.png" alt="" loading="lazy"></figure>
-<h3 id="在内核中间中">在内核中间中</h3>
-<blockquote>
-<p>在内核中有用来记录系统中所有线程的线程表。</p>
-</blockquote>
-<ul>
-<li>
-<p>优点：</p>
-<ul>
-<li>更好的并发功能</li>
-</ul>
-</li>
-<li>
-<p>缺点：</p>
-<ul>
-<li>每创建一个用户线程就需要创建一个内核线程</li>
-</ul>
-</li>
-</ul>
-<p><strong>一对一模型</strong>，Linux和Windows</p>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602497879332.png" alt="" loading="lazy"></figure>
-<h3 id="混合实现">混合实现</h3>
-<p><strong>多对多模型</strong>多路复用了用户线程到同样数量或更小数量的内核线程上。</p>
-<h2 id="线程状态">线程状态</h2>
-<ul>
-<li>运行</li>
-<li>就绪</li>
-<li>等待</li>
-</ul>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602497891365.png" alt="" loading="lazy"></figure>
-<h2 id="线程调度">线程调度</h2>
-<p>都带有优先级调度和轮转法</p>
-<p>一般IO密集型比CPU密集型线程更容易得到优先级提升。</p>
-<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602497900748.png" alt="" loading="lazy"></figure>
-<h2 id="可抢占式线程和非可抢占式线程">可抢占式线程和非可抢占式线程</h2>
-<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602497910265.png" alt="" loading="lazy"></figure>
-<h2 id="同步与锁">同步与锁</h2>
-<ul>
-<li>锁</li>
-<li>信号量</li>
-<li>互斥量
-<ul>
-<li>和信号量不同的是，信号量可以被一个线程获取后，另一个线程释放。而互斥量是哪个线程获取，哪个线程释放。</li>
-</ul>
-</li>
-<li>临界区</li>
-<li>读写锁</li>
-</ul>
-<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602497923265.png" alt="" loading="lazy"></figure>
-<h3 id="volatile">volatile</h3>
-<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602497934632.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602497947148.png" alt="" loading="lazy"></figure>
-<h1 id="3调度">3.调度</h1>
-<h2 id="抢占式和非抢占式">抢占式和非抢占式</h2>
-<ul>
-<li>
-<p>非抢占式</p>
-<ul>
-<li>让进程运行直到结束或阻塞的调度方式</li>
-<li>容易实现 适合专用系统，不适合通用系统</li>
-</ul>
-</li>
-<li>
-<p>抢占式</p>
-<ul>
-<li>允许将逻辑上可继续运行的在运行过程暂停的调度方式</li>
-<li>可防止单一进程长时间独占CPU 系统开销大</li>
-</ul>
-</li>
-</ul>
-<h2 id="进程调度">进程调度</h2>
-<h3 id="批处理系统"><a href="https://baike.baidu.com/item/%E6%89%B9%E5%A4%84%E7%90%86%E7%B3%BB%E7%BB%9F/3702274?fr=aladdin">批处理系统</a>调度</h3>
-<ul>
-<li>
-<p>先来先服务 first-come first-severd （FCFS）</p>
-<ul>
-<li>优点 简单</li>
-<li>缺点 不够灵活，尤其是前面有占用时间很长的任务，而后面的任务耗时较短</li>
-</ul>
-</li>
-<li>
-<p>最短作业优先 shortest job first （SJF）</p>
-</li>
-<li>
-<p>最短剩余时间优先 shortest remaining time next</p>
-<p>调度程序总是选择剩余运行时间最短的那个进程运行。再次提醒，有关的运行时间必须提前掌握</p>
-</li>
-</ul>
-<h3 id="交互系统调度">交互系统调度</h3>
-<ul>
-<li>轮转调度</li>
-</ul>
-<blockquote>
-<p>轮转调度做了一个隐含的假设，即所有的进程同等重要</p>
-<p>每个进程被分配一个时间段，称为时间片（quantum），即允许该进程在该时间段中运行。如果在时间片结束时该进程还在运行，则将剥夺CPU并分配给另一个进程。</p>
-<p>从一个进程切换到另一个进程是需要一定时间进行管理事务处理的——保存和装入寄存器值及内存映像、更新各种表格和列表、清除和重新调入内存高速缓存等。假如进程切换（process switch），有时称为上下文切换（context switch），需要1ms，包括切换内存映像、清除和重新调入高速缓存等。</p>
-</blockquote>
-<ul>
-<li>优先级调度</li>
-<li>多级队列</li>
-</ul>
-<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602497964129.gif" alt="" loading="lazy"></figure>
-<p>分成多个队列，队列优先级不同，每个队列有自己的调度算法</p>
-<ul>
-<li><s>最短进程优先</s></li>
-<li><s>保证调度</s></li>
-<li><s>彩票调度</s></li>
-<li><s>公平分享调度</s></li>
-</ul>
-<h2 id="线程调度-2">线程调度</h2>
-<h1 id="4进程通信">4.进程通信</h1>
-<ul>
-<li>共享内存</li>
-<li>消息传递
-<ul>
-<li>例如 socket、RPC、RMI</li>
-</ul>
-</li>
-</ul>
-<h1 id="5进程同步">5.进程同步</h1>
-<h2 id="51-概念">5.1 概念</h2>
-<h3 id="竞争条件">竞争条件</h3>
-<p>两个或多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时序，称为竞争条件（race condition）</p>
-<h3 id="临界区">临界区</h3>
-<p>在某些时候进程可能需要访问共享内存或共享文件，或执行另外一些会导致竞争的操作。我们把对共享内存进行访问的程序片段称作临界区域（critical region）或临界区（critical section）。如果我们能够适当地安排，使得两个进程不可能同时处于临界区中，就能够避免竞争条件。</p>
-<ul>
-<li>1)任何两个进程不能同时处于其临界区。</li>
-<li>2)不应对CPU的速度和数量做任何假设。</li>
-<li>3)临界区外运行的进程不得阻塞其他进程。</li>
-<li>4)不得使进程无限期等待进入临界区。</li>
-</ul>
-<figure data-type="image" tabindex="13"><img src="https://sparkfengbo.github.io/post-images/1602497978515.png" alt="" loading="lazy"></figure>
-<h2 id="52-同步方法">5.2 同步方法</h2>
-<h3 id="521-屏蔽中断"><s>5.2.1 屏蔽中断</s></h3>
-<blockquote>
-<p>最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，并在就要离开之前再打开中断。屏蔽中断后，时钟中断也被屏蔽。CPU只有发生时钟中断或其他中断时才会进行进程切换，这样，在屏蔽中断之后CPU将不会被切换到其他进程。于是，一旦某个进程屏蔽中断之后，它就可以检查和修改共享内存，而不必担心其他进程介入。</p>
-</blockquote>
-<p>缺点：</p>
-<ul>
-<li>因为把屏蔽中断的权力交给用户进程是不明智的</li>
-</ul>
-<p>屏蔽中断对于操作系统本身而言是一项很有用的技术，但对于用户进程则不是一种合适的通用互斥机制。</p>
-<h3 id="522-锁变量"><s>5.2.2 锁变量</s></h3>
-<h3 id="523-严格轮换法">5.2.3 严格轮换法</h3>
-<p>浪费CPU时间，所以通常应该避免。<br>
-只有在有理由认为等待时间是非常短的情形下，才使用忙等待。用于忙等待的锁，称为<strong>自旋锁（spin lock）</strong>。</p>
-<figure data-type="image" tabindex="14"><img src="https://sparkfengbo.github.io/post-images/1602497988714.png" alt="" loading="lazy"></figure>
-<p>整型变量turn，初始值为0，用于记录轮到哪个进程进入临界区，并检查或更新共享内存。开始时，进程0检查turn，发现其值为0，于是进入临界区。进程1也发现其值为0，所以在一个等待循环中不停地测试turn，看其值何时变为1。连续测试一个变量直到某个值出现为止，称为忙等待（busy waiting）。</p>
-<h3 id="524-perterson解法">5.2.4 Perterson解法</h3>
-<figure data-type="image" tabindex="15"><img src="https://sparkfengbo.github.io/post-images/1602497999863.png" alt="" loading="lazy"></figure>
-<h3 id="525-tsl指令">5.2.5 TSL指令</h3>
-<p>测试并加锁（Test and Set Lock）</p>
-<blockquote>
-<p>Peterson解法和TSL或XCHG解法都是正确的，但它们都有忙等待的缺点。这些解法在本质上是这样的：当一个进程想进入临界区时，先检查是否允许进入，若不允许，则该进程将原地等待，直到允许为止。</p>
-<p>这种方法不仅浪费了CPU时间，而且还可能引起预想不到的结果。考虑一台计算机有两个进程，H优先级较高，L优先级较低。调度规则规定，只要H处于就绪态它就可以运行。在某一时刻，L处于临界区中，此时H变到就绪态，准备运行（例如，一条I/O操作结束）。现在H开始忙等待，但由于当H就绪时L不会被调度，也就无法离开临界区，所以H将永远忙等待下去。这种情况有时被称作优先级反转问题（priority inversion problem）。</p>
-</blockquote>
-<h3 id="526-信号量">5.2.6 信号量</h3>
-<p>参考Java的信号量</p>
-<ul>
-<li><a href="https://www.cnblogs.com/pony1223/p/9479299.html">Java并发编程原理与实战二十八：信号量Semaphore</a></li>
-</ul>
-<h3 id="527-互斥量">5.2.7 互斥量</h3>
-<p>如果不需要信号量的计数能力，有时可以使用信号量的一个简化版本，称为互斥量（mutex）。</p>
-<h3 id="528-屏障">5.2.8 屏障</h3>
-<p>可以参考Java的CyclicBarrier</p>
-<h2 id="53-管程">5.3 管程</h2>
-<p>https://zh.wikipedia.org/wiki/%E7%9B%A3%E8%A6%96%E5%99%A8_(%E7%A8%8B%E5%BA%8F%E5%90%8C%E6%AD%A5%E5%8C%96)</p>
-<p><a href="https://zhuanlan.zhihu.com/p/58766005">Java并发之Monitor实现</a></p>
-<blockquote>
-<p>管程 (英语：Monitors，也称为监视器) 是一种程序结构，结构内的多个子程序（对象或模块）形成的多个工作线程互斥访问共享资源。这些共享资源一般是硬件或一群变量。管程实现了在一个时间点，最多只有一个线程在执行管程的某个子程序。与那些通过修改数据结构实现互斥访问的并发程序设计相比，管程实现很大程度上简化了程序设计。</p>
-<p>管程提供了一种机制，线程可以临时放弃互斥访问，等待某些条件得到满足后，重新获得执行权恢复它的互斥访问。</p>
-</blockquote>
-<h1 id="6死锁">6.死锁</h1>
-<h2 id="死锁预防">死锁预防</h2>
-<p>死锁条件</p>
-<ul>
-<li>1)互斥条件。每个资源要么已经分配给了一个进程，要么就是可用的。</li>
-<li>2)占有和等待条件。已经得到了某个资源的进程可以再请求新的资源。</li>
-<li>3)不可抢占条件。已经分配给一个进程的资源不能强制性地被抢占，它只能被占有它的进程显式地释放。</li>
-<li>4)环路等待条件。死锁发生时，系统中一定有由两个或两个以上的进程组成的一条环路，该环路中的每个进程都在等待着下一个进程所占有的资源。</li>
-</ul>
-<p>通过限制资源申请，确保四个条件之一不会发生。缺点是低设备使用率和设备吞吐率。</p>
-<h2 id="死锁避免">死锁避免</h2>
-<p>获得以后如何申请资源的附加信息。动态的检测资源的分配状态以确保循环等待的条件不成立。</p>
-<p><strong>安全状态</strong></p>
-<p>通过跟踪哪一个状态是安全状态，哪一个状态是不安全状态，可以避免死锁。安全状态就是这样一个状态：存在一个事件序列，保证所有的进程都能完成。不安全状态就不存在这样的保证。银行家算法可以通过拒绝可能引起不安全状态的请求来避免死锁。</p>
-<blockquote>
-<p>死锁避免从本质上来说是不可能的，因为它需要获知未来的请求，而这些请求是不可知的。</p>
-</blockquote>
-<ul>
-<li>资源分配图算法</li>
-<li>银行家算法</li>
-</ul>
-<h2 id="死锁检测">死锁检测</h2>
-<ul>
-<li>每种类型一个资源的死锁检测</li>
-<li>每种类型多个资源的死锁检测</li>
-</ul>
-<h2 id="死锁恢复">死锁恢复</h2>
-<ul>
-<li>进程终止
-<ul>
-<li>终止所有进程</li>
-<li>一次只终止一个进程</li>
-</ul>
-</li>
-<li>资源抢占
-<ul>
-<li>逐步从进程中抢占资源给其他进程使用，直到死锁环被打破为止。</li>
-</ul>
-</li>
-</ul>
-<h2 id="活锁和饥饿">活锁和饥饿</h2>
-<p><a href="https://www.cnblogs.com/ktgu/p/3529143.html">死锁，活锁和饥饿</a></p>
-<h1 id="7线程同步">7.线程同步</h1>
-<p>Java并发编程实践</p>
-<p>链接:https://pan.baidu.com/s/1ukIEcJzUzPufJZFF7Rsrhg  密码:szwe</p>
-<h1 id="8经典问题">8.经典问题</h1>
-<h2 id="81-哲学家进餐">8.1 哲学家进餐</h2>
-<figure data-type="image" tabindex="16"><img src="https://sparkfengbo.github.io/post-images/1602498025163.png" alt="" loading="lazy"></figure>
-<p>可参考</p>
-<p>https://zhuanlan.zhihu.com/p/34553097</p>
-<h2 id="82-读者-写者问题">8.2 读者-写者问题</h2>
-<h2 id="83-生产者-消费者">8.3 生产者-消费者</h2>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[1.计算机整体结构和操作系统梗概]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-1ji-suan-ji-zheng-ti-jie-gou-he-cao-zuo-xi-tong-geng-gai/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-1ji-suan-ji-zheng-ti-jie-gou-he-cao-zuo-xi-tong-geng-gai/">
-        </link>
-        <updated>2020-10-12T10:14:04.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="1计算机结构">1.计算机结构</h1>
-<p>计算机系统大致分为4个组成部分，计算机硬件、操作系统、系统程序和应用程序、用户。</p>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497701020.png" alt="" loading="lazy"></figure>
-<h2 id="cpu">CPU</h2>
-<p>每个CPU都有其一套可执行的专门指令集。在时间多路复用（time multiplexing）CPU中，操作系统经常会中止正在运行的某个程序并启动（或再启动）另一个程序。每次停止一个运行着的程序时，操作系统必须保存所有的寄存器，这样在稍后该程序被再次运行时，可以把这些寄存器重新装入。</p>
-<h3 id="cpu包含寄存器">CPU包含寄存器</h3>
-<p>1.用来保存关键变量和临时数据的寄存器</p>
-<p>由于用来访问内存以得到指令或数据的时间要比执行指令花费的时间长得多，因此，所有的CPU内都有一些用来保存关键变量和临时数据的寄存器。(这样，通常在指令集中提供一些指令，用以将一个字从内存调入寄存器，以及将一个字从寄存器存入内存。其他的指令可以把来自寄存器、内存的操作数组合，或者用两者产生一个结果，诸如将两个字相加并把结果存在寄存器或内存中。)</p>
-<p>2.程序计数器</p>
-<p>除了用来保存变量和临时结果的通用寄存器之外，多数计算机还有一些对程序员可见的专门寄存器。其中之一是程序计数器，它保存了将要取出的下一条指令的内存地址。在指令取出之后，程序计数器就被更新以便指向后继的指令。</p>
-<p>3.堆栈指针</p>
-<p>另一个寄存器是堆栈指针，它指向内存中当前栈的顶端。该栈含有已经进入但是还没有退出的每个过程的一个框架。在一个过程的堆栈框架中保存了有关的输入参数、局部变量以及那些没有保存在寄存器中的临时变量。</p>
-<p>4.程序状态字（Program Status Word，PSW）寄存器</p>
-<p>这个寄存器包含了条件码位（由比较指令设置）、CPU优先级、模式（用户态或内核态），以及各种其他控制位。用户程序通常读入整个PSW，但是，只对其中的少量字段写入。在系统调用和I/O中，PSW的作用很重要。</p>
-<h3 id="cpu的内核态和用户态">CPU的内核态和用户态</h3>
-<p>多数CPU都有两种模式，即前面已经提及的内核态和用户态。通常，在PSW中有一个二进制位控制这两种模式。当在内核态运行时，CPU可以执行指令集中的每一条指令，并且使用硬件的每种功能。操作系统在内核态下运行，从而可以访问整个硬件。</p>
-<p>相反，用户程序在用户态下运行，仅允许执行整个指令集的一个子集和访问所有功能的一个子集。一般而言，在用户态中有关I/O和内存保护的所有指令是禁止的。</p>
-<p>为了从操作系统中获得服务，用户程序必须使用系统调用（system call）系统调用陷入内核并调用操作系统。</p>
-<blockquote>
-<p>我理解CPU这里是很复杂的，所以了解概念即可，类似，带有共享L2缓存的4核芯片；b)带有分离L2缓存的4核芯片这样的内容没有记录。</p>
-</blockquote>
-<h2 id="存储器">存储器</h2>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602497711835.png" alt="" loading="lazy"></figure>
-<p>顶层的存储器速度较高，容量较小，与底层的存储器相比每位成本较高，其差别往往是十亿数量级。</p>
-<h3 id="寄存器">寄存器</h3>
-<p>存储器系统的顶层是CPU中的寄存器。它们用与CPU相同的材料制成，所以和CPU一样快。显然，访问它们是没有时延的。其典型的存储容量是，在32位CPU中为32×32位，而在64位CPU中为64×64位。在这两种情形下，其存储容量都小于1 KB。程序必须在软件中自行管理这些寄存器（即决定如何使用它们）。</p>
-<h3 id="高速缓存">高速缓存</h3>
-<p>它多数由硬件控制。主存被分割成高速缓存行（cache line），其典型大小为64个字节，地址0至63对应高速缓存行0，地址64至127对应高速缓存行1，以此类推。最常用的高速缓存行放置在CPU内部或者非常接近CPU的高速缓存中。当某个程序需要读一个存储字时，高速缓存硬件检查所需要的高速缓存行是否在高速缓存中。如果是，称为高速缓存命中，缓存满足了请求，就不需要通过总线把访问请求送往主存。高速缓存命中通常需要两个<a href="https://baike.baidu.com/item/%E6%97%B6%E9%92%9F%E5%91%A8%E6%9C%9F/1545064?fr=aladdin">时钟周期</a>。高速缓存未命中就必须访问内存，这要付出大量的时间代价。由于高速缓存的价格昂贵，所以其大小有限。有些机器具有两级甚至三级高速缓存，每一级高速缓存比前一级慢且容量更大。</p>
-<p>现代CPU中设计了两个缓存。第一级或称为<strong>L1缓存</strong>总是在CPU中，通常用来将已解码的指令调入CPU的执行引擎。对于那些频繁使用的数据字，多数芯片安排有第二个L1缓存。典型的L1缓存大小为16KB。另外，往往还设计有二级缓存，称为<strong>L2缓存</strong>，用来存放近来所使用过若干兆字节的内存字。L1和L2缓存之间的差别在于时序。对L1缓存的访问，不存在任何延时；而对L2缓存的访问，则会延时1或2个时钟周期。</p>
-<h3 id="主存-ram">主存  RAM</h3>
-<p>主存。这是存储器系统的主力。主存通常称为随机访问存储器（Random Access Memory，RAM）</p>
-<p>除了主存之外，许多计算机已经在使用少量的非易失性随机访问存储器。它们与RAM不同，在电源切断之后，非易失性随机访问存储器并不丢失其内容。只读存储器（Read Only Memory，ROM）在工厂中就被编程完毕，然后再也不能被修改。ROM速度快且便宜。在有些计算机中，用于启动计算机的引导加载模块就存放在ROM中。另外，一些I/O卡也采用ROM处理底层设备控制。</p>
-<h2 id="磁盘">磁盘</h2>
-<h2 id="io设备">IO设备</h2>
-<p>可参考<a href="https://www.toutiao.com/i6802161744752935436/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1583802979&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_android&amp;req_id=202003100916180100260771961F64434A&amp;group_id=6802161744752935436">深入剖析神秘的“零拷贝”「转」</a><br>
-后续第5章节DMA会总结</p>
-<p>实现输入输出三种方式</p>
-<ul>
-<li>
-<p>1.忙等待 需要占据CPU</p>
-</li>
-<li>
-<p>2.<a href="http://www.kerneltravel.net/journal/viii/01.htm">中断</a></p>
-<p>中断一般有两个属性，一个是中断号，一个是中断处理程序。不同的中断有不同的中断号，每个中断号都对应了一个中断处理程序。在内核中有一个叫中断向量表的数组来映射这个关系。当中断到来时，cpu会暂停正在执行的代码，根据中断号去中断向量表找出对应的中断处理程序并调用。中断处理程序执行完成后，会继续执行之前的代码。</p>
-</li>
-</ul>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602497725969.gif" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602497768966.png" alt="" loading="lazy"></figure>
-<ul>
-<li>3.DMA</li>
-</ul>
-<h2 id="总线">总线</h2>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602497762716.png" alt="" loading="lazy"></figure>
-<p>https://zh.wikipedia.org/wiki/%E6%80%BB%E7%BA%BF</p>
-<p>PC上一般有五种总线：</p>
-<ul>
-<li>
-<p>数据总线（Data Bus）</p>
-<p>在CPU与RAM之间来回传送需要处理或是需要储存的数据。</p>
-</li>
-<li>
-<p>地址总线（Address Bus）</p>
-<p>用来指定在RAM（Random Access Memory）之中储存的数据的地址。</p>
-</li>
-<li>
-<p>控制总线（Control Bus）</p>
-<p>将微处理器控制单元（Control Unit）的信号，传送到周边设备，一般常见的为USB Bus和1394 Bus。</p>
-</li>
-<li>
-<p>扩展总线（Expansion Bus）</p>
-<p>可连接扩展槽和电脑。</p>
-</li>
-<li>
-<p>局部总线（Local Bus）</p>
-<p>取代更高速数据传输的扩展总线。</p>
-</li>
-</ul>
-<p>例如：</p>
-<ul>
-<li>PCL</li>
-<li>ISA</li>
-<li>SATA</li>
-<li>...</li>
-</ul>
-<h1 id="2操作系统">2.操作系统</h1>
-<ul>
-<li>进程管理</li>
-<li>内存管理</li>
-<li>存储管理</li>
-<li>...</li>
-</ul>
-<p>功能：</p>
-<ul>
-<li>用户界面</li>
-<li>程序执行</li>
-<li>IO</li>
-<li>文件系统操作</li>
-<li>通信</li>
-<li>资源分配</li>
-<li>错误检测</li>
-<li>统计和安全</li>
-</ul>
-<p>分类：</p>
-<ul>
-<li>单用户操作系统</li>
-</ul>
-<blockquote>
-<p>单用户操作系统一次只能支持一个用户程序的运行。单用户操作系统向用户提供联机交互式的工作环境，比如MS-DOS就是一个经典的单用户操作系统。</p>
-</blockquote>
-<ul>
-<li>批处理操作系统</li>
-</ul>
-<blockquote>
-<p>可对用户作业成批处理，期间勿需用户干预，分为单道批处理系统和多道批处理系统。</p>
-</blockquote>
-<ul>
-<li>分时操作系统</li>
-</ul>
-<blockquote>
-<p>利用分时技术的一种联机的多用户交互式操作系统，每个用户可以通过自己的终端向系统发出各种操作控制命令，完成作业的运行。分时是指把处理机的运行时间分成很短的时间片，按时间片轮流把处理机分配给各联机作业使用。</p>
-</blockquote>
-<ul>
-<li>实时操作系统</li>
-</ul>
-<blockquote>
-<p>一个能够在指定或者确定的时间内完成系统功能以及对外部或内部事件在同步或异步时间内做出响应的系统,实时意思就是对响应时间有严格要求,要以足够快的速度进行处理.分为硬实时和软实时两种。</p>
-</blockquote>
-<ul>
-<li>通用操作系统</li>
-</ul>
-<blockquote>
-<p>同时兼有多道批处理、分时、实时处理的功能，或者其中两种以上功能的操作系统。</p>
-</blockquote>
-<ul>
-<li>网络操作系统</li>
-</ul>
-<blockquote>
-<p>一种在通常操作系统功能的基础上提供网络通信和网络服务功能的操作系统。</p>
-</blockquote>
-<ul>
-<li>分布式操作系统</li>
-<li>嵌入式操作系统</li>
-</ul>
-<h1 id="3系统调用">3.系统调用</h1>
-<p>类型：</p>
-<ul>
-<li>进程控制</li>
-<li>文件管理</li>
-<li>设备管理</li>
-<li>信息维护</li>
-<li>通信</li>
-</ul>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602497779683.png" alt="" loading="lazy"></figure>
-<h1 id="4其他基本概念">4.其他基本概念</h1>
-<h2 id="进程">进程</h2>
-<p>进程本质上是正在执行的一个程序。与每个进程相关的是进程的地址空间（address space），这是从某个最小值的存储位置（通常是零）到某个最大值存储位置的列表。在这个地址空间中，进程可以进行读写。该地址空间中存放有可执行程序、程序的数据以及程序的堆栈。与每个进程相关的还有资源集，通常包括寄存器（含有程序计数器和堆栈指针）、打开文件的清单、突出的报警、有关进程清单，以及运行该程序所需要的所有其他信息。进程基本上是容纳运行一个程序所需要所有信息的容器。</p>
-<h2 id="线程">线程</h2>
-<h2 id="地址空间">地址空间</h2>
-<p>通常，每个进程有一些可以使用的地址集合，典型值从0开始直到某个最大值。在最简单的情形下，一个进程可拥有的最大地址空间小于主存。</p>
-<p>虚拟内存<br>
-操作系统可以把部分地址空间装入主存，部分留在磁盘上。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[0.大纲]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-0da-gang/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-0da-gang/">
-        </link>
-        <updated>2020-10-12T10:13:38.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li>现代操作系统
-<ul>
-<li>链接:https://pan.baidu.com/s/10XBhqqwUrbw0VnaD6_LWaA  密码:jrjz</li>
-</ul>
-</li>
-<li>操作系统概念
-<ul>
-<li>链接:https://pan.baidu.com/s/1aEszxfSZczMxmL1j8HC3sQ  密码:3w3w</li>
-</ul>
-</li>
-<li>Linux内核完全解析 赵炯
-<ul>
-<li>链接:https://pan.baidu.com/s/1mois7h8tNFL_FHkWmVpu7A  密码:n9xd</li>
-</ul>
-</li>
-<li><a href="https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/59.html">鸟哥的Linux私房菜</a></li>
-<li>程序员的自我修养
-<ul>
-<li>链接:https://pan.baidu.com/s/1-Lco9gd-32aKfvlhFTL66w  密码:bocy</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="1计算机的整体结构和基本概念">1.计算机的整体结构和基本概念</h2>
-<ul>
-<li>总线等</li>
-<li>中断</li>
-<li>内核空间、用户空间</li>
-<li>进程、线程</li>
-</ul>
-<h2 id="2进程和线程">2.进程和线程</h2>
-<ul>
-<li>同步、死锁</li>
-<li>调度算法</li>
-</ul>
-<h2 id="3内存">3.内存</h2>
-<ul>
-<li>MMU、TLB</li>
-</ul>
-<h2 id="4存储">4.存储</h2>
-<h2 id="5io相关">5.IO相关</h2>
-<h2 id="6安全相关">6.安全相关</h2>
-<h2 id="7其他">7.其他</h2>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Q1/session、cookie、token]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-q1sessioncookietoken/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-q1sessioncookietoken/">
-        </link>
-        <updated>2020-10-12T10:06:16.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="session-cookie">Session、Cookie</h1>
-<ul>
-<li><a href="https://www.toutiao.com/i6797963155034079755/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1587090932&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202004171035320100140400921D0F3D3D&amp;group_id=6797963155034079755">从session、cookie到token以及JWT</a></li>
-<li><a href="https://segmentfault.com/a/1190000017831088?tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">彻底弄懂session，cookie，token</a></li>
-</ul>
-<p>HTTP是无状态的，为了维护状态，服务器端记录一个会话id（sessionId），记录一下用户及其状态。然后把sessionId回给客户端。浏览器将这个sessionId记录到cookie里，下一次请求再带上。这样服务器从请求中拿到cookie里的sessionId，到自己的存储（一般是用redis）里查一下，得到用户的状态。之后就可以愉快的进行下面的操作了。</p>
-<blockquote>
-<p>session是服务器端的，cookie是浏览器端的<br>
-cookie只是实现session的其中一种方案。虽然是最常用的，但并不是唯一的方法。禁用cookie后还有其他方法存储，比如放在url中<br>
-现在后端服务都是分布式部署，session一般统一放在redis集群中。这样有个问题就是一旦redis故障，可能会影响所有的用户请求。</p>
-</blockquote>
-<p><strong>所有session都要落地到session服务的存储上，服务压力巨大，任何redis的扩容修改都有可能造成服务端的雪崩。</strong></p>
-<h1 id="cookie">Cookie</h1>
-<ul>
-<li>客户端cookie管理存在丢失情况，并且一直难以排查根除，造成用户掉线情况。</li>
-<li>cookie具有域名特性，业务域名多域名同步存在问题，目前客户端为手动进行同步。</li>
-<li>cookie的修改，一切api接口客户端均认可，容易发生串号的情况。</li>
-</ul>
-<h1 id="token">Token</h1>
-<p>那么，我们有没有可能不存储session呢？</p>
-<ul>
-<li>如果我们讲所有信息全部放在cookie里，那么只要cookie将用户的id和状态给服务器传过去就好了。</li>
-<li>但是，这样非常危险。用户可以随意伪造cookie，并且非常容易被劫持</li>
-<li>所以，问题变成了，怎么确保安全性？</li>
-<li>答案就是做签名。在用户第一次登录时，服务端使用如SHA256算法对数据进行加密。就称之为token。</li>
-</ul>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497226624.jpeg" alt="" loading="lazy"></figure>
-<p>下一次浏览器把加密后的token带过来，服务器再使用相同的算法对数据进 行一次加密，比较两次加密的结果，相等即为验证通过。<br>
-<img src="https://sparkfengbo.github.io/post-images/1602497235639.jpeg" alt="" loading="lazy"></p>
-<p>因为私钥只要服务器知道。所以用户过来的请求是无法伪造的。</p>
-<p>这样一来，服务器不需要再费力的保存session数据。服务器端是无状态的。</p>
-<p>token的优势：</p>
-<ul>
-<li>无状态、可扩展</li>
-<li>支持移动设备（移动设备是没有cookie的）</li>
-<li>跨程序调用</li>
-<li>安全</li>
-</ul>
-<h3 id="token认证流程">token认证流程</h3>
-<p>token 的认证流程与cookie很相似</p>
-<ul>
-<li>用户登录，成功后服务器返回Token给客户端。</li>
-<li>客户端收到数据后保存在客户端</li>
-<li>客户端再次访问服务器，将token放入headers中</li>
-<li>服务器端采用filter过滤器校验。校验成功则返回请求数据，校验失败则返回错误码</li>
-</ul>
-<h2 id="分布式情况下的session和token">分布式情况下的session和token</h2>
-<p>我们已经知道session时有状态的，一般存于服务器内存或硬盘中，当服务器采用分布式或集群时，session就会面对负载均衡问题。</p>
-<ul>
-<li>负载均衡多服务器的情况，不好确认当前用户是否登录，因为多服务器不共享session。这个问题也可以将session存在一个服务器中来解决，但是就不能完全达到负载均衡的效果。当今的几种解决session负载均衡的方法。</li>
-</ul>
-<p>而token是无状态的，token字符串里就保存了所有的用户信息</p>
-<ul>
-<li>客户端登陆传递信息给服务端，服务端收到后把用户信息加密（token）传给客户端，客户端将token存放于localStroage等容器中。客户端每次访问都传递token，服务端解密token，就知道这个用户是谁了。通过cpu加解密，服务端就不需要存储session占用存储空间，就很好的解决负载均衡多服务器的问题了。这个方法叫做JWT(Json Web Token)</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[7.Web页面请求过程]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-7web-ye-mian-qing-qiu-guo-cheng/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-7web-ye-mian-qing-qiu-guo-cheng/">
-        </link>
-        <updated>2020-10-12T10:03:15.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<p>可参考 <a href="https://blog.csdn.net/sun927/article/details/50764837">Web页面的请求历程</a></p>
-<h1 id="1获取ip地址">1.获取IP地址</h1>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497012993.png" alt="" loading="lazy"></figure>
-<ul>
-<li>构建DHCP请求报文，放入UDP报文段，UDP报文段放在IP数据报中，IP数据报放在以太网帧中，通过广播地址到达DHCP服务器。</li>
-<li>DHCP服务器以CIDR快进行分配，生成DHCP ACK报文
-<ul>
-<li>IP地址</li>
-<li>DNS服务器IP地址（68.87.71.226）</li>
-<li>默认网关路由器（第一跳路由）IP地址 68.85.2.1</li>
-<li>子网块（网络掩码） 68.85.2.0/24</li>
-</ul>
-</li>
-</ul>
-<h1 id="2dns-arp">2.DNS &amp; ARP</h1>
-<h1 id="3web客户服务器交互tcp和http">3.Web客户——服务器交互：TCP和HTTP</h1>
-<h1 id="4-非持续链接http和持续链接http">4. 非持续链接HTTP和持续链接HTTP</h1>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[6.物理层]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-6wu-li-ceng/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-6wu-li-ceng/">
-        </link>
-        <updated>2020-10-12T10:01:59.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[5.链路层]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-5lian-lu-ceng/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-5lian-lu-ceng/">
-        </link>
-        <updated>2020-10-12T09:59:45.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="概述">概述</h1>
-<h2 id="提供的服务">提供的服务</h2>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496804763.png" alt="" loading="lazy"></figure>
-<h2 id="总结">总结</h2>
-<ul>
-<li>可靠交付</li>
-<li>差错检测和纠正</li>
-<li>部分功能是硬件实现的
-<ul>
-<li>网络适配器</li>
-</ul>
-</li>
-</ul>
-<h1 id="比特级差错检测和纠正">比特级差错检测和纠正</h1>
-<h2 id="奇偶校验">奇偶校验</h2>
-<h3 id="思想">思想</h3>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496812959.png" alt="" loading="lazy"></figure>
-<p>出现偶数个比特差错会失效。</p>
-<h3 id="进阶二维奇偶校验">进阶：二维奇偶校验</h3>
-<p>d个比特被划分为i行j列，产生i+j+1奇偶比特作为帧的差错检测比特。</p>
-<p>不仅可以识别，还可以<strong>纠正</strong></p>
-<p>接收方检测和纠正差错的能力称为<strong>前向纠错（FEC，Forward Error Correction）</strong></p>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496867343.png" alt="" loading="lazy"></figure>
-<h2 id="检验和方法">检验和方法</h2>
-<p>通常多用于运输层</p>
-<p><strong>因特网检验和（Internet checksum）<strong>基于这种方法，即数据的字节作为16比特的整数对待并</strong>求和</strong>。将<strong>和的反码</strong>放在报文段首部作为<strong>因特网检验和</strong>。</p>
-<p>接收方通过对接受的数据（包括检验和）<strong>计算和并取反码</strong>，检测结构<strong>是否全部为1</strong>。有0就有差错。（TCP、UDP的检验和只用了16比特，降低分组开销）</p>
-<h2 id="循环冗余检测-crc">循环冗余检测  CRC</h2>
-<p>通常多应用在适配器中的链路层</p>
-<p>Cyclic Redundancy Check,CRC编码也称为多项式编码</p>
-<p><img src="https://sparkfengbo.github.io/post-images/1602496875809.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602496880524.png" alt="" loading="lazy"></p>
-<h1 id="多路访问协议">多路访问协议</h1>
-<ul>
-<li>信道划分协议
-<ul>
-<li>时分多路复用 TDM</li>
-<li>频分多路复用 FDM</li>
-<li>码分多址 CDMA</li>
-</ul>
-</li>
-<li>随机接入协议
-<ul>
-<li>ALOHA</li>
-<li>CSMA</li>
-</ul>
-</li>
-<li>轮流协议</li>
-</ul>
-<h1 id="链路层寻址和arp"><strong>链路层寻址和ARP</strong></h1>
-<h2 id="mac地址">MAC地址</h2>
-<p>链路层地址，LAN地址、物理地址、MAC地址，都可以</p>
-<p>长度 6字节</p>
-<h2 id="arp-地址解析协议">ARP 地址解析协议</h2>
-<p>Address Resolution Protocol，IP地址和MAC地址的转换</p>
-<p>DNS为因特网中任何地方的主机解析主机名，ARP只为在同一个子网的主机和路由器解析IP地址。</p>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496889894.png" alt="" loading="lazy"></figure>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[4.网络层]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-4wang-luo-ceng/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-4wang-luo-ceng/">
-        </link>
-        <updated>2020-10-12T09:53:07.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="概述">概述</h1>
-<h2 id="功能">功能</h2>
-<p>网络层，将分组从一台发送主机移动到一台接收主机，网络层需要提供两个功能</p>
-<ul>
-<li>转发<br>
-将分组从一个输入链路接口转移到适当的输出链路接口的路由器本地动作</li>
-<li>路由选择<br>
-指网络范围的过程，以决定分组从源到目的地所采取的端到端路径。</li>
-</ul>
-<h2 id="分类">分类</h2>
-<ul>
-<li>虚电路网络（Virtual-Circuit，VC）<br>
-仅在网络层提供连接服务的计算机网络，如ATM网络、帧中继</li>
-<li>数据报网络（datagram network）<br>
-仅在网络层提供无连接服务的计算机网络</li>
-</ul>
-<p><strong>因特网</strong>的网络层提供尽力而为服务（best-effort service）</p>
-<p>其他的网络体系结构模型（例如ATM（Asynchronous Transfer Mode，异步传输）网络、帧中继等）可能提供确保交付、确保最小带宽等特定服务。</p>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496408753.png" alt="" loading="lazy"></figure>
-<h1 id="网际协议ip"><strong>网际协议（IP）</strong></h1>
-<h2 id="ipv4">IPv4</h2>
-<p>可参考 <a href="https://zh.wikipedia.org/wiki/IPv4">维基百科 IPv4</a></p>
-<h3 id="报文格式">报文格式</h3>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496423765.png" alt="" loading="lazy"></figure>
-<h3 id="首部字段含义">首部字段含义</h3>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496436315.png" alt="" loading="lazy"></figure>
-<p><strong>一个IP数据报如果没有选项首部总长20字节，如果承载一个TCP报文段，则每个（无分片的）数据报共承载40字节首部（20字节IP首部、20字节TCP首部）</strong></p>
-<h2 id="ip数据报分片">IP数据报分片</h2>
-<h3 id="为什么要分片">为什么要分片？</h3>
-<p>一个链路层帧能承载的最大数据量叫做最大传送单元（MTU ,Maximum Transmissioon Unit)<br>
-不同的链路层帧的大小不同，以太网帧承载不超过1500字节的数据，在某些广域网链路的帧可承载不超过576字节的数据。当IP数据报比链路层协议的MTU大时，就需要分片。</p>
-<h3 id="如何分片和重组">如何分片和重组？</h3>
-<p>只有<strong>IPv4支持分片，IPv6不支持分片</strong>（如果IPv6数据报太大不能转发到链路上，则路由器只需丢掉该数据报，并向发送方发送“分组太大”的ICMP差错报文）</p>
-<p>分片是可以在路由器中执行的，<strong>重组放在路由器会影响性能，所以重组放在端系统中完成</strong>，目的主机通过IP数据报首部的标识、标志和片偏移字段进行组装。</p>
-<p>详细的组装过程不赘述，大致了解即可。</p>
-<h2 id="编址">编址</h2>
-<h3 id="容量">容量</h3>
-<p>IPv4使用32位（4字节）地址，因此地址空间中只有4,294,967,296（2^32）个地址。不过，一些地址是为特殊用途所保留的，如专用网络（约1800万个地址）和多播地址（约2.7亿个地址），这减少了可在互联网上路由的地址数量。</p>
-<h3 id="点分十进制记法">点分十进制记法</h3>
-<p>IPv4地址可被写作任何表示一个32位整数值的形式，但为了方便人类阅读和分析，它通常被写作点分十进制的形式，即四个字节被分开用十进制写出，中间用点分隔。 例如，<code>192.0.2.235</code>。此外，在点分格式中，每个字节都可用任意的进制表达。如，<code>192.0x00.0002.235</code>是一种合法（但不常用）的表示。</p>
-<h3 id="ipv6的地址表示方法">IPv6的地址表示方法</h3>
-<p>IPv6二进位制下为128位长度，以<strong>16位为一组，每组以冒号“:”隔开，可以分为8组，每组以4位十六进制方式表示</strong>。例如：<code>2001:0db8:86a3:08d3:1319:8a2e:0370:7344</code> 是一个合法的IPv6地址。类似于IPv4的点分十进制，同样也存在点分十六进制的写法，将8组4位十六进制地址的冒号去除后，每位以点号“.”分组，例如：<code>2001:0db8:85a3:08d3:1319:8a2e:0370:7344</code>则记为<code>2.0.0.1.0.d.b.8.8.5.a.3.0.8.d.3.1.3.1.9.8.a.2.e.0.3.7.0.7.3.4.4</code>，其倒序写法用于ip6.arpa子域名记录IPv6地址与域名的映射。</p>
-<p>省略规则</p>
-<ul>
-<li>每项数字前导的0可以省略，省略后前导数字仍是0则继续
-<ul>
-<li><code>2001:DB8:2de:0:0:0:0:e13</code></li>
-</ul>
-</li>
-<li>可以用双冒号“::”表示一组0或多组连续的0，但<strong>只能出现一次</strong>
-<ul>
-<li><code>2001:0DB8:0::0:1428:57ab</code></li>
-</ul>
-</li>
-</ul>
-<h3 id="分类编址">分类编址</h3>
-<p>IP地址的网络部分被限制为长度为8、16或24比特，地址的高位字节被重定义为网络的类(Class)。这个系统定义了五个类别：A、B、C、D和E。A、B和C类有不同的网络类别长度，剩余的部分被用来识别网络内的主机，这就意味着每个网络类别有着不同的给主机编址的能力。D类被用于多播地址，E类被留作将来使用。</p>
-<p>但是C类（/24）子网仅能容纳 2^8 - 2 = 254台主机，B（/16）类可支持65534台主机又太大了。这样会导致地址空间不够用或极度浪费。</p>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496453131.png" alt="" loading="lazy"></figure>
-<h4 id="地址分类">地址分类</h4>
-<p>可参考<a href="https://zh.wikipedia.org/wiki/IPv4">维基百科 IPv4</a>中对地址分类的表述。</p>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496468163.png" alt="" loading="lazy"></figure>
-<h5 id="本地回环地址">本地回环地址</h5>
-<p><a href="https://zh.wikipedia.org/zh-sg/Localhost">维基百科LocalHost</a></p>
-<p>localhost是一个在计算机网络中用于表示“此计算机”的主机名。它被用于通过本地环回网络接口，来访问本机运行的服务，并且将会绕过任何物理网络接口硬件。</p>
-<h5 id="公有地址-私有地址">公有地址、私有地址</h5>
-<p><a href="https://www.zhihu.com/question/19813460">知乎-为什么局域网的IP普遍是192.168开头？</a></p>
-<ul>
-<li>公有地址
-<ul>
-<li>A、B、C三类地址中，绝大多数的IP地址都是公有地址，需要向国际互联网信息中心申请注册。但是在IPv4地址协议中预留了3个IP地址段，作为私有地址，供组织机构内部使用。</li>
-</ul>
-</li>
-<li>私有地址
-<ul>
-<li>
-<blockquote>
-<p>A类地址：10.0.0.0--10.255.255.255<br>
-B类地址：172.16.0.0--172.31.255.255<br>
-C类地址：192.168.0.0--192.168.255.255</p>
-</blockquote>
-</li>
-<li>常见的局域网由于容量小，一般选择C类的192.168.0.0作为地址段使用，一些大型企业就需要使用B类甚至A类地址段作为内部网络的地址段。</li>
-</ul>
-</li>
-</ul>
-<h3 id="cidr">CIDR</h3>
-<p><strong>无类别域间路由选择，Classless Interdomain Routing</strong></p>
-<p>a.b.c.d/x</p>
-<p>CIDR创建的分层架构由互联网号码分配局（IANA）和区域互联网注册管理机构（RIR）进行管理，每个RIR均维护着一个公共的WHOIS数据库，以此提供IP地址分配的详情。</p>
-<h2 id="dhcp">DHCP</h2>
-<h3 id="作用">作用</h3>
-<p><strong>动态主机配置协议， Dynamic Host Configuration</strong></p>
-<p>DHCP允许主机<strong>自动</strong>获取（被分配）一个IP地址，获取其他信息，例如它的子网掩码、第一跳路由器地址（默认网关）、本地DNS服务器地址。</p>
-<p>网络管理员能够配置DHCP，以使某给定主机每次和网络连接时能得到一个相同的IP地址，或者某主机将被分配临时的IP地址。</p>
-<h3 id="请求过程">请求过程</h3>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602496499046.png" alt="" loading="lazy"></figure>
-<ul>
-<li>DHCP请求步骤中，会从一个或多个服务器中提供中选择一个，构建请求报文，DHCP服务器可能有多个</li>
-</ul>
-<h2 id="nat">NAT</h2>
-<p><strong>网路地址转换，Network Address Translation</strong></p>
-<p>可参考<a href="https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%8D%A2">维基百科NAT</a></p>
-<h3 id="作用-2">作用</h3>
-<p>一种解决IPv4地址短缺以避免保留IP地址困难的方案。流行在网络上的一种看法认为，IPv6的广泛采用将使得NAT不再需要，因为NAT只是一个处理IPv4的地址空间不足的方法</p>
-<blockquote>
-<p>可以这样理解，假设分配的IP地址已经并且只能满足256个主机使用，假设此时有更多的主机接入，那么没有NAT的话只能重新申请IP地址保证能容纳足够的主机，然是使用NAT的话就不需要，内部维护一个NAT转换表进行内部转发。</p>
-</blockquote>
-<h3 id="如何工作">如何工作</h3>
-<p>NAT转换表（NAT translation table）</p>
-<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602496512030.png" alt="" loading="lazy"></figure>
-<p>假设路由器地址 138.76.29.7</p>
-<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602496520214.jpg" alt="" loading="lazy"></figure>
-<h2 id="icmp"><strong>ICMP</strong></h2>
-<p>互联网控制消息协议（Internet Control Message Protocol）</p>
-<p>可参考<a href="https://zh.wikipedia.org/wiki/%E4%BA%92%E8%81%94%E7%BD%91%E6%8E%A7%E5%88%B6%E6%B6%88%E6%81%AF%E5%8D%8F%E8%AE%AE">维基百科ICMP</a></p>
-<h3 id="作用-3">作用</h3>
-<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602496529664.png" alt="" loading="lazy"></figure>
-<h3 id="报文">报文</h3>
-<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602496547246.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602496557328.png" alt="" loading="lazy"></figure>
-<h2 id="ipv6">IPv6</h2>
-<p>可参考 <a href="https://zh.wikipedia.org/wiki/IPv6">维基百科 IPv6</a></p>
-<h3 id="报文格式-2">报文格式</h3>
-<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602496573861.png" alt="" loading="lazy"></figure>
-<h3 id="首部字段含义-2">首部字段含义</h3>
-<figure data-type="image" tabindex="13"><img src="https://sparkfengbo.github.io/post-images/1602496587461.png" alt="" loading="lazy"></figure>
-<h3 id="与ipv4的不同">与IPv4的不同</h3>
-<figure data-type="image" tabindex="14"><img src="https://sparkfengbo.github.io/post-images/1602496601162.png" alt="" loading="lazy"></figure>
-<p>IPv4有单播地址、多播地址，<strong>IPv6多一个任播地址</strong>。</p>
-<h3 id="转换机制">转换机制</h3>
-<ul>
-<li>双堆栈
-<ul>
-<li>双堆栈（Dual IP stack implementation）是将IPv6视为一种IPv4的延伸，以共享代码的方式去实现网络堆栈，其可以同时支持IPv4和IPv6，如此是相对较为容易的。</li>
-</ul>
-</li>
-<li>隧道
-<ul>
-<li>为了连通IPv6互联网，一个孤立主机或网络需要使用现存IPv4的基础设施来携带IPv6数据包。这可由将IPv6数据包装入IPv4数据包的隧道协议来完成，实际上就是将IPv4当成IPv6的链接层。</li>
-</ul>
-</li>
-</ul>
-<h1 id="路由器">路由器</h1>
-<h2 id="工作原理">工作原理</h2>
-<figure data-type="image" tabindex="15"><img src="https://sparkfengbo.github.io/post-images/1602496616479.png" alt="" loading="lazy"></figure>
-<ul>
-<li>1.输入端口
-<ul>
-<li>将输入的物理链路和路由器连接，实现物理层功能</li>
-<li><img src="https://sparkfengbo.github.io/post-images/1602496658728.png" alt="" loading="lazy"></li>
-</ul>
-</li>
-<li>2.输出端口
-<ul>
-<li><img src="https://sparkfengbo.github.io/post-images/1602496663612.png" alt="" loading="lazy"></li>
-</ul>
-</li>
-<li>3.交换结构
-<ul>
-<li>路由器内部结构，将输入端口和输出端口连接</li>
-<li><img src="https://sparkfengbo.github.io/post-images/1602496672462.png" alt="" loading="lazy"></li>
-<li>经内存交换
-<ul>
-<li>最简单、最早的路由器是传统的计算机</li>
-</ul>
-</li>
-<li>经总线交换</li>
-<li>经互联网络交换</li>
-</ul>
-</li>
-<li>4.路由选择处理器
-<ul>
-<li>执行路由选择协议、维护路由选择表以及连接的链路状态信息</li>
-</ul>
-</li>
-</ul>
-<p>如果路由器输出队列缓存存在拥堵，则对缓存进行管理的策略称为 主动队列管理（AQM，Active Queue Management）</p>
-<p>随机早期检测（RED，Random Early Detection）算法是一种AQM算法。</p>
-<p><img src="https://sparkfengbo.github.io/post-images/1602496678994.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602496684544.png" alt="" loading="lazy"></p>
-<h2 id="路由选择算法">路由选择算法</h2>
-<h3 id="分类-链路状态算法与距离向量算法">分类-链路状态算法与距离向量算法</h3>
-<p>广义上的一种分类</p>
-<ul>
-<li>全局式路由选择算法
-<ul>
-<li>用完成的全局性的网络知识计算从源到目的地的最低费用路径，以所有结点之间的连通性和费用为输入</li>
-<li>例如：<strong>链路状态算法（Link State，LS）</strong>（<a href="https://blog.csdn.net/yalishadaa/article/details/55827681">Dijkstra算法</a>）</li>
-</ul>
-</li>
-<li>分散式路由选择算法
-<ul>
-<li>以迭代、分布式的方式计算最低费用路径，没有结点拥有所有网络链路费用的完整信息，而每个结点仅有与其直接相连链路的费用信息。</li>
-<li>例如：<strong>距离向量算法（Distance-Vector，DV）</strong></li>
-</ul>
-</li>
-</ul>
-<p>广义上的另一种分类</p>
-<ul>
-<li>静态路由选择算法
-<ul>
-<li>人工配置</li>
-</ul>
-</li>
-<li>动态路由选择算法
-<ul>
-<li>当网络负载或拓扑发生变化时改变路由选择路径</li>
-</ul>
-</li>
-</ul>
-<h3 id="链路状态算法-dijkstra算法">链路状态算法 - Dijkstra算法</h3>
-<p><a href="https://blog.csdn.net/yalishadaa/article/details/55827681">Dijkstra算法</a></p>
-<h3 id="距离向量算法">距离向量算法</h3>
-<p>每个结点需要维护 <strong>路由选择表</strong>,<strong>基于Bellman-Ford算法</strong></p>
-<p><img src="https://sparkfengbo.github.io/post-images/1602496695644.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602496702178.png" alt="" loading="lazy"></p>
-<h3 id="对比">对比</h3>
-<p>暂时忽略，详见 4.5.2.3</p>
-<h3 id="自治系统">自治系统</h3>
-<p>Autonomous System， AS，自治系统内部运行的路由选择算法叫做<strong>自治系统内部路由选择协议</strong>（<strong>内部网关协议 IGP</strong>）。AS内部负责向在本AS之外的目的地转发分组的路由器被称为网关路由器。还有<strong>自治系统间路由选择协议</strong>（<strong>边界网关协议 BGP</strong>）。</p>
-<figure data-type="image" tabindex="19"><img src="https://sparkfengbo.github.io/post-images/1602496707645.png" alt="" loading="lazy"></figure>
-<h2 id="路由选择协议"><strong>路由选择协议</strong></h2>
-<h3 id="内部网关协议rip">内部网关协议：RIP</h3>
-<p>Routing Information Protocol 路由选择信息协议，<strong>基于Bellman-Ford算法，是一种距离向量协议</strong>，每隔30秒会与相邻的路由器交换子消息，以动态的创建路由表。</p>
-<p>可参考<a href="https://zh.wikipedia.org/zh-sg/%E8%B7%AF%E7%94%B1%E4%BF%A1%E6%81%AF%E5%8D%8F%E8%AE%AE">维基百科</a></p>
-<h3 id="内部网关协议ospf">内部网关协议：OSPF</h3>
-<p>Open Shortest Path First 开放最短路优先<br>
-可参考<a href="https://zh.wikipedia.org/wiki/%E5%BC%80%E6%94%BE%E5%BC%8F%E6%9C%80%E7%9F%AD%E8%B7%AF%E5%BE%84%E4%BC%98%E5%85%88">维基百科</a></p>
-<p>OSPF是对链路状态路由协议的一种实现，运作于自治系统内部。它采用 <strong>Dijkstra算法</strong> 来计算最短路径树。</p>
-<h3 id="边界网关协议-bgp">边界网关协议： BGP</h3>
-<p>Border Gateway Protocol</p>
-<p>它通过维护IP路由表或‘前缀’表 <strong>(CDIR化的前缀)</strong> 来实现自治系统（AS）之间的可达性，属于矢量路由协议。</p>
-<p>可参考 <a href="https://zh.wikipedia.org/wiki/%E8%BE%B9%E7%95%8C%E7%BD%91%E5%85%B3%E5%8D%8F%E8%AE%AE">维基百科</a></p>
-<h1 id="广播和多播路由选择">广播和多播路由选择</h1>
-<ul>
-<li><a href="https://zh.wikipedia.org/wiki/%E5%96%AE%E6%92%AD">单播</a>
-<ul>
-<li>每次只有两个实体相互通信，发送端和接收端都是唯一确定的。</li>
-</ul>
-</li>
-<li><a href="https://zh.wikipedia.org/wiki/%E5%BB%A3%E6%92%AD_(%E7%B6%B2%E8%B7%AF)">广播</a></li>
-<li><a href="https://zh.wikipedia.org/wiki/%E5%A4%9A%E6%92%AD">多播</a>
-<ul>
-<li>它把信息同时传递给一组目的计算机。</li>
-</ul>
-</li>
-</ul>
-<figure data-type="image" tabindex="20"><img src="https://sparkfengbo.github.io/post-images/1602496721195.png" alt="" loading="lazy"></figure>
-<h2 id="广播路由选择">广播路由选择</h2>
-<p>网络层提供一种源节点到网络中的所有其他结点交付分组</p>
-<p>N次单播</p>
-<ul>
-<li>
-<p>无控制洪泛</p>
-</li>
-<li>
-<p>受控洪泛</p>
-<ul>
-<li>反向路径转发 RPF</li>
-</ul>
-</li>
-<li>
-<p>生成树广播</p>
-</li>
-</ul>
-<h2 id="多播路由选择">多播路由选择</h2>
-<p>单个源节点到网络中的其他结点的一份子集交付分组</p>
-<ul>
-<li>IGMP</li>
-<li>DVMRP</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[3.0 运输层]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-30-yun-shu-ceng/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-30-yun-shu-ceng/">
-        </link>
-        <updated>2020-10-12T09:49:40.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="概述">概述</h1>
-<p><strong>功能：</strong> 运输层协议为运行在不同的主机上的应用进程提供了逻辑通信功能。网络层提供了主机之间的逻辑通信。</p>
-<h1 id="多路复用-多路分解">多路复用 多路分解</h1>
-<p><strong>多路分解</strong>：将运输层报文段中的数据交付到正确的套接字<br>
-<strong>多路复用</strong>：源主机从不同套接字中收集数据块，并为每个数据块封装首部信息生成报文段，传递到网络层，这些工作成为多路复用。</p>
-<h1 id="无连接运输udp">无连接运输：UDP</h1>
-<h2 id="特点">特点</h2>
-<ul>
-<li>
-<p><strong>无连接的</strong><br>
-发送方和接收方的运输层实体之间没有握手。不会引入建立连接的时延。</p>
-</li>
-<li>
-<p><strong>无连接状态</strong><br>
-TCP需要在端系统中维护连接状态，包括接收和发送给缓存、拥塞控制参数以及序号和确认号的参数。</p>
-</li>
-<li>
-<p><strong>分组首部开销小</strong></p>
-</li>
-<li>
-<p><strong>关于何时、发送什么数据的应用层控制更为精细</strong><br>
-UDP打包即发出，没有TCP的拥塞控制等限制，TCP可靠交付可能时延比较大。</p>
-</li>
-<li>
-<p>面向数据报</p>
-</li>
-</ul>
-<blockquote>
-<p>为什么说TCP报文段是面向字节流的，UDP是面向数据报的？</p>
-<p>面向报文的传输方式是应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。因此，应用程序必须选择合适大小的报文。若报文太长，则IP层需要分片，降低效率。若太短，会是IP太小。UDP对应用层交下来的报文，既不合并，也不拆分，而是保留这些报文的边界。这也就是说，应用层交给UDP多长的报文，UDP就照样发送，即一次发送一个报文。</p>
-<p>虽然应用程序和TCP的交互是一次一个数据块（大小不等），但TCP把应用程序看成是一连串的无结构的字节流。TCP有一个缓冲，当应用程序传送的数据块太长，TCP就可以把它划分短一些再传送。如果应用程序一次只发送一个字节，TCP也可以等待积累有足够多的字节后再构成报文段发送出去。</p>
-<p>在TCP建立连接前两次握手的SYN报文中选项字段的MSS值，通信双方商定通信的最大报文长度。如果应用层交付下来的数据过大，就会对数据分段，然后发送；否则通过滑动窗口协议来控制通信双发的数据。</p>
-</blockquote>
-<h2 id="报文">报文</h2>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496197569.png" alt="" loading="lazy"></figure>
-<p>提供端到端的差错检测，但是对差错恢复无能为力，有点UDP的实现是丢弃受损的报文段，其他实现是将受损的报文段交给应用程序并给出警告。</p>
-<h2 id="udp和tcp的不同">UDP和TCP的不同</h2>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496207934.jpeg" alt="" loading="lazy"></figure>
-<h1 id="面向连接的运输tcp">面向连接的运输：TCP</h1>
-<h2 id="特点-2">特点</h2>
-<ul>
-<li><strong>面向连接</strong>的<strong>可靠</strong>运输</li>
-<li><strong>全双工</strong>服务<br>
-进程A和B建立连接，应用层数据可在从进程B流向进程A的同时，也从进程A流向进程B。</li>
-<li>点对点<br>
-连接在单个发送方和单个接收方之间。</li>
-<li>面向字节流</li>
-</ul>
-<p><a href="https://zh.wikipedia.org/wiki/%E4%BC%A0%E8%BE%93%E6%8E%A7%E5%88%B6%E5%8D%8F%E8%AE%AE">维基百科TCP</a></p>
-<h2 id="mss">MSS</h2>
-<p>TCP三次握手初期设置发送缓存，TCP从发送缓存里取数据，从缓存取出并放到报文段的数据数量受限于 <strong>最大报文段长度（Maximum Segment Size, MSS）</strong>。</p>
-<p>MSS通常根据MTU设置。MSS保证一个TCP报文段适合MTU（报文+TCP/IP首部）。MSS典型值 1460字节。</p>
-<h2 id="报文-2">报文</h2>
-<p>TCP首部通常20字节。</p>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496228383.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496236599.png" alt="" loading="lazy"></figure>
-<h2 id="连接管理">连接管理</h2>
-<h3 id="三次握手">三次握手</h3>
-<p>参考 <a href="https://blog.csdn.net/qzcsu/article/details/72861891">TCP的三次握手与四次挥手</a></p>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496247132.png" alt="" loading="lazy"></figure>
-<ul>
-<li>TCP服务器进程先创建传输控制块TCB，时刻准备接受客户进程的连接请求，此时服务器就进入了LISTEN（监听）状态；</li>
-<li>TCP客户进程也是先创建传输控制块TCB，然后向服务器发出连接请求报文，这是报文首部中的同部位SYN=1，同时选择一个初始序列号 seq=x ，此时，TCP客户端进程进入了 SYN-SENT（同步已发送状态）状态。<strong>TCP规定，SYN报文段（SYN=1的报文段）不能携带数据，但需要消耗掉一个序号。</strong></li>
-<li>TCP服务器收到请求报文后，如果同意连接，则发出确认报文。确认报文中应该 ACK=1，SYN=1，确认号是ack=x+1，同时也要为自己初始化一个序列号 seq=y，此时，TCP服务器进程进入了SYN-RCVD（同步收到）状态。<strong>这个报文也不能携带数据，但是同样要消耗一个序号。</strong></li>
-<li>TCP客户进程收到确认后，还要向服务器给出确认。确认报文的ACK=1，ack=y+1，自己的序列号seq=x+1，此时，TCP连接建立，客户端进入ESTABLISHED（已建立连接）状态。<strong>TCP规定，ACK报文段可以携带数据，但是如果不携带数据则不消耗序号。</strong></li>
-<li>当服务器收到客户端的确认后也进入ESTABLISHED状态，此后双方就可以开始通信了。</li>
-</ul>
-<h4 id="为什么需要三次握手而不是两次握手">为什么需要三次握手而不是两次握手？</h4>
-<blockquote>
-<p>一句话，主要防止已经失效的连接请求报文突然又传送到了服务器，从而产生错误。</p>
-<p>如果使用的是两次握手建立连接，假设有这样一种场景，客户端发送了第一个请求连接并且没有丢失，只是因为在网络结点中滞留的时间太长了，由于TCP的客户端迟迟没有收到确认报文，以为服务器没有收到，此时重新向服务器发送这条报文，此后客户端和服务器经过两次握手完成连接，传输数据，然后关闭连接。此时此前滞留的那一次请求连接，网络通畅了到达了服务器，这个报文本该是失效的，但是，两次握手的机制将会让客户端和服务器再次建立连接，这将导致不必要的错误和资源的浪费。</p>
-<p>如果采用的是三次握手，就算是那一次失效的报文传送过来了，服务端接受到了那条失效报文并且回复了确认报文，但是客户端不会再次发出确认。由于服务器收不到确认，就知道客户端并没有请求连接。</p>
-</blockquote>
-<blockquote>
-<p>也可以这样理解，<br>
-第一次 只能确认发送方发送正常<br>
-第二次 能确认接收方发送接收正常，发送方发送正常，但还无法确认发送方接收正常<br>
-第三次 能确认双方接收发送都正常</p>
-</blockquote>
-<h3 id="四次挥手">四次挥手</h3>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602496259516.png" alt="" loading="lazy"></figure>
-<ul>
-<li>客户端进程发出连接释放报文，并且停止发送数据。释放数据报文首部，FIN=1，其序列号为seq=u（等于前面已经传送过来的数据的最后一个字节的序号加1），此时，客户端进入FIN-WAIT-1（终止等待1）状态。 <strong>TCP规定，FIN报文段即使不携带数据，也要消耗一个序号。</strong></li>
-<li>服务器收到连接释放报文，发出确认报文，ACK=1，ack=u+1，并且带上自己的序列号seq=v，此时，服务端就进入了CLOSE-WAIT（关闭等待）状态。<strong>TCP服务器通知高层的应用进程，客户端向服务器的方向就释放了，这时候处于半关闭状态，即客户端已经没有数据要发送了，但是服务器若发送数据，客户端依然要接受。这个状态还要持续一段时间，也就是整个CLOSE-WAIT状态持续的时间。</strong></li>
-<li>客户端收到服务器的确认请求后，此时，客户端就进入FIN-WAIT-2（终止等待2）状态，等待服务器发送连接释放报文 <strong>（在这之前还需要接受服务器发送的最后的数据）。</strong></li>
-<li>服务器将最后的数据发送完毕后，就向客户端发送连接释放报文，FIN=1，ack=u+1，由于在半关闭状态，服务器很可能又发送了一些数据，假定此时的序列号为seq=w，此时，服务器就进入了LAST-ACK（最后确认）状态，等待客户端的确认。</li>
-<li>客户端收到服务器的连接释放报文后，必须发出确认，ACK=1，ack=w+1，而自己的序列号是seq=u+1，此时，客户端就进入了TIME-WAIT（时间等待）状态。<strong>注意此时TCP连接还没有释放，必须经过2*MSL（最长报文段寿命）的时间后，当客户端撤销相应的TCB后，才进入CLOSED状态。</strong></li>
-<li>服务器只要收到了客户端发出的确认，立即进入CLOSED状态。同样，撤销TCB后，就结束了这次的TCP连接。<strong>可以看到，服务器结束TCP连接的时间要比客户端早一些。</strong></li>
-</ul>
-<h4 id="为什么客户端最后还要等待2msl">为什么客户端最后还要等待2MSL？</h4>
-<blockquote>
-<p>MSL（Maximum Segment Lifetime），TCP允许不同的实现可以设置不同的MSL值。</p>
-<p>第一，保证客户端发送的最后一个ACK报文能够到达服务器，因为这个ACK报文可能丢失，站在服务器的角度看来，我已经发送了FIN+ACK报文请求断开了，客户端还没有给我回应，应该是我发送的请求断开报文它没有收到，于是服务器又会重新发送一次，而客户端就能在这个2MSL时间段内收到这个重传的报文，接着给出回应报文，并且会重启2MSL计时器。</p>
-<p>第二，防止类似与“三次握手”中提到了的“已经失效的连接请求报文段”出现在本连接中。客户端发送完最后一个确认报文后，在这个2MSL时间中，就可以使本连接持续的时间内所产生的所有报文段都从网络中消失。这样新的连接中不会出现旧连接的请求报文。</p>
-</blockquote>
-<h3 id="为什么建立连接是三次握手关闭连接却是四次挥手呢">为什么建立连接是三次握手，关闭连接却是四次挥手呢？</h3>
-<blockquote>
-<p>建立连接的时候， 服务器在LISTEN状态下，收到建立连接请求的SYN报文后，把ACK和SYN放在一个报文里发送给客户端。<br>
-而关闭连接时，服务器收到对方的FIN报文时，仅仅表示对方不再发送数据了但是还能接收数据，而自己也未必全部数据都发送给对方了，所以己方可以立即关闭，也可以发送一些数据给对方后，再发送FIN报文给对方来表示同意现在关闭连接，因此，己方ACK和FIN一般都会分开发送，从而导致多了一次。</p>
-</blockquote>
-<h2 id="可靠性传输">可靠性传输</h2>
-<h3 id="arq">ARQ</h3>
-<p><strong>ARQ（Automatic Repeat reQuest）自动重传请求协议</strong> 是OSI模型数据链路层和运输层的错误纠正协议之一。通过<strong>确认</strong>和<strong>超时</strong>这两个机制，在不可靠服务的基础上实现可靠的信息传输。包括<strong>停止等待ARQ协议</strong>和<strong>连续ARQ协议</strong>。</p>
-<p><strong>TCP使用的是连续ARQ协议。</strong></p>
-<p><strong>ARQ协议包括这些机制</strong></p>
-<ul>
-<li>差错检测</li>
-<li>接收方反馈 肯定确认ACK、否定确认NCK
-<ul>
-<li><strong>累计确认：</strong> 接收方不必对收到的分组逐个发送确认。而是在收到几个分组后，对按序到达的最后一个分组发送确认。</li>
-</ul>
-</li>
-<li>重传 超时重传等</li>
-</ul>
-<p><strong>ARQ协议对错误纠正的方法是：</strong></p>
-<ul>
-<li>丢弃已经接收的含有错误的数据包。</li>
-<li>向发送点请求重新发送数据包。</li>
-</ul>
-<p>可参考<a href="https://zh.wikipedia.org/wiki/%E8%87%AA%E5%8A%A8%E9%87%8D%E4%BC%A0%E8%AF%B7%E6%B1%82">维基百科ARQ</a></p>
-<h4 id="连续arq">连续ARQ</h4>
-<p>为了克服停止并等待ARQ协议长时间等待ACK的缺点。这个协议会连续发送一组数据包（流水线传输），然后再等待这些数据包的ACK.</p>
-<p>流水线传输就是发送方可以连续发送多个分组，不必每发完一个分组就停下来等待对方确认。连续ARQ通常结合滑动窗口协议使用。</p>
-<p><strong>回退N重传(Go-Back-N)</strong></p>
-<ul>
-<li>接收点丢弃从第一个没有收到的数据包开始的所有数据包。</li>
-<li>发送点收到NACK后，从NACK中指明的数据包开始重新发送。
-<ul>
-<li>有缺点：不能正确的向发送方反映出接收方已经正确收到的所以分组的信息。</li>
-<li>
-<blockquote>
-<p>比如发送方发送了前5个分组，而中间的第3个分组丢失了，这时候接收方只能对前2个发出确认。而不知道后面3个分组的下落，因此只能把后面的3个分组都重传一次，</p>
-</blockquote>
-</li>
-</ul>
-</li>
-</ul>
-<p><strong>选择重传(Selective Repeat)</strong></p>
-<ul>
-<li>发送点连续发送数据包但对每个数据包都设有个一个计时器。</li>
-<li>当在一定时间内没有收到某个数据包的ACK时，发送点只重新发送那个没有ACK的数据包。</li>
-</ul>
-<h4 id="停止等待arq">停止等待ARQ</h4>
-<p>停止并等待协议的工作原理如下：</p>
-<ul>
-<li>发送点对接收点发送数据包，然后等待接收点回复ACK并且开始计时。</li>
-<li>在等待过程中，发送点停止发送新的数据包。</li>
-<li>当数据包没有成功被接收点接收时候，接收点不会发送ACK.这样发送点在等待一定时间后，重新发送数据包。</li>
-<li>反复以上步骤直到收到从接收点发送的ACK.</li>
-</ul>
-<p><strong>缺点</strong></p>
-<ul>
-<li>较长的等待时间导致低的数据传输速度</li>
-</ul>
-<h3 id="滑动窗口">滑动窗口</h3>
-<p>发送方维护发送窗口，接收方维护接收窗口。<br>
-<img src="https://sparkfengbo.github.io/post-images/1602496289766.jpg" alt="" loading="lazy"></p>
-<p><strong>规则：</strong></p>
-<ul>
-<li>（1）凡是已经发送过的数据，在未收到确认之前，都必须暂时保留，以便在超时重传时使用。</li>
-<li>（2）只有当发送方A收到了接收方的确认报文段时，发送方窗口才可以向前滑动几个序号。</li>
-<li>（3）当发送方A发送的数据经过一段时间没有收到确认（由超时计时器控制），就要使用回退N步协议，回到最后接收到确认号的地方，重新发送这部分数据。</li>
-</ul>
-<p><strong>发送窗口中有四个概念</strong></p>
-<ul>
-<li>已发送并收到确认的数据（不在发送窗口和发送缓冲区之内）</li>
-<li>已发送但未收到确认的数据（位于发送窗口之内）</li>
-<li>允许发送但尚未发送的数据（位于发送窗口之内）</li>
-<li>发送窗口之外的缓冲区内暂时不允许发送的数据。</li>
-</ul>
-<p><strong>接收窗口中也有四个概念</strong></p>
-<ul>
-<li>已发送确认并交付主机的数据（不在接收窗口和接收缓冲区之内）</li>
-<li>未按序收到的数据（位于接收窗口之内）</li>
-<li>允许的数据（位于接收窗口之内）</li>
-<li>不允许接收的数据（位于发送窗口之内）。</li>
-</ul>
-<h2 id="流量控制">流量控制</h2>
-<p>一条TCP连接每一侧主机都为该连接设置了接受缓存。TCP连接收到正确、按序的字节后，它就将数据放入接收缓存。应用程序从该缓存读数据，但不是数据刚到就读取。为了防止发送方发送太多太快，导致接收缓存溢出，TCP提供<strong>流量控制服务（flow-control service）</strong></p>
-<p><strong>使用滑动窗口协议</strong></p>
-<p>发送方维护 <strong>接收窗口（rwnd）</strong> 的变量进行流量控制。</p>
-<p>把rwnd的值放在TCP报文 接收窗口字段。</p>
-<p>举例：</p>
-<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602496301515.png" alt="" loading="lazy"></figure>
-<h2 id="拥塞控制-tcp-conggestion-control-algorithm">拥塞控制 (TCP conggestion control algorithm)</h2>
-<p>和流量控制相似，都是控制发送方发送的速度，但是目标不一样，流量控制是为了防止接收方接收缓存溢出，拥塞控制是因为网络发生拥堵而降低发送速度。</p>
-<p><strong>TCP的拥塞控制采用了四种算法，即 慢开始 、 拥塞避免 、快重传 和 快恢复。</strong></p>
-<p>可参考</p>
-<ul>
-<li><a href="https://www.cnblogs.com/wuchanming/p/4422779.html">TCP的拥塞控制</a></li>
-<li><a href="https://juejin.im/entry/5b7fcd13f265da4372473199?utm_medium=yw&amp;utm_source=weibo0825_1">浅谈 TCP 拥塞控制算法</a></li>
-</ul>
-<h3 id="慢开始">慢开始</h3>
-<blockquote>
-<p>发送方维持一个叫做 <strong>拥塞窗口cwnd（congestion window）</strong> 的状态变量。拥塞窗口的大小取决于网络的拥塞程度，并且动态地在变化。发送方让自己的发送窗口等于拥塞窗口，另外考虑到接受方的接收能力，发送窗口可能小于拥塞窗口。</p>
-</blockquote>
-<p>慢开始算法的思路就是，不要一开始就发送大量的数据，先探测一下网络的拥塞程度，也就是说由小到大逐渐增加拥塞窗口的大小 <strong>(乘法增长)</strong>。</p>
-<p>这里用报文段的个数的拥塞窗口大小举例说明慢开始算法，实时拥塞窗口大小是以字节为单位的。如下图：</p>
-<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602496314016.jpeg" alt="" loading="lazy"></figure>
-<h3 id="拥塞避免">拥塞避免</h3>
-<p>为了防止cwnd增长过大引起网络拥塞，还需设置一个 <strong>慢开始门限ssthresh</strong>状态变量。ssthresh的用法如下：</p>
-<ul>
-<li>当cwnd &lt; ssthresh时，使用慢开始算法。</li>
-<li>当cwnd &gt; ssthresh时，改用拥塞避免算法。</li>
-<li>当cwnd = ssthresh时，慢开始与拥塞避免算法任意。</li>
-</ul>
-<p>无论是在慢开始阶段还是在拥塞避免阶段，只要发送方判断网络出现拥塞，就把 <strong>慢开始门限设置为出现拥塞时的发送窗口大小的一半</strong>。然后把拥塞窗口设置为1，执行慢开始算法。</p>
-<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602496323466.jpeg" alt="" loading="lazy"></figure>
-<h3 id="快重传-和-快恢复-frr-fast-retransmit-and-recovery">快重传 和 快恢复 （FRR, fast retransmit and recovery）</h3>
-<p>快重传要求接收方在收到一个失序的报文段后就立即发出重复确认（为的是使发送方及早知道有报文段没有到达对方）而不要等到自己发送数据时捎带确认。快重传算法规定，发送方只要一连收到三个重复确认就应当立即重传对方尚未收到的报文段，而不必继续等待设置的重传计时器时间到期(<strong>没有FRR，如果数据包丢失了，TCP 将会使用定时器来要求传输暂停。在暂停的这段时间内，没有新的或复制的数据包被发送</strong>)。</p>
-<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602496332515.jpeg" alt="" loading="lazy"></figure>
-<p>快重传配合使用的还有快恢复算法，有以下两个要点:</p>
-<ul>
-<li>①当发送方连续收到三个重复确认时，就执行“乘法减小”算法，把ssthresh门限减半。但是接下去并不执行慢开始算法。</li>
-<li>②考虑到如果网络出现拥塞的话就不会收到好几个重复的确认，所以发送方现在认为网络可能没有出现拥塞。所以此时不执行慢开始算法，而是将cwnd设置为ssthresh的大小，然后执行拥塞避免算法。</li>
-</ul>
-<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602496341797.jpeg" alt="" loading="lazy"></figure>
-<h1 id="应用层协议使用运输层协议一些分类">应用层协议使用运输层协议一些分类</h1>
-<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602496351981.png" alt="" loading="lazy"></figure>
-<ul>
-<li>SSH	<br>
-端口号22，TCP</li>
-<li>MYSQL<br>
-端口号 3306 TCP</li>
-</ul>
-<p>0~1023是周知端口号，受限制，给HTTP或者FTP这种预留使用的。</p>
 ]]></content>
     </entry>
 </feed>

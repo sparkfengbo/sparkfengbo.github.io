@@ -1,0 +1,415 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>5.0输入输出和IO(包含零拷贝) | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602498897275">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="5.0输入输出和IO(包含零拷贝) | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+1.IO硬件
+分类
+
+块设备 block device
+
+块设备把信息存储在固定大小的块中，每个块有自己的地址
+CR-ROM、USB
+
+
+字符设备 character device
+
+字符设备以字符为单位发送或接收一个字符流，而..." />
+    <meta name="keywords" content="操作系统" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602498897275" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              5.0输入输出和IO(包含零拷贝)
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                16 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/IK7I4uoJQ/" class="post-tag">
+                  # 操作系统
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="1io硬件">1.IO硬件</h1>
+<h2 id="分类">分类</h2>
+<ul>
+<li>块设备 block device
+<ul>
+<li>块设备把信息存储在固定大小的块中，每个块有自己的地址</li>
+<li>CR-ROM、USB</li>
+</ul>
+</li>
+<li>字符设备 character device
+<ul>
+<li>字符设备以字符为单位发送或接收一个字符流，而不考虑任何块结构。字符设备是不可寻址的，也没有任何寻道操作。</li>
+<li>打印机</li>
+<li>网络接口</li>
+<li>鼠标（用作指点设备）</li>
+<li>以及大多数与磁盘不同的设备都可看作是字符设备。</li>
+</ul>
+</li>
+</ul>
+<h2 id="设备控制器">设备控制器</h2>
+<h2 id="内存映射io">内存映射IO</h2>
+<p>优点：</p>
+<ul>
+<li>对于内存映射I/O，I/O设备驱动程序可以完全用C语言编写。如果不使用内存映射I/O，就要用到某些汇编代码。</li>
+<li>不需要特殊的保护机制来阻止用户进程执行I/O操作</li>
+<li>可以引用内存的每一条指令也可以引用控制寄存器。</li>
+</ul>
+<hr>
+<h1 id="2io软件">2.IO软件</h1>
+<h2 id="程序控制io">程序控制IO</h2>
+<p>CPU要不断地查询设备以了解它是否就绪准备接收另一个字符。这一行为经常称为轮询（polling）或忙等待（busy waiting）。</p>
+<p>十分简单但是有缺点，即直到全部I/O完成之前要占用CPU的全部时间。</p>
+<h2 id="中断驱动io">中断驱动IO</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498378648.png" alt="" loading="lazy"></figure>
+<p>中断驱动I/O的一个明显缺点是中断发生在每个字符上。中断要花费时间，所以这一方法将浪费一定数量的CPU时间。</p>
+<h2 id="中断io">中断IO</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498388360.png" alt="" loading="lazy"></figure>
+<ul>
+<li>用户进程向 CPU 发起 read 系统调用读取数据，由用户态切换为内核态，然后一直阻塞等待数据的返回。</li>
+<li>CPU 在接收到指令以后对磁盘发起 I/O 请求，将磁盘数据先放入磁盘控制器缓冲区。<br>
+数据准备完成以后，磁盘向 CPU 发起 I/O 中断。</li>
+<li>CPU 收到 I/O 中断以后将磁盘缓冲区中的数据拷贝到内核缓冲区，然后再从内核缓冲区拷贝到用户缓冲区。</li>
+<li>用户进程由内核态切换回用户态，解除阻塞状态，然后等待 CPU 的下一个执行时间钟。</li>
+</ul>
+<p><strong>2次上下文切换、2次拷贝</strong></p>
+<h2 id="使用dma的io">使用DMA的IO</h2>
+<p>DMA重大的成功是将中断的次数从打印每个字符一次减少到打印每个缓冲区一次。如果有许多字符并且中断十分缓慢，那么采用DMA可能是重要的改进。另一方面，DMA控制器通常比主CPU要慢很多。如果DMA控制器不能以全速驱动设备，或者CPU在等待DMA中断的同时没有其他事情要做，那么采用中断驱动I/O甚至采用程序控制I/O也许更好。</p>
+<h2 id="直接存储器存取-dma">直接存储器存取 DMA</h2>
+<p>Direct Memory Access，直接内存存取</p>
+<p>无论DMA控制器在物理上处于什么地方，它都能够独立于CPU而访问系统总线</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498401543.png" alt="" loading="lazy"></figure>
+<p>工作原理：</p>
+<ul>
+<li>没有DMA</li>
+</ul>
+<blockquote>
+<p>“我们首先看一下没有使用DMA时磁盘如何读。首先，控制器从磁盘驱动器串行地、一位一位地读一个块（一个或多个扇区），直到将整块信息放入控制器的内部缓冲区中。接着，它计算校验和，以保证没有读错误发生。然后控制器产生一个中断。当操作系统开始运行时，它重复地从控制器的缓冲区中一次一个字节或一个字地读取该块的信息，并将其存入内存中。”</p>
+</blockquote>
+<ul>
+<li>有DMA</li>
+</ul>
+<blockquote>
+<p>首先，CPU通过设置DMA控制器的寄存器对它进行编程，所以DMA控制器知道将什么数据传送到什么地方（图5-4中的第1步）。DMA控制器还要向磁盘控制器发出一个命令，通知它从磁盘读数据到其内部的缓冲区中，并且对校验和进行检验。如果磁盘控制器的缓冲区中的数据是有效的，那么DMA就可以开始了。</p>
+<p>DMA控制器通过在总线上发出一个读请求到磁盘控制器而发起DMA传送（第2步）。这一读请求看起来与任何其他读请求是一样的，并且磁盘控制器并不知道或者并不关心它是来自CPU还是来自DMA控制器。一般情况下，要写的内存地址在总线的地址线上，所以当磁盘控制器从其内部缓冲区中读取下一个字的时候，它知道将该字写到什么地方。写到内存是另一个标准总线周期（第3步）。当写操作完成时，磁盘控制器在总线上发出一个应答信号到DMA控制器（第4步）。于是，DMA控制器步增要使用的内存地址，并且步减字节计数。如果字节计数仍然大于0，则重复第2步到第4步，直到字节计数到达0。此时，DMA控制器将中断CPU以便让CPU知道传送现在已经完成了。当操作系统开始工作时，用不着将磁盘块复制到内存中，因为它已经在内存中了。</p>
+</blockquote>
+<blockquote>
+<p>普通中断方式是在数据缓冲寄存器满后，发中断请求，CPU进行中断处理<br>
+DMA方式则是以数据块为单位传输的,在所要求传送的数据块全部传送结束时要求CPU进行中断处理,大大减少了CPU进行中断处理的次数<br>
+总结:DMA方式不需CPU干预传送操作,仅仅是开始和结尾借用CPU一点时间,其余不占用CPU任何资源，中断方式是程序切换,每次操作需要保护和恢复现场</p>
+<p>中断控制方式虽然在某种程度上解决了上述问题，但由于中断次数多，因而CPU仍需要花较多的时间处理中断，而且能够并行操作的设备台数也受到中断处理时间的限制，中断次数增多导致数据丢失。</p>
+<p>DMA方式和通道方式较好地解决了上述问题。这两种方式采用了外设和内存直接交换数据的方式。只有在一段数据传送结束时，这两种方式才发出中断信号要求CPU做善后处理，从而大大减少了CPU的工作负担。中断控制方式虽然在某种程度上解决了上述问题，但由于中断次数多，因而CPU仍需要花较多的时间处理中断，而且能够并行操作的设备台数也受到中断处理时间的限制，中断次数增多导致数据丢失。DMA方式和通道方式较好地解决了上述问题。这两种方式采用了外设和内存直接交换数据的方式。只有在一段数据传送结束时，这两种方式才发出中断信号要求CPU做善后处理，从而大大减少了CPU的工作负担。</p>
+</blockquote>
+<p>参考文章</p>
+<ul>
+<li><a href="https://byte.baike.com/cwiki/DMA&amp;fr=toutiao?isPreloadWebView=1">DMA-字节百科</a></li>
+</ul>
+<blockquote>
+<p>DMA 传输将数据从一个地址空间复制到另外一个地址空间。当CPU 初始化这个传输动作，传输动作本身是由 DMA 控制器来实行和完成。典型的例子就是移动一个外部内存的区块到芯片内部更快的内存区。像是这样的操作并没有让处理器工作拖延，反而可以被重新排程去处理其他的工作。DMA 传输对于高效能 嵌入式系统算法和网络是很重要的。</p>
+<p>在实现DMA传输时，是由DMA控制器直接掌管总线，因此，存在着一个总线控制权转移问题。即DMA传输前，CPU要把总线控制权交给DMA控制器，而在结束DMA传输后，DMA控制器应立即把总线控制权再交回给CPU。一个完整的DMA传输过程必须经过DMA请求、DMA响应、DMA传输、DMA结束4个步骤。</p>
+<ul>
+<li>请求
+<ul>
+<li>CPU对DMA控制器初始化，并向I/O接口发出操作命令，I/O接口提出DMA请求。</li>
+</ul>
+</li>
+<li>响应
+<ul>
+<li>DMA控制器对DMA请求判别优先级及屏蔽，向总线裁决逻辑提出总线请求。当CPU执行完当前总线周期即可释放总线控制权。此时，总线裁决逻辑输出总线应答，表示DMA已经响应，通过DMA控制器通知I/O接口开始DMA传输。</li>
+</ul>
+</li>
+<li>传输
+<ul>
+<li>DMA控制器获得总线控制权后，CPU即刻挂起或只执行内部操作，由DMA控制器输出读写命令，直接控制RAM与I/O接口进行DMA传输。</li>
+<li>在DMA控制器的控制下，在存储器和外部设备之间直接进行数据传送，在传送过程中不需要中央处理器的参与。开始时需提供要传送的数据的起始位置和数据长度。</li>
+</ul>
+</li>
+<li>结束
+<ul>
+<li>当完成规定的成批数据传送后，DMA控制器即释放总线控制权，并向I/O接口发出结束信号。当I/O接口收到结束信号后，一方面停 止I/O设备的工作，另一方面向CPU提出中断请求，使CPU从不介入的状态解脱，并执行一段检查本次DMA传输操作正确性的代码。最后，带着本次操作结果及状态继续执行原来的程序。</li>
+</ul>
+</li>
+</ul>
+<p>由此可见，DMA传输方式无需CPU直接控制传输，也没有中断处理方式那样保留现场和恢复现场的过程，通过硬件为RAM与I/O设备开辟一条直接传送数据的通路，使CPU的效率大为提高。</p>
+<p>DMA控制器与CPU怎样分时使用内存呢?通常采用以下三种方法：(1)停止CPU访内存；(2)周期挪用；(3)DMA与CPU交替访问内存。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498415009.png" alt="" loading="lazy"></figure>
+<ul>
+<li>用户进程向 CPU 发起 read 系统调用读取数据，由用户态切换为内核态，然后一直阻塞等待数据的返回。</li>
+<li>CPU 在接收到指令以后对 DMA 磁盘控制器发起调度指令。</li>
+<li>DMA 磁盘控制器对磁盘发起 I/O 请求，将磁盘数据先放入磁盘控制器缓冲区，CPU 全程不参与此过程。</li>
+<li>数据读取完成后，DMA 磁盘控制器会接受到磁盘的通知，将数据从磁盘控制器缓冲区拷贝到内核缓冲区。</li>
+<li>DMA 磁盘控制器向 CPU 发出数据读完的信号，由 CPU 负责将数据从内核缓冲区拷贝到用户缓冲区。</li>
+<li>用户进程由内核态切换回用户态，解除阻塞状态，然后等待 CPU 的下一个执行时间钟。</li>
+</ul>
+<p><strong>2次上下文切换，2次拷贝</strong></p>
+<h2 id="零拷贝">零拷贝</h2>
+<ul>
+<li><a href="https://www.toutiao.com/i6802161744752935436/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1583802979&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_android&amp;req_id=202003100916180100260771961F64434A&amp;group_id=6802161744752935436">深入剖析神秘的“零拷贝”「转」</a></li>
+<li>强烈推荐这篇文章 <a href="https://juejin.im/post/5d84bd1f6fb9a06b2d780df7">深入剖析Linux IO原理和几种零拷贝机制的实现</a></li>
+</ul>
+<h3 id="传统io">传统IO</h3>
+<h4 id="1传统读写">1.传统读写</h4>
+<pre><code>read(file_fd, tmp_buf, len);
+write(socket_fd, tmp_buf, len);
+</code></pre>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498425858.png" alt="" loading="lazy"></figure>
+<p><strong>整个过程涉及 2 次 CPU 拷贝、2 次 DMA 拷贝总共 4 次拷贝，以及 4 次上下文切换</strong></p>
+<ul>
+<li>上下文切换：当用户程序向内核发起系统调用时，CPU 将用户进程从用户态切换到内核态；当系统调用返回时，CPU 将用户进程从内核态切换回用户态。</li>
+<li>CPU拷贝：由 CPU 直接处理数据的传送，数据拷贝时会一直占用 CPU 的资源。</li>
+<li>DMA拷贝：由 CPU 向DMA磁盘控制器下达指令，让 DMA 控制器来处理数据的传送，数据传送完毕再把信息反馈给 CPU，从而减轻了 CPU 资源的占有率。</li>
+</ul>
+<h4 id="2传统读">2.传统读</h4>
+<pre><code>read(file_fd, tmp_buf, len);
+</code></pre>
+<p><strong>2 次上下文切换，1 次 DMA 拷贝和 1 次 CPU 拷贝</strong></p>
+<ul>
+<li>用户进程通过 read() 函数向内核（kernel）发起系统调用，上下文从用户态（user space）切换为内核态（kernel space）。</li>
+<li>CPU利用DMA控制器将数据从主存或硬盘拷贝到内核空间（kernel space）的读缓冲区（read buffer）。</li>
+<li>CPU将读缓冲区（read buffer）中的数据拷贝到用户空间（user space）的用户缓冲区（user buffer）。</li>
+<li>上下文从内核态（kernel space）切换回用户态（user space），read 调用执行返回。</li>
+</ul>
+<h4 id="3传统写">3.传统写</h4>
+<pre><code>write(socket_fd, tmp_buf, len);
+</code></pre>
+<p><strong>2 次上下文切换，1 次 CPU 拷贝和 1 次 DMA 拷贝</strong></p>
+<ul>
+<li>户进程通过 write() 函数向内核（kernel）发起系统调用，上下文从用户态（user space）切换为内核态（kernel space）。</li>
+<li>CPU 将用户缓冲区（user buffer）中的数据拷贝到内核空间（kernel space）的网络缓冲区（socket buffer）。</li>
+<li>CPU 利用 DMA 控制器将数据从网络缓冲区（socket buffer）拷贝到网卡进行数据传输。</li>
+<li>上下文从内核态（kernel space）切换回用户态（user space），write 系统调用执行返回。</li>
+</ul>
+<h3 id="零拷贝-2">零拷贝</h3>
+<p>在 Linux 中零拷贝技术主要有 3 个实现思路：用户态直接 I/O、减少数据拷贝次数以及写时复制技术。</p>
+<ul>
+<li>用户态直接 I/O：应用程序可以直接访问硬件存储，操作系统内核只是辅助数据传输。这种方式依旧存在用户空间和内核空间的上下文切换，硬件上的数据直接拷贝至了用户空间，不经过内核空间。因此，直接 I/O 不存在内核空间缓冲区和用户空间缓冲区之间的数据拷贝。</li>
+<li>减少数据拷贝次数：在数据传输过程中，避免数据在用户空间缓冲区和系统内核空间缓冲区之间的CPU拷贝，以及数据在系统内核空间内的CPU拷贝，这也是当前主流零拷贝技术的实现思路。</li>
+<li>写时复制技术：写时复制指的是当多个进程共享同一块数据时，如果其中一个进程需要对这份数据进行修改，那么将其拷贝到自己的进程地址空间中，如果只是数据读取操作则不需要进行拷贝操作。</li>
+</ul>
+<h4 id="用户态直接-io">用户态直接 I/O</h4>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498439992.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>用户态直接 I/O 只能适用于不需要内核缓冲区处理的应用程序，这些应用程序通常在进程地址空间有自己的数据缓存机制，称为自缓存应用程序，如数据库管理系统就是一个代表。其次，这种零拷贝机制会直接操作磁盘 I/O，由于 CPU 和磁盘 I/O 之间的执行时间差距，会造成大量资源的浪费，解决方案是配合异步 I/O 使用。</p>
+</blockquote>
+<h4 id="mmap-write">mmap + write</h4>
+<p><strong>减少了 1 次 CPU 拷贝操作</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498449207.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498455475.png" alt="" loading="lazy"></p>
+<h4 id="sendfile">sendfile</h4>
+<p><strong>sendfile 系统调用在 Linux 内核版本 2.1 中被引入，目的是简化通过网络在两个通道之间进行的数据传输过程。sendfile 系统调用的引入，不仅减少了 CPU 拷贝的次数，还减少了上下文切换的次数</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498461791.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498466238.png" alt="" loading="lazy"></p>
+<h4 id="sendfile-dma-gather-copy">sendfile + DMA gather copy</h4>
+<p><strong>Linux 2.4 版本的内核对 sendfile 系统调用进行修改，为  DMA 拷贝引入了 gather 操作。它将内核空间（kernel space）的读缓冲区（read buffer）中对应的数据描述信息（内存地址、地址偏移量）记录到相应的网络缓冲区（ socket  buffer）中，由 DMA 根据内存地址、地址偏移量将数据批量地从读缓冲区（read buffer）拷贝到网卡设备中，这样就省去了内核空间中仅剩的 1 次 CPU 拷贝操作s</strong></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498477091.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498482857.png" alt="" loading="lazy"></p>
+<h4 id="splice">splice</h4>
+<p><strong>sendfile 只适用于将数据从文件拷贝到 socket 套接字上，同时需要硬件的支持，这也限定了它的使用范围。Linux 在 2.6.17 版本引入 splice 系统调用，不仅不需要硬件支持，还实现了两个文件描述符之间的数据零拷贝。</strong></p>
+<pre><code>splice(fd_in, off_in, fd_out, off_out, len, flags);
+</code></pre>
+<p><img src="https://sparkfengbo.github.io/post-images/1602498489058.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602498497440.png" alt="" loading="lazy"></p>
+<h4 id="写时复制">写时复制</h4>
+<blockquote>
+<p>在某些情况下，内核缓冲区可能被多个进程所共享，如果某个进程想要这个共享区进行 write 操作，由于 write 不提供任何的锁操作，那么就会对共享区中的数据造成破坏，写时复制的引入就是 Linux 用来保护数据的。<br>
+写时复制指的是当多个进程共享同一块数据时，如果其中一个进程需要对这份数据进行修改，那么就需要将其拷贝到自己的进程地址空间中。这样做并不影响其他进程对这块数据的操作，每个进程要修改的时候才会进行拷贝，所以叫写时拷贝。这种方法在某种程度上能够降低系统开销，如果某个进程永远不会对所访问的数据进行更改，那么也就永远不需要拷贝。</p>
+</blockquote>
+<h4 id="linux零拷贝对比">Linux零拷贝对比</h4>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602498504843.png" alt="" loading="lazy"></figure>
+<hr>
+<h1 id="3io软件层级">3.IO软件层级</h1>
+<h1 id="4盘">4.盘</h1>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1io%E7%A1%AC%E4%BB%B6">1.IO硬件</a>
+<ul>
+<li><a href="#%E5%88%86%E7%B1%BB">分类</a></li>
+<li><a href="#%E8%AE%BE%E5%A4%87%E6%8E%A7%E5%88%B6%E5%99%A8">设备控制器</a></li>
+<li><a href="#%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84io">内存映射IO</a></li>
+</ul>
+</li>
+<li><a href="#2io%E8%BD%AF%E4%BB%B6">2.IO软件</a>
+<ul>
+<li><a href="#%E7%A8%8B%E5%BA%8F%E6%8E%A7%E5%88%B6io">程序控制IO</a></li>
+<li><a href="#%E4%B8%AD%E6%96%AD%E9%A9%B1%E5%8A%A8io">中断驱动IO</a></li>
+<li><a href="#%E4%B8%AD%E6%96%ADio">中断IO</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8dma%E7%9A%84io">使用DMA的IO</a></li>
+<li><a href="#%E7%9B%B4%E6%8E%A5%E5%AD%98%E5%82%A8%E5%99%A8%E5%AD%98%E5%8F%96-dma">直接存储器存取 DMA</a></li>
+<li><a href="#%E9%9B%B6%E6%8B%B7%E8%B4%9D">零拷贝</a>
+<ul>
+<li><a href="#%E4%BC%A0%E7%BB%9Fio">传统IO</a>
+<ul>
+<li><a href="#1%E4%BC%A0%E7%BB%9F%E8%AF%BB%E5%86%99">1.传统读写</a></li>
+<li><a href="#2%E4%BC%A0%E7%BB%9F%E8%AF%BB">2.传统读</a></li>
+<li><a href="#3%E4%BC%A0%E7%BB%9F%E5%86%99">3.传统写</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9B%B6%E6%8B%B7%E8%B4%9D-2">零拷贝</a>
+<ul>
+<li><a href="#%E7%94%A8%E6%88%B7%E6%80%81%E7%9B%B4%E6%8E%A5-io">用户态直接 I/O</a></li>
+<li><a href="#mmap-write">mmap + write</a></li>
+<li><a href="#sendfile">sendfile</a></li>
+<li><a href="#sendfile-dma-gather-copy">sendfile + DMA gather copy</a></li>
+<li><a href="#splice">splice</a></li>
+<li><a href="#%E5%86%99%E6%97%B6%E5%A4%8D%E5%88%B6">写时复制</a></li>
+<li><a href="#linux%E9%9B%B6%E6%8B%B7%E8%B4%9D%E5%AF%B9%E6%AF%94">Linux零拷贝对比</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3io%E8%BD%AF%E4%BB%B6%E5%B1%82%E7%BA%A7">3.IO软件层级</a></li>
+<li><a href="#4%E7%9B%98">4.盘</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/czxt-4cun-chu-he-wen-jian/">
+              <h3 class="post-title">
+                4.存储和文件
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

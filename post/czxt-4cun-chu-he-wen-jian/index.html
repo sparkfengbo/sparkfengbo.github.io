@@ -1,0 +1,323 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4.存储和文件 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602498897275">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="4.存储和文件 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="1.文件
+文件命名
+文件结构
+文件类型
+
+
+普通文件
+
+普通文件一般分为ASCII文件和二进制文件。ASCII文件由多行正文组成。在某些系统中，每行用回车符结束，其他系统则用换行符结束。有些系统还同时采用回车符和换行符（如MS-DOS）。文..." />
+    <meta name="keywords" content="操作系统" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602498897275" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              4.存储和文件
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/IK7I4uoJQ/" class="post-tag">
+                  # 操作系统
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <h1 id="1文件">1.文件</h1>
+<h2 id="文件命名"><s>文件命名</s></h2>
+<h2 id="文件结构"><s>文件结构</s></h2>
+<h2 id="文件类型">文件类型</h2>
+<ul>
+<li>
+<p>普通文件</p>
+<ul>
+<li>普通文件一般分为ASCII文件和二进制文件。ASCII文件由多行正文组成。在某些系统中，每行用回车符结束，其他系统则用换行符结束。有些系统还同时采用回车符和换行符（如MS-DOS）。文件中各行的长度不一定相同。</li>
+<li>ASCII文件的最大优势是可以显示和打印，还可以用任何文本编辑器进行编辑。</li>
+<li>其他与ASCII文件不同的是二进制文件。打印出来的二进制文件是无法理解的、充满混乱字符的一张表。通常，二进制文件有一定的内部结构，使用该文件的程序才了解这种结构。</li>
+</ul>
+</li>
+<li>
+<p>目录</p>
+</li>
+<li>
+<p>字符特殊文件</p>
+<ul>
+<li>和输入/输出有关，用于串行I/O类设备，如终端、打印机、网络等。</li>
+</ul>
+</li>
+<li>
+<p>块特殊文件</p>
+<ul>
+<li>用于磁盘类设备。</li>
+</ul>
+</li>
+</ul>
+<h2 id="文件读取">文件读取</h2>
+<ul>
+<li><s>顺序存取</s></li>
+<li>随机存取</li>
+</ul>
+<h2 id="文件属性">文件属性</h2>
+<blockquote>
+<p>文件都有文件名和数据。另外，所有的操作系统还会保存其他与文件相关的信息，如文件创建的日期和时间、文件大小等。这些附加信息称为文件属性（attribute），有些人称之为元数据（metadata）。文件的属性在不同系统中差别很大。一些常用的属性在图4-4中列出，但还存在其他的属性。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498249545.png" alt="" loading="lazy"></figure>
+<h1 id="2目录">2.目录</h1>
+<h2 id="结构">结构</h2>
+<ul>
+<li>一级目录系统</li>
+<li>层次目录系统</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498258561.png" alt="" loading="lazy"></figure>
+<h2 id="路径名">路径名</h2>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498267327.png" alt="" loading="lazy"></figure>
+<h1 id="3文件系统的实现">3.文件系统的实现</h1>
+<h2 id="文件系统布局">文件系统布局</h2>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498275229.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>多数磁盘划分为一个或多个分区，每个分区中有一个独立的文件系统。磁盘的0号扇区称为主引导记录（Master Boot Record，MBR），用来引导计算机。在MBR的结尾是分区表。该表给出了每个分区的起始和结束地址。表中的一个分区被标记为活动分区。</p>
+</blockquote>
+<blockquote>
+<p>在计算机被引导时，BIOS读入并执行MBR。MBR做的第一件事是确定活动分区，读入它的第一个块，称为引导块（boot block），并执行之。引导块中的程序将装载该分区中的操作系统。为统一起见，每个分区都从一个启动块开始，即使它不含有一个可启动的操作系统。</p>
+</blockquote>
+<h2 id="文件的实现">文件的实现</h2>
+<ul>
+<li>连续分配
+<ul>
+<li>把每个文件作为一连串连续数据块存储在磁盘上</li>
+<li>实现简单，记录第一块的磁盘地址和文件的块数即可</li>
+<li>读操作更好</li>
+<li>缺点： 磁盘碎片</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498286294.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>链表分配</p>
+<ul>
+<li>没有磁盘碎片</li>
+</ul>
+<blockquote>
+<p>与连续分配方案不同，这一方法可以充分利用每个磁盘块。不会因为磁盘碎片（除了最后一块中的内部碎片）而浪费存储空间。同样，在目录项中，只需要存放第一块的磁盘地址，文件的其他块就可以从这个首块地址查找到。</p>
+</blockquote>
+<ul>
+<li>随机存取缓慢，需要链表查找</li>
+<li>指针占去了一些字节<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498300227.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>
+<p>在内存中采用表的链表分配</p>
+<ul>
+<li><strong>如果取出每个磁盘块的指针字，把它放在内存的一个表中，就可以解决上述链表的两个不足。</strong></li>
+<li>内存中的这样一个表格称为<strong>文件分配表（File Allocation Table，FAT）</strong>。</li>
+<li>保留所有磁盘块的链接表的表大小正比于磁盘自身的大小，磁盘越大，这个表可能很大。</li>
+</ul>
+</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498310160.png" alt="" loading="lazy"></figure>
+<ul>
+<li>i节点
+<ul>
+<li>给每个文件赋予一个称为i节点（index-node）的数据结构，其中列出了文件属性和文件块的磁盘地址。</li>
+<li><strong>只有在对应文件打开时，其i节点才在内存中</strong></li>
+<li>i节点机制需要在内存中有一个数组，其大小正比于可能要同时打开的最大文件个数。它与磁盘无关</li>
+<li>相对于在内存中采用表的方式而言，这种机制具有很大的优势，即只有在对应文件打开时，其i节点才在内存中<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498320660.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+</ul>
+<h2 id="目录的实现">目录的实现</h2>
+<p>所有目录项大小一样的实现<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498329477.png" alt="" loading="lazy"></p>
+<p>非-所有目录项大小一样的实现</p>
+<p>“有三个文件，project-budget、personnel和foo”<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498337576.png" alt="" loading="lazy"></p>
+<h2 id="实现">实现</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/NTFS">NTFS</a></li>
+<li>FAT</li>
+<li>EXT2
+<ul>
+<li>https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/59.html</li>
+</ul>
+</li>
+<li>HFS （苹果）</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E6%96%87%E4%BB%B6">1.文件</a>
+<ul>
+<li><a href="#%E6%96%87%E4%BB%B6%E5%91%BD%E5%90%8D"><s>文件命名</s></a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><s>文件结构</s></a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E7%B1%BB%E5%9E%8B">文件类型</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E8%AF%BB%E5%8F%96">文件读取</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E5%B1%9E%E6%80%A7">文件属性</a></li>
+</ul>
+</li>
+<li><a href="#2%E7%9B%AE%E5%BD%95">2.目录</a>
+<ul>
+<li><a href="#%E7%BB%93%E6%9E%84">结构</a></li>
+<li><a href="#%E8%B7%AF%E5%BE%84%E5%90%8D">路径名</a></li>
+</ul>
+</li>
+<li><a href="#3%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%AE%9E%E7%8E%B0">3.文件系统的实现</a>
+<ul>
+<li><a href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%B8%83%E5%B1%80">文件系统布局</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E7%9A%84%E5%AE%9E%E7%8E%B0">文件的实现</a></li>
+<li><a href="#%E7%9B%AE%E5%BD%95%E7%9A%84%E5%AE%9E%E7%8E%B0">目录的实现</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0">实现</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/czxt-3nei-cun/">
+              <h3 class="post-title">
+                3.内存
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
