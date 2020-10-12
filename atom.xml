@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
-    <title>Gridea</title>
-    <updated>2020-10-12T08:12:31.220Z</updated>
+    <title>FengBo`s Blog</title>
+    <updated>2020-10-12T08:31:00.687Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
     <subtitle>温故而知新</subtitle>
     <logo>https://sparkfengbo.github.io/images/avatar.png</logo>
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
-    <rights>All rights reserved 2020, Gridea</rights>
+    <rights>All rights reserved 2020, FengBo`s Blog</rights>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
         <id>https://sparkfengbo.github.io/post/hello-gridea/</id>
