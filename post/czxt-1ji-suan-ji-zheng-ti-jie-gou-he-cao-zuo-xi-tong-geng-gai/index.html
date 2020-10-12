@@ -1,0 +1,366 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1.计算机整体结构和操作系统梗概 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602498168805">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="1.计算机整体结构和操作系统梗概 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+1.计算机结构
+计算机系统大致分为4个组成部分，计算机硬件、操作系统、系统程序和应用程序、用户。
+
+CPU
+每个CPU都有其一套可执行的专门指令集。在时间多路复用（time multiplexing）CPU中，操作系统经常会中止..." />
+    <meta name="keywords" content="操作系统" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602498168805" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              1.计算机整体结构和操作系统梗概
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                10 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/IK7I4uoJQ/" class="post-tag">
+                  # 操作系统
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="1计算机结构">1.计算机结构</h1>
+<p>计算机系统大致分为4个组成部分，计算机硬件、操作系统、系统程序和应用程序、用户。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497701020.png" alt="" loading="lazy"></figure>
+<h2 id="cpu">CPU</h2>
+<p>每个CPU都有其一套可执行的专门指令集。在时间多路复用（time multiplexing）CPU中，操作系统经常会中止正在运行的某个程序并启动（或再启动）另一个程序。每次停止一个运行着的程序时，操作系统必须保存所有的寄存器，这样在稍后该程序被再次运行时，可以把这些寄存器重新装入。</p>
+<h3 id="cpu包含寄存器">CPU包含寄存器</h3>
+<p>1.用来保存关键变量和临时数据的寄存器</p>
+<p>由于用来访问内存以得到指令或数据的时间要比执行指令花费的时间长得多，因此，所有的CPU内都有一些用来保存关键变量和临时数据的寄存器。(这样，通常在指令集中提供一些指令，用以将一个字从内存调入寄存器，以及将一个字从寄存器存入内存。其他的指令可以把来自寄存器、内存的操作数组合，或者用两者产生一个结果，诸如将两个字相加并把结果存在寄存器或内存中。)</p>
+<p>2.程序计数器</p>
+<p>除了用来保存变量和临时结果的通用寄存器之外，多数计算机还有一些对程序员可见的专门寄存器。其中之一是程序计数器，它保存了将要取出的下一条指令的内存地址。在指令取出之后，程序计数器就被更新以便指向后继的指令。</p>
+<p>3.堆栈指针</p>
+<p>另一个寄存器是堆栈指针，它指向内存中当前栈的顶端。该栈含有已经进入但是还没有退出的每个过程的一个框架。在一个过程的堆栈框架中保存了有关的输入参数、局部变量以及那些没有保存在寄存器中的临时变量。</p>
+<p>4.程序状态字（Program Status Word，PSW）寄存器</p>
+<p>这个寄存器包含了条件码位（由比较指令设置）、CPU优先级、模式（用户态或内核态），以及各种其他控制位。用户程序通常读入整个PSW，但是，只对其中的少量字段写入。在系统调用和I/O中，PSW的作用很重要。</p>
+<h3 id="cpu的内核态和用户态">CPU的内核态和用户态</h3>
+<p>多数CPU都有两种模式，即前面已经提及的内核态和用户态。通常，在PSW中有一个二进制位控制这两种模式。当在内核态运行时，CPU可以执行指令集中的每一条指令，并且使用硬件的每种功能。操作系统在内核态下运行，从而可以访问整个硬件。</p>
+<p>相反，用户程序在用户态下运行，仅允许执行整个指令集的一个子集和访问所有功能的一个子集。一般而言，在用户态中有关I/O和内存保护的所有指令是禁止的。</p>
+<p>为了从操作系统中获得服务，用户程序必须使用系统调用（system call）系统调用陷入内核并调用操作系统。</p>
+<blockquote>
+<p>我理解CPU这里是很复杂的，所以了解概念即可，类似，带有共享L2缓存的4核芯片；b)带有分离L2缓存的4核芯片这样的内容没有记录。</p>
+</blockquote>
+<h2 id="存储器">存储器</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602497711835.png" alt="" loading="lazy"></figure>
+<p>顶层的存储器速度较高，容量较小，与底层的存储器相比每位成本较高，其差别往往是十亿数量级。</p>
+<h3 id="寄存器">寄存器</h3>
+<p>存储器系统的顶层是CPU中的寄存器。它们用与CPU相同的材料制成，所以和CPU一样快。显然，访问它们是没有时延的。其典型的存储容量是，在32位CPU中为32×32位，而在64位CPU中为64×64位。在这两种情形下，其存储容量都小于1 KB。程序必须在软件中自行管理这些寄存器（即决定如何使用它们）。</p>
+<h3 id="高速缓存">高速缓存</h3>
+<p>它多数由硬件控制。主存被分割成高速缓存行（cache line），其典型大小为64个字节，地址0至63对应高速缓存行0，地址64至127对应高速缓存行1，以此类推。最常用的高速缓存行放置在CPU内部或者非常接近CPU的高速缓存中。当某个程序需要读一个存储字时，高速缓存硬件检查所需要的高速缓存行是否在高速缓存中。如果是，称为高速缓存命中，缓存满足了请求，就不需要通过总线把访问请求送往主存。高速缓存命中通常需要两个<a href="https://baike.baidu.com/item/%E6%97%B6%E9%92%9F%E5%91%A8%E6%9C%9F/1545064?fr=aladdin">时钟周期</a>。高速缓存未命中就必须访问内存，这要付出大量的时间代价。由于高速缓存的价格昂贵，所以其大小有限。有些机器具有两级甚至三级高速缓存，每一级高速缓存比前一级慢且容量更大。</p>
+<p>现代CPU中设计了两个缓存。第一级或称为<strong>L1缓存</strong>总是在CPU中，通常用来将已解码的指令调入CPU的执行引擎。对于那些频繁使用的数据字，多数芯片安排有第二个L1缓存。典型的L1缓存大小为16KB。另外，往往还设计有二级缓存，称为<strong>L2缓存</strong>，用来存放近来所使用过若干兆字节的内存字。L1和L2缓存之间的差别在于时序。对L1缓存的访问，不存在任何延时；而对L2缓存的访问，则会延时1或2个时钟周期。</p>
+<h3 id="主存-ram">主存  RAM</h3>
+<p>主存。这是存储器系统的主力。主存通常称为随机访问存储器（Random Access Memory，RAM）</p>
+<p>除了主存之外，许多计算机已经在使用少量的非易失性随机访问存储器。它们与RAM不同，在电源切断之后，非易失性随机访问存储器并不丢失其内容。只读存储器（Read Only Memory，ROM）在工厂中就被编程完毕，然后再也不能被修改。ROM速度快且便宜。在有些计算机中，用于启动计算机的引导加载模块就存放在ROM中。另外，一些I/O卡也采用ROM处理底层设备控制。</p>
+<h2 id="磁盘">磁盘</h2>
+<h2 id="io设备">IO设备</h2>
+<p>可参考<a href="https://www.toutiao.com/i6802161744752935436/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1583802979&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_android&amp;req_id=202003100916180100260771961F64434A&amp;group_id=6802161744752935436">深入剖析神秘的“零拷贝”「转」</a><br>
+后续第5章节DMA会总结</p>
+<p>实现输入输出三种方式</p>
+<ul>
+<li>
+<p>1.忙等待 需要占据CPU</p>
+</li>
+<li>
+<p>2.<a href="http://www.kerneltravel.net/journal/viii/01.htm">中断</a></p>
+<p>中断一般有两个属性，一个是中断号，一个是中断处理程序。不同的中断有不同的中断号，每个中断号都对应了一个中断处理程序。在内核中有一个叫中断向量表的数组来映射这个关系。当中断到来时，cpu会暂停正在执行的代码，根据中断号去中断向量表找出对应的中断处理程序并调用。中断处理程序执行完成后，会继续执行之前的代码。</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602497725969.gif" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602497768966.png" alt="" loading="lazy"></figure>
+<ul>
+<li>3.DMA</li>
+</ul>
+<h2 id="总线">总线</h2>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602497762716.png" alt="" loading="lazy"></figure>
+<p>https://zh.wikipedia.org/wiki/%E6%80%BB%E7%BA%BF</p>
+<p>PC上一般有五种总线：</p>
+<ul>
+<li>
+<p>数据总线（Data Bus）</p>
+<p>在CPU与RAM之间来回传送需要处理或是需要储存的数据。</p>
+</li>
+<li>
+<p>地址总线（Address Bus）</p>
+<p>用来指定在RAM（Random Access Memory）之中储存的数据的地址。</p>
+</li>
+<li>
+<p>控制总线（Control Bus）</p>
+<p>将微处理器控制单元（Control Unit）的信号，传送到周边设备，一般常见的为USB Bus和1394 Bus。</p>
+</li>
+<li>
+<p>扩展总线（Expansion Bus）</p>
+<p>可连接扩展槽和电脑。</p>
+</li>
+<li>
+<p>局部总线（Local Bus）</p>
+<p>取代更高速数据传输的扩展总线。</p>
+</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li>PCL</li>
+<li>ISA</li>
+<li>SATA</li>
+<li>...</li>
+</ul>
+<h1 id="2操作系统">2.操作系统</h1>
+<ul>
+<li>进程管理</li>
+<li>内存管理</li>
+<li>存储管理</li>
+<li>...</li>
+</ul>
+<p>功能：</p>
+<ul>
+<li>用户界面</li>
+<li>程序执行</li>
+<li>IO</li>
+<li>文件系统操作</li>
+<li>通信</li>
+<li>资源分配</li>
+<li>错误检测</li>
+<li>统计和安全</li>
+</ul>
+<p>分类：</p>
+<ul>
+<li>单用户操作系统</li>
+</ul>
+<blockquote>
+<p>单用户操作系统一次只能支持一个用户程序的运行。单用户操作系统向用户提供联机交互式的工作环境，比如MS-DOS就是一个经典的单用户操作系统。</p>
+</blockquote>
+<ul>
+<li>批处理操作系统</li>
+</ul>
+<blockquote>
+<p>可对用户作业成批处理，期间勿需用户干预，分为单道批处理系统和多道批处理系统。</p>
+</blockquote>
+<ul>
+<li>分时操作系统</li>
+</ul>
+<blockquote>
+<p>利用分时技术的一种联机的多用户交互式操作系统，每个用户可以通过自己的终端向系统发出各种操作控制命令，完成作业的运行。分时是指把处理机的运行时间分成很短的时间片，按时间片轮流把处理机分配给各联机作业使用。</p>
+</blockquote>
+<ul>
+<li>实时操作系统</li>
+</ul>
+<blockquote>
+<p>一个能够在指定或者确定的时间内完成系统功能以及对外部或内部事件在同步或异步时间内做出响应的系统,实时意思就是对响应时间有严格要求,要以足够快的速度进行处理.分为硬实时和软实时两种。</p>
+</blockquote>
+<ul>
+<li>通用操作系统</li>
+</ul>
+<blockquote>
+<p>同时兼有多道批处理、分时、实时处理的功能，或者其中两种以上功能的操作系统。</p>
+</blockquote>
+<ul>
+<li>网络操作系统</li>
+</ul>
+<blockquote>
+<p>一种在通常操作系统功能的基础上提供网络通信和网络服务功能的操作系统。</p>
+</blockquote>
+<ul>
+<li>分布式操作系统</li>
+<li>嵌入式操作系统</li>
+</ul>
+<h1 id="3系统调用">3.系统调用</h1>
+<p>类型：</p>
+<ul>
+<li>进程控制</li>
+<li>文件管理</li>
+<li>设备管理</li>
+<li>信息维护</li>
+<li>通信</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602497779683.png" alt="" loading="lazy"></figure>
+<h1 id="4其他基本概念">4.其他基本概念</h1>
+<h2 id="进程">进程</h2>
+<p>进程本质上是正在执行的一个程序。与每个进程相关的是进程的地址空间（address space），这是从某个最小值的存储位置（通常是零）到某个最大值存储位置的列表。在这个地址空间中，进程可以进行读写。该地址空间中存放有可执行程序、程序的数据以及程序的堆栈。与每个进程相关的还有资源集，通常包括寄存器（含有程序计数器和堆栈指针）、打开文件的清单、突出的报警、有关进程清单，以及运行该程序所需要的所有其他信息。进程基本上是容纳运行一个程序所需要所有信息的容器。</p>
+<h2 id="线程">线程</h2>
+<h2 id="地址空间">地址空间</h2>
+<p>通常，每个进程有一些可以使用的地址集合，典型值从0开始直到某个最大值。在最简单的情形下，一个进程可拥有的最大地址空间小于主存。</p>
+<p>虚拟内存<br>
+操作系统可以把部分地址空间装入主存，部分留在磁盘上。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BB%93%E6%9E%84">1.计算机结构</a>
+<ul>
+<li><a href="#cpu">CPU</a>
+<ul>
+<li><a href="#cpu%E5%8C%85%E5%90%AB%E5%AF%84%E5%AD%98%E5%99%A8">CPU包含寄存器</a></li>
+<li><a href="#cpu%E7%9A%84%E5%86%85%E6%A0%B8%E6%80%81%E5%92%8C%E7%94%A8%E6%88%B7%E6%80%81">CPU的内核态和用户态</a></li>
+</ul>
+</li>
+<li><a href="#%E5%AD%98%E5%82%A8%E5%99%A8">存储器</a>
+<ul>
+<li><a href="#%E5%AF%84%E5%AD%98%E5%99%A8">寄存器</a></li>
+<li><a href="#%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98">高速缓存</a></li>
+<li><a href="#%E4%B8%BB%E5%AD%98-ram">主存  RAM</a></li>
+</ul>
+</li>
+<li><a href="#%E7%A3%81%E7%9B%98">磁盘</a></li>
+<li><a href="#io%E8%AE%BE%E5%A4%87">IO设备</a></li>
+<li><a href="#%E6%80%BB%E7%BA%BF">总线</a></li>
+</ul>
+</li>
+<li><a href="#2%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F">2.操作系统</a></li>
+<li><a href="#3%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8">3.系统调用</a></li>
+<li><a href="#4%E5%85%B6%E4%BB%96%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5">4.其他基本概念</a>
+<ul>
+<li><a href="#%E8%BF%9B%E7%A8%8B">进程</a></li>
+<li><a href="#%E7%BA%BF%E7%A8%8B">线程</a></li>
+<li><a href="#%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4">地址空间</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/czxt-0da-gang/">
+              <h3 class="post-title">
+                0.大纲
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

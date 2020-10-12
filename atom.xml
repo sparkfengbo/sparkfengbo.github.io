@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-12T10:04:25.989Z</updated>
+    <updated>2020-10-12T10:23:29.612Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -10,6 +10,759 @@
     <logo>https://sparkfengbo.github.io/images/avatar.png</logo>
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, FengBo`s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[3.内存]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-3nei-cun/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-3nei-cun/">
+        </link>
+        <updated>2020-10-12T10:20:49.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="1地址空间">1.地址空间</h1>
+<p>如果将物理地址空间暴露给进程会有如下问题：</p>
+<ul>
+<li>如果用户程序可以寻址内存的每个字节，它们就可以很容易地（故意地或偶然地）破坏操作系统，从而使系统慢慢地停止运行</li>
+<li>想要同时（如果只有一个CPU就轮流执行）运行多个程序是很困难的</li>
+</ul>
+<blockquote>
+<ul>
+<li>地址空间不隔离</li>
+<li>内存使用效率低</li>
+<li>程序运行的地址不确定</li>
+</ul>
+</blockquote>
+<p>地址空间是一个进程可用于寻址内存的一套地址集合。每个进程都有一个自己的地址空间，并且这个地址空间独立于其他进程的地址空间（除了在一些特殊情况下进程需要共享它们的地址空间外）。</p>
+<p><strong>一种简单的解决方案：</strong></p>
+<p>基址寄存器和界限寄存器</p>
+<h1 id="2空闲内存的管理方法">2.空闲内存的管理方法</h1>
+<h2 id="使用位图进行管理">使用位图进行管理</h2>
+<p>使用位图方法时，内存可能被划分成小到几个字或大到几千字节的分配单元。每个分配单元对应于位图中的一位，0表示空闲，1表示占用 。</p>
+<p>分配单元的大小是一个重要的设计因素。分配单元越小，位图越大。搜索位图也可能比较耗时。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498066200.png" alt="" loading="lazy"></p>
+<h2 id="使用链表进行管理">使用链表进行管理</h2>
+<p>维护一个记录已分配内存段和空闲内存段的链表。其中链表中的一个结点或者包含一个进程，或者是两个进程间的一个空的空闲区。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498066200.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498087712.png" alt="" loading="lazy"></figure>
+<ul>
+<li>首次适配算法
+<ul>
+<li>存储管理器沿着段链表进行搜索，直到找到一个足够大的空闲区，除非空闲区大小和要分配的空间大小正好一样，否则将该空闲区分为两部分，一部分供进程使用，另一部分形成新的空闲区。首次适配算法是一种速度很快的算法，因为它尽可能少地搜索链表结点。</li>
+</ul>
+</li>
+<li>最佳适配算法
+<ul>
+<li>最佳适配算法搜索整个链表（从开始到结束），找出能够容纳进程的最小的空闲区。</li>
+</ul>
+</li>
+<li>最差适配算法
+<ul>
+<li>即总是分配最大的可用空闲区，使新的空闲区比较大从而可以继续使用</li>
+</ul>
+</li>
+<li>快速适配算法
+<ul>
+<li>它为那些常用大小的空闲区维护单独的链表。例如，有一个n项的表，该表的第一项是指向大小为4KB的空闲区链表表头的指针，第二项是指向大小为8KB的空闲区链表表头的指针，第三项是指向大小为12KB的空闲区链表表头的指针，以此类推。像21KB这样的空闲区既可以放在20KB的链表中，也可以放在一个专门存放大小比较特别的空闲区的链表中。</li>
+</ul>
+</li>
+</ul>
+<h1 id="3处理内存超载的方法">3.处理内存超载的方法</h1>
+<p>有两种处理内存超载的通用方法。最简单的策略是<strong>交换（swapping）技术</strong>，即把一个进程完整调入内存，使该进程运行一段时间，然后把它存回磁盘。空闲进程主要存储在磁盘上，所以当它们不运行时就不会占用内存（尽管它们的一些进程会周期性地被唤醒以完成相关工作，然后就又进入睡眠状态）。另一种策略是<strong>虚拟内存（virtual memory）</strong></p>
+<h1 id="4虚拟内存">4.虚拟内存</h1>
+<p>虚拟内存的基本思想是：每个程序拥有自己的地址空间，这个空间被分割成多个块，每一块称作一页或页面（page）。每一页有连续的地址范围。这些页被映射到物理内存，但并不是所有的页都必须在内存中才能运行程序。当程序引用到一部分在物理内存中的地址空间时，由硬件立刻执行必要的映射。当程序引用到一部分不在物理内存中的地址空间时，由操作系统负责将缺失的部分装入物理内存并重新执行失败的指令。</p>
+<p>从某个角度来讲，虚拟内存是对基址寄存器和界限寄存器的一种综合。</p>
+<h2 id="41-分页">4.1 分页</h2>
+<h3 id="mmu-内存管理单元memory-management-unitmmu">MMU - 内存管理单元（Memory Management Unit，MMU）</h3>
+<blockquote>
+<p>在任何一台计算机上，程序引用了一组内存地址。当程序执行指令</p>
+<p>MOV REG,1000</p>
+<p>时，它把地址为1000的内存单元的内容复制到REG中（或者相反，这取决于计算机的型号）。地址可以通过索引、基址寄存器、段寄存器或其他方式产生。</p>
+<p><strong>由程序产生的这些地址称为虚拟地址（virtual address），它们构成了一个虚拟地址空间（virtual address space）。在没有虚拟内存的计算机上，系统直接将虚拟地址送到内存总线上，读写操作使用具有同样地址的物理内存字；而在使用虚拟内存的情况下，虚拟地址不是被直接送到内存总线上，而是被送到内存管理单元（Memory Management Unit，MMU），MMU把虚拟地址映射为物理内存地址</strong></p>
+</blockquote>
+<p><strong>缺页中断</strong></p>
+<p>MMU注意到该页面没有被映射（在图中用叉号表示），于是使CPU陷入到操作系统，这个陷阱称为缺页中断（page fault）。操作系统找到一个很少使用的页框且把它的内容写入磁盘（如果它不在磁盘上）。随后把需要访问的页面读到刚才回收的页框中，修改映射关系，然后重新启动引起陷阱的指令。</p>
+<h3 id="页面和页框">页面和页框</h3>
+<p>虚拟地址空间按照固定大小划分成称为页面（page）的若干单元。在物理内存中对应的单元称为页框（page frame）。页面和页框的大小通常是一样的。</p>
+<h3 id="工作流程">工作流程</h3>
+<p>这个例子中，有一台可以产生16位地址的计算机，地址范围从0到64K，且这些地址是虚拟地址。然而，这台计算机只有32KB的物理内存，因此，虽然可以编写64KB的程序，但它们却不能被完全调入内存运行。在磁盘上必须有一个可以大到64KB的程序核心映像的完整副本，以保证程序片段在需要时能被调入内存。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498101162.png" alt="" loading="lazy"></figure>
+<h2 id="42-页表">4.2 页表</h2>
+<blockquote>
+<p>虚拟地址被分成虚拟页号（高位部分）和偏移量（低位部分）两部分。</p>
+</blockquote>
+<p>虚拟地址8196（二进制是0010000000000100）用图3-9所示的MMU映射机制进行映射，输入的16位虚拟地址被分为4位的页号和12位的偏移量。4位的页可以表示16个页面，12位的偏移可以为一页内的全部4096个字节编址。</p>
+<p>可用页号作为页表（page table）的索引，以得出对应于该虚拟页面的页框号。如果“在/不在”位是0，则将引起一个操作系统陷阱。如果该位是1，则将在页表中查到的页框号复制到输出寄存器的高3位中，再加上输入虚拟地址中的低12位偏移量。如此就构成了15位的物理地址。输出寄存器的内容随即被作为物理地址送到内存总线。</p>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498109529.png" alt="" loading="lazy"></figure>
+<p><strong>页表项结构</strong></p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498116580.png" alt="" loading="lazy"></figure>
+<p><strong>大内存分页</strong></p>
+<ul>
+<li>多级页表
+<ul>
+<li>引入多级页表的原因是避免把全部页表一直保存在内存中。特别是那些从不需要的页表就不应该保留。</li>
+</ul>
+</li>
+<li>倒排页面
+<ul>
+<li>在实际内存中每一个页框有一个表项，而不是每一个虚拟页面有一个表项</li>
+</ul>
+</li>
+</ul>
+<h2 id="43-加速分页-tlbtranslation-lookaside-buffer">4.3 加速分页 - TLB（translation lookaside buffer）</h2>
+<p><strong>问题</strong></p>
+<ul>
+<li>1)虚拟地址到物理地址的映射必须非常快。</li>
+<li>2)如果虚拟地址空间很大，页表也会很大。</li>
+</ul>
+<blockquote>
+<p>最简单的设计（至少从概念上）是使用由一组“快速硬件寄存器”组成的单一页表，每一个表项对应一个虚页，虚页号作为索引，如图3-10所示。当启动一个进程时，操作系统把保存在内存中的进程页表的副本载入到寄存器中。在进程运行过程中，不必再为页表而访问内存。这个方法的优势是简单并且在映射过程中不需要访问内存。而缺点是在页表很大时，代价高昂。而且每一次上下文切换都必须装载整个页表，这样会降低性能。<br>
+另一种极端方法是，整个页表都在内存中。那时所需的硬件仅仅是一个指向页表起始位置的寄存器。这样的设计使得在上下文切换时，进行“虚拟地址到物理地址”的映射只需重新装入一个寄存器。当然，这种做法的缺陷是在执行每条指令时，都需要一次或多次内存访问，以完成页表项的读入，速度非常慢。</p>
+</blockquote>
+<p><strong>转换检测缓冲区</strong></p>
+<blockquote>
+<p><strong>这种解决方案的建立基于这样一种现象：大多数程序总是对少量的页面进行多次的访问，而不是相反的。因此，只有很少的页表项会被反复读取，而其他的页表项很少被访问。</strong></p>
+<p>上面提到的解决方案是为计算机设置一个小型的硬件设备，将虚拟地址直接映射到物理地址，而不必再访问页表。这种设备称为转换检测缓冲区 <strong>（Translation Lookaside Buffer，TLB）</strong>，有时又称为相联存储器（associate memory）<br>
+它通常在MMU中，包含少量的表项，在此例中为8个，在实际中很少会超过64个。每个表项记录了一个页面的相关信息，包括虚拟页号、页面的修改位、保护码（读/写/执行权限）和该页所对应的物理页框。除了虚拟页号（不是必须放在页表中的），这些域与页表中的域是一一对应的。另外还有一位用来记录这个表项是否有效（即是否在使用）。</p>
+</blockquote>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498127313.png" alt="" loading="lazy"></figure>
+<h1 id="5页面置换算法">5.页面置换算法</h1>
+<ul>
+<li>
+<p>最优页面置换算法</p>
+<ul>
+<li>无法实现，需要提前知道页面什么时候被访问，将最不可能被访问的页面置换出去</li>
+</ul>
+</li>
+<li>
+<p>最近未使用页面置换算法</p>
+<ul>
+<li>NRU（Not Recently Used）</li>
+</ul>
+</li>
+<li>
+<p>先进先出页面置换算法</p>
+<ul>
+<li>FIFO</li>
+<li>简单，FIFO算法可能会把经常使用的页面置换出去”</li>
+</ul>
+</li>
+<li>
+<p>第二次机会页面置换算法</p>
+<ul>
+<li>FIFO的改进算法</li>
+<li>检查最老页面的R位。如果R位是0，那么这个页面既老又没有被使用，可以立刻置换掉；如果是1，就将R位清0，并把该页面放到链表的尾端，修改它的装入时间使它就像刚装入的一样，然后继续搜索。</li>
+<li>一个比较合理的算法，但它经常要在链表中移动页面，既降低了效率又不是很有必要。</li>
+</ul>
+</li>
+<li>
+<p>时钟页面置换算法<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498138629.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>最近最少使用算法</p>
+<ul>
+<li>LRU<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498149098.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+</ul>
+<h1 id="6分段">6.分段</h1>
+<p>段表，段基地址，段界限<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498156978.png" alt="" loading="lazy"></p>
+<p><strong>为什么不用分段？</strong></p>
+<p>因为分段粒度太大，以程序的单位，内存不足都是换入换出整个程序，有大量的磁盘访问操作，效率比分页低，实际上分页是从分段发展而来。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[2.进程]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-2jin-cheng/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-2jin-cheng/">
+        </link>
+        <updated>2020-10-12T10:16:47.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="1进程">1.进程</h1>
+<h2 id="状态">状态</h2>
+<ul>
+<li>1)运行态（该时刻进程实际占用CPU）。</li>
+<li>2)就绪态（可运行，但因为其他进程正在运行而暂时停止）。</li>
+<li>3)阻塞态（除非某种外部事件发生，否则进程不能运行）。</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497825302.png" alt="" loading="lazy"></figure>
+<p>转换2和3是由进程调度程序引起的，进程调度程序是操作系统的一部分，进程甚至感觉不到调度程序的存在。</p>
+<h2 id="pcb">PCB</h2>
+<p>每个进程在操作系统内用进程控制块（PCB）表示。</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602497835899.png" alt="" loading="lazy"></figure>
+<ul>
+<li>进程状态 新建、就绪、停止、运行、等待</li>
+<li>程序计数器</li>
+<li>CPU寄存器</li>
+<li>CPU调度信息
+<ul>
+<li>进程优先级、调度队列指针、调度参数</li>
+</ul>
+</li>
+<li>内存管理信息
+<ul>
+<li>基址、界限寄存器的值、页表、段表</li>
+</ul>
+</li>
+<li>I/O状态信息
+<ul>
+<li>IO设备列表、打开的文件列表等</li>
+</ul>
+</li>
+</ul>
+<h1 id="2线程">2.线程</h1>
+<blockquote>
+<p><strong>进程和线程的区别?</strong></p>
+<p>进程是资源分配的最小单位，线程是程序执行的最小单位。</p>
+<p>进程有自己的独立地址空间。线程是共享进程中的数据的，使用相同的地址空间，因此CPU切换一个线程的花费远比进程要小很多，同时创建一个线程的开销也比进程要小很多。</p>
+<p>线程之间的通信更方便，同一进程下的线程共享全局变量、静态变量等数据，而进程之间的通信需要以通信的方式（IPC)进行。不过如何处理好同步与互斥是编写多线程程序的难点。<br>
+但是多进程程序更健壮，多线程程序只要有一个线程死掉，整个进程也死掉了，而一个进程死掉并不会对另外一个进程造成影响，因为进程有自己独立的地址空间。</p>
+</blockquote>
+<h2 id="线程访问权限">线程访问权限</h2>
+<p>私有的存储空间：</p>
+<ul>
+<li>栈</li>
+<li>线程局部存储（Thread Local Storage）</li>
+<li>寄存器</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602497852100.png" alt="" loading="lazy"></figure>
+<h2 id="并发与并行">并发与并行</h2>
+<blockquote>
+<p>并发的关键是你有处理多个任务的能力，不一定要同时。<br>
+并行的关键是你有同时处理多个任务的能力。</p>
+<p>所以我认为它们最关键的点就是：是否是『同时』。</p>
+</blockquote>
+<h2 id="实现">实现</h2>
+<h3 id="在用户空间中">在用户空间中</h3>
+<ul>
+<li>优点：
+<ul>
+<li>用户级线程包可以在不支持线程的操作系统上实现</li>
+<li>它允许每个进程有自己定制的调度算法</li>
+</ul>
+</li>
+<li>缺点：
+<ul>
+<li>如果一个线程开始运行，那么在该进程中的其他线程就不能运行，除非第一个线程自动放弃CPU。在一个单独的进程内部，没有时钟中断，所以不可能用轮转调度（轮流）的方式调度进程</li>
+<li>阻塞系统调用，进程会被阻塞</li>
+</ul>
+</li>
+</ul>
+<p><strong>多对一模型</strong>，例如Green thread、GNU Portable thread</p>
+<blockquote>
+<p>线程管理由线程库在用户空间进行，效率高。但是如果一个线程执行了阻塞系统调用，任意时刻只有一个线程能够访问内核，多个线程不能并行的运行在多处理器上，所以整个进程会被阻塞。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602497866182.png" alt="" loading="lazy"></figure>
+<h3 id="在内核中间中">在内核中间中</h3>
+<blockquote>
+<p>在内核中有用来记录系统中所有线程的线程表。</p>
+</blockquote>
+<ul>
+<li>
+<p>优点：</p>
+<ul>
+<li>更好的并发功能</li>
+</ul>
+</li>
+<li>
+<p>缺点：</p>
+<ul>
+<li>每创建一个用户线程就需要创建一个内核线程</li>
+</ul>
+</li>
+</ul>
+<p><strong>一对一模型</strong>，Linux和Windows</p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602497879332.png" alt="" loading="lazy"></figure>
+<h3 id="混合实现">混合实现</h3>
+<p><strong>多对多模型</strong>多路复用了用户线程到同样数量或更小数量的内核线程上。</p>
+<h2 id="线程状态">线程状态</h2>
+<ul>
+<li>运行</li>
+<li>就绪</li>
+<li>等待</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602497891365.png" alt="" loading="lazy"></figure>
+<h2 id="线程调度">线程调度</h2>
+<p>都带有优先级调度和轮转法</p>
+<p>一般IO密集型比CPU密集型线程更容易得到优先级提升。</p>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602497900748.png" alt="" loading="lazy"></figure>
+<h2 id="可抢占式线程和非可抢占式线程">可抢占式线程和非可抢占式线程</h2>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602497910265.png" alt="" loading="lazy"></figure>
+<h2 id="同步与锁">同步与锁</h2>
+<ul>
+<li>锁</li>
+<li>信号量</li>
+<li>互斥量
+<ul>
+<li>和信号量不同的是，信号量可以被一个线程获取后，另一个线程释放。而互斥量是哪个线程获取，哪个线程释放。</li>
+</ul>
+</li>
+<li>临界区</li>
+<li>读写锁</li>
+</ul>
+<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602497923265.png" alt="" loading="lazy"></figure>
+<h3 id="volatile">volatile</h3>
+<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602497934632.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602497947148.png" alt="" loading="lazy"></figure>
+<h1 id="3调度">3.调度</h1>
+<h2 id="抢占式和非抢占式">抢占式和非抢占式</h2>
+<ul>
+<li>
+<p>非抢占式</p>
+<ul>
+<li>让进程运行直到结束或阻塞的调度方式</li>
+<li>容易实现 适合专用系统，不适合通用系统</li>
+</ul>
+</li>
+<li>
+<p>抢占式</p>
+<ul>
+<li>允许将逻辑上可继续运行的在运行过程暂停的调度方式</li>
+<li>可防止单一进程长时间独占CPU 系统开销大</li>
+</ul>
+</li>
+</ul>
+<h2 id="进程调度">进程调度</h2>
+<h3 id="批处理系统"><a href="https://baike.baidu.com/item/%E6%89%B9%E5%A4%84%E7%90%86%E7%B3%BB%E7%BB%9F/3702274?fr=aladdin">批处理系统</a>调度</h3>
+<ul>
+<li>
+<p>先来先服务 first-come first-severd （FCFS）</p>
+<ul>
+<li>优点 简单</li>
+<li>缺点 不够灵活，尤其是前面有占用时间很长的任务，而后面的任务耗时较短</li>
+</ul>
+</li>
+<li>
+<p>最短作业优先 shortest job first （SJF）</p>
+</li>
+<li>
+<p>最短剩余时间优先 shortest remaining time next</p>
+<p>调度程序总是选择剩余运行时间最短的那个进程运行。再次提醒，有关的运行时间必须提前掌握</p>
+</li>
+</ul>
+<h3 id="交互系统调度">交互系统调度</h3>
+<ul>
+<li>轮转调度</li>
+</ul>
+<blockquote>
+<p>轮转调度做了一个隐含的假设，即所有的进程同等重要</p>
+<p>每个进程被分配一个时间段，称为时间片（quantum），即允许该进程在该时间段中运行。如果在时间片结束时该进程还在运行，则将剥夺CPU并分配给另一个进程。</p>
+<p>从一个进程切换到另一个进程是需要一定时间进行管理事务处理的——保存和装入寄存器值及内存映像、更新各种表格和列表、清除和重新调入内存高速缓存等。假如进程切换（process switch），有时称为上下文切换（context switch），需要1ms，包括切换内存映像、清除和重新调入高速缓存等。</p>
+</blockquote>
+<ul>
+<li>优先级调度</li>
+<li>多级队列</li>
+</ul>
+<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602497964129.gif" alt="" loading="lazy"></figure>
+<p>分成多个队列，队列优先级不同，每个队列有自己的调度算法</p>
+<ul>
+<li><s>最短进程优先</s></li>
+<li><s>保证调度</s></li>
+<li><s>彩票调度</s></li>
+<li><s>公平分享调度</s></li>
+</ul>
+<h2 id="线程调度-2">线程调度</h2>
+<h1 id="4进程通信">4.进程通信</h1>
+<ul>
+<li>共享内存</li>
+<li>消息传递
+<ul>
+<li>例如 socket、RPC、RMI</li>
+</ul>
+</li>
+</ul>
+<h1 id="5进程同步">5.进程同步</h1>
+<h2 id="51-概念">5.1 概念</h2>
+<h3 id="竞争条件">竞争条件</h3>
+<p>两个或多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时序，称为竞争条件（race condition）</p>
+<h3 id="临界区">临界区</h3>
+<p>在某些时候进程可能需要访问共享内存或共享文件，或执行另外一些会导致竞争的操作。我们把对共享内存进行访问的程序片段称作临界区域（critical region）或临界区（critical section）。如果我们能够适当地安排，使得两个进程不可能同时处于临界区中，就能够避免竞争条件。</p>
+<ul>
+<li>1)任何两个进程不能同时处于其临界区。</li>
+<li>2)不应对CPU的速度和数量做任何假设。</li>
+<li>3)临界区外运行的进程不得阻塞其他进程。</li>
+<li>4)不得使进程无限期等待进入临界区。</li>
+</ul>
+<figure data-type="image" tabindex="13"><img src="https://sparkfengbo.github.io/post-images/1602497978515.png" alt="" loading="lazy"></figure>
+<h2 id="52-同步方法">5.2 同步方法</h2>
+<h3 id="521-屏蔽中断"><s>5.2.1 屏蔽中断</s></h3>
+<blockquote>
+<p>最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，并在就要离开之前再打开中断。屏蔽中断后，时钟中断也被屏蔽。CPU只有发生时钟中断或其他中断时才会进行进程切换，这样，在屏蔽中断之后CPU将不会被切换到其他进程。于是，一旦某个进程屏蔽中断之后，它就可以检查和修改共享内存，而不必担心其他进程介入。</p>
+</blockquote>
+<p>缺点：</p>
+<ul>
+<li>因为把屏蔽中断的权力交给用户进程是不明智的</li>
+</ul>
+<p>屏蔽中断对于操作系统本身而言是一项很有用的技术，但对于用户进程则不是一种合适的通用互斥机制。</p>
+<h3 id="522-锁变量"><s>5.2.2 锁变量</s></h3>
+<h3 id="523-严格轮换法">5.2.3 严格轮换法</h3>
+<p>浪费CPU时间，所以通常应该避免。<br>
+只有在有理由认为等待时间是非常短的情形下，才使用忙等待。用于忙等待的锁，称为<strong>自旋锁（spin lock）</strong>。</p>
+<figure data-type="image" tabindex="14"><img src="https://sparkfengbo.github.io/post-images/1602497988714.png" alt="" loading="lazy"></figure>
+<p>整型变量turn，初始值为0，用于记录轮到哪个进程进入临界区，并检查或更新共享内存。开始时，进程0检查turn，发现其值为0，于是进入临界区。进程1也发现其值为0，所以在一个等待循环中不停地测试turn，看其值何时变为1。连续测试一个变量直到某个值出现为止，称为忙等待（busy waiting）。</p>
+<h3 id="524-perterson解法">5.2.4 Perterson解法</h3>
+<figure data-type="image" tabindex="15"><img src="https://sparkfengbo.github.io/post-images/1602497999863.png" alt="" loading="lazy"></figure>
+<h3 id="525-tsl指令">5.2.5 TSL指令</h3>
+<p>测试并加锁（Test and Set Lock）</p>
+<blockquote>
+<p>Peterson解法和TSL或XCHG解法都是正确的，但它们都有忙等待的缺点。这些解法在本质上是这样的：当一个进程想进入临界区时，先检查是否允许进入，若不允许，则该进程将原地等待，直到允许为止。</p>
+<p>这种方法不仅浪费了CPU时间，而且还可能引起预想不到的结果。考虑一台计算机有两个进程，H优先级较高，L优先级较低。调度规则规定，只要H处于就绪态它就可以运行。在某一时刻，L处于临界区中，此时H变到就绪态，准备运行（例如，一条I/O操作结束）。现在H开始忙等待，但由于当H就绪时L不会被调度，也就无法离开临界区，所以H将永远忙等待下去。这种情况有时被称作优先级反转问题（priority inversion problem）。</p>
+</blockquote>
+<h3 id="526-信号量">5.2.6 信号量</h3>
+<p>参考Java的信号量</p>
+<ul>
+<li><a href="https://www.cnblogs.com/pony1223/p/9479299.html">Java并发编程原理与实战二十八：信号量Semaphore</a></li>
+</ul>
+<h3 id="527-互斥量">5.2.7 互斥量</h3>
+<p>如果不需要信号量的计数能力，有时可以使用信号量的一个简化版本，称为互斥量（mutex）。</p>
+<h3 id="528-屏障">5.2.8 屏障</h3>
+<p>可以参考Java的CyclicBarrier</p>
+<h2 id="53-管程">5.3 管程</h2>
+<p>https://zh.wikipedia.org/wiki/%E7%9B%A3%E8%A6%96%E5%99%A8_(%E7%A8%8B%E5%BA%8F%E5%90%8C%E6%AD%A5%E5%8C%96)</p>
+<p><a href="https://zhuanlan.zhihu.com/p/58766005">Java并发之Monitor实现</a></p>
+<blockquote>
+<p>管程 (英语：Monitors，也称为监视器) 是一种程序结构，结构内的多个子程序（对象或模块）形成的多个工作线程互斥访问共享资源。这些共享资源一般是硬件或一群变量。管程实现了在一个时间点，最多只有一个线程在执行管程的某个子程序。与那些通过修改数据结构实现互斥访问的并发程序设计相比，管程实现很大程度上简化了程序设计。</p>
+<p>管程提供了一种机制，线程可以临时放弃互斥访问，等待某些条件得到满足后，重新获得执行权恢复它的互斥访问。</p>
+</blockquote>
+<h1 id="6死锁">6.死锁</h1>
+<h2 id="死锁预防">死锁预防</h2>
+<p>死锁条件</p>
+<ul>
+<li>1)互斥条件。每个资源要么已经分配给了一个进程，要么就是可用的。</li>
+<li>2)占有和等待条件。已经得到了某个资源的进程可以再请求新的资源。</li>
+<li>3)不可抢占条件。已经分配给一个进程的资源不能强制性地被抢占，它只能被占有它的进程显式地释放。</li>
+<li>4)环路等待条件。死锁发生时，系统中一定有由两个或两个以上的进程组成的一条环路，该环路中的每个进程都在等待着下一个进程所占有的资源。</li>
+</ul>
+<p>通过限制资源申请，确保四个条件之一不会发生。缺点是低设备使用率和设备吞吐率。</p>
+<h2 id="死锁避免">死锁避免</h2>
+<p>获得以后如何申请资源的附加信息。动态的检测资源的分配状态以确保循环等待的条件不成立。</p>
+<p><strong>安全状态</strong></p>
+<p>通过跟踪哪一个状态是安全状态，哪一个状态是不安全状态，可以避免死锁。安全状态就是这样一个状态：存在一个事件序列，保证所有的进程都能完成。不安全状态就不存在这样的保证。银行家算法可以通过拒绝可能引起不安全状态的请求来避免死锁。</p>
+<blockquote>
+<p>死锁避免从本质上来说是不可能的，因为它需要获知未来的请求，而这些请求是不可知的。</p>
+</blockquote>
+<ul>
+<li>资源分配图算法</li>
+<li>银行家算法</li>
+</ul>
+<h2 id="死锁检测">死锁检测</h2>
+<ul>
+<li>每种类型一个资源的死锁检测</li>
+<li>每种类型多个资源的死锁检测</li>
+</ul>
+<h2 id="死锁恢复">死锁恢复</h2>
+<ul>
+<li>进程终止
+<ul>
+<li>终止所有进程</li>
+<li>一次只终止一个进程</li>
+</ul>
+</li>
+<li>资源抢占
+<ul>
+<li>逐步从进程中抢占资源给其他进程使用，直到死锁环被打破为止。</li>
+</ul>
+</li>
+</ul>
+<h2 id="活锁和饥饿">活锁和饥饿</h2>
+<p><a href="https://www.cnblogs.com/ktgu/p/3529143.html">死锁，活锁和饥饿</a></p>
+<h1 id="7线程同步">7.线程同步</h1>
+<p>Java并发编程实践</p>
+<p>链接:https://pan.baidu.com/s/1ukIEcJzUzPufJZFF7Rsrhg  密码:szwe</p>
+<h1 id="8经典问题">8.经典问题</h1>
+<h2 id="81-哲学家进餐">8.1 哲学家进餐</h2>
+<figure data-type="image" tabindex="16"><img src="https://sparkfengbo.github.io/post-images/1602498025163.png" alt="" loading="lazy"></figure>
+<p>可参考</p>
+<p>https://zhuanlan.zhihu.com/p/34553097</p>
+<h2 id="82-读者-写者问题">8.2 读者-写者问题</h2>
+<h2 id="83-生产者-消费者">8.3 生产者-消费者</h2>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[1.计算机整体结构和操作系统梗概]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-1ji-suan-ji-zheng-ti-jie-gou-he-cao-zuo-xi-tong-geng-gai/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-1ji-suan-ji-zheng-ti-jie-gou-he-cao-zuo-xi-tong-geng-gai/">
+        </link>
+        <updated>2020-10-12T10:14:04.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="1计算机结构">1.计算机结构</h1>
+<p>计算机系统大致分为4个组成部分，计算机硬件、操作系统、系统程序和应用程序、用户。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497701020.png" alt="" loading="lazy"></figure>
+<h2 id="cpu">CPU</h2>
+<p>每个CPU都有其一套可执行的专门指令集。在时间多路复用（time multiplexing）CPU中，操作系统经常会中止正在运行的某个程序并启动（或再启动）另一个程序。每次停止一个运行着的程序时，操作系统必须保存所有的寄存器，这样在稍后该程序被再次运行时，可以把这些寄存器重新装入。</p>
+<h3 id="cpu包含寄存器">CPU包含寄存器</h3>
+<p>1.用来保存关键变量和临时数据的寄存器</p>
+<p>由于用来访问内存以得到指令或数据的时间要比执行指令花费的时间长得多，因此，所有的CPU内都有一些用来保存关键变量和临时数据的寄存器。(这样，通常在指令集中提供一些指令，用以将一个字从内存调入寄存器，以及将一个字从寄存器存入内存。其他的指令可以把来自寄存器、内存的操作数组合，或者用两者产生一个结果，诸如将两个字相加并把结果存在寄存器或内存中。)</p>
+<p>2.程序计数器</p>
+<p>除了用来保存变量和临时结果的通用寄存器之外，多数计算机还有一些对程序员可见的专门寄存器。其中之一是程序计数器，它保存了将要取出的下一条指令的内存地址。在指令取出之后，程序计数器就被更新以便指向后继的指令。</p>
+<p>3.堆栈指针</p>
+<p>另一个寄存器是堆栈指针，它指向内存中当前栈的顶端。该栈含有已经进入但是还没有退出的每个过程的一个框架。在一个过程的堆栈框架中保存了有关的输入参数、局部变量以及那些没有保存在寄存器中的临时变量。</p>
+<p>4.程序状态字（Program Status Word，PSW）寄存器</p>
+<p>这个寄存器包含了条件码位（由比较指令设置）、CPU优先级、模式（用户态或内核态），以及各种其他控制位。用户程序通常读入整个PSW，但是，只对其中的少量字段写入。在系统调用和I/O中，PSW的作用很重要。</p>
+<h3 id="cpu的内核态和用户态">CPU的内核态和用户态</h3>
+<p>多数CPU都有两种模式，即前面已经提及的内核态和用户态。通常，在PSW中有一个二进制位控制这两种模式。当在内核态运行时，CPU可以执行指令集中的每一条指令，并且使用硬件的每种功能。操作系统在内核态下运行，从而可以访问整个硬件。</p>
+<p>相反，用户程序在用户态下运行，仅允许执行整个指令集的一个子集和访问所有功能的一个子集。一般而言，在用户态中有关I/O和内存保护的所有指令是禁止的。</p>
+<p>为了从操作系统中获得服务，用户程序必须使用系统调用（system call）系统调用陷入内核并调用操作系统。</p>
+<blockquote>
+<p>我理解CPU这里是很复杂的，所以了解概念即可，类似，带有共享L2缓存的4核芯片；b)带有分离L2缓存的4核芯片这样的内容没有记录。</p>
+</blockquote>
+<h2 id="存储器">存储器</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602497711835.png" alt="" loading="lazy"></figure>
+<p>顶层的存储器速度较高，容量较小，与底层的存储器相比每位成本较高，其差别往往是十亿数量级。</p>
+<h3 id="寄存器">寄存器</h3>
+<p>存储器系统的顶层是CPU中的寄存器。它们用与CPU相同的材料制成，所以和CPU一样快。显然，访问它们是没有时延的。其典型的存储容量是，在32位CPU中为32×32位，而在64位CPU中为64×64位。在这两种情形下，其存储容量都小于1 KB。程序必须在软件中自行管理这些寄存器（即决定如何使用它们）。</p>
+<h3 id="高速缓存">高速缓存</h3>
+<p>它多数由硬件控制。主存被分割成高速缓存行（cache line），其典型大小为64个字节，地址0至63对应高速缓存行0，地址64至127对应高速缓存行1，以此类推。最常用的高速缓存行放置在CPU内部或者非常接近CPU的高速缓存中。当某个程序需要读一个存储字时，高速缓存硬件检查所需要的高速缓存行是否在高速缓存中。如果是，称为高速缓存命中，缓存满足了请求，就不需要通过总线把访问请求送往主存。高速缓存命中通常需要两个<a href="https://baike.baidu.com/item/%E6%97%B6%E9%92%9F%E5%91%A8%E6%9C%9F/1545064?fr=aladdin">时钟周期</a>。高速缓存未命中就必须访问内存，这要付出大量的时间代价。由于高速缓存的价格昂贵，所以其大小有限。有些机器具有两级甚至三级高速缓存，每一级高速缓存比前一级慢且容量更大。</p>
+<p>现代CPU中设计了两个缓存。第一级或称为<strong>L1缓存</strong>总是在CPU中，通常用来将已解码的指令调入CPU的执行引擎。对于那些频繁使用的数据字，多数芯片安排有第二个L1缓存。典型的L1缓存大小为16KB。另外，往往还设计有二级缓存，称为<strong>L2缓存</strong>，用来存放近来所使用过若干兆字节的内存字。L1和L2缓存之间的差别在于时序。对L1缓存的访问，不存在任何延时；而对L2缓存的访问，则会延时1或2个时钟周期。</p>
+<h3 id="主存-ram">主存  RAM</h3>
+<p>主存。这是存储器系统的主力。主存通常称为随机访问存储器（Random Access Memory，RAM）</p>
+<p>除了主存之外，许多计算机已经在使用少量的非易失性随机访问存储器。它们与RAM不同，在电源切断之后，非易失性随机访问存储器并不丢失其内容。只读存储器（Read Only Memory，ROM）在工厂中就被编程完毕，然后再也不能被修改。ROM速度快且便宜。在有些计算机中，用于启动计算机的引导加载模块就存放在ROM中。另外，一些I/O卡也采用ROM处理底层设备控制。</p>
+<h2 id="磁盘">磁盘</h2>
+<h2 id="io设备">IO设备</h2>
+<p>可参考<a href="https://www.toutiao.com/i6802161744752935436/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1583802979&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_android&amp;req_id=202003100916180100260771961F64434A&amp;group_id=6802161744752935436">深入剖析神秘的“零拷贝”「转」</a><br>
+后续第5章节DMA会总结</p>
+<p>实现输入输出三种方式</p>
+<ul>
+<li>
+<p>1.忙等待 需要占据CPU</p>
+</li>
+<li>
+<p>2.<a href="http://www.kerneltravel.net/journal/viii/01.htm">中断</a></p>
+<p>中断一般有两个属性，一个是中断号，一个是中断处理程序。不同的中断有不同的中断号，每个中断号都对应了一个中断处理程序。在内核中有一个叫中断向量表的数组来映射这个关系。当中断到来时，cpu会暂停正在执行的代码，根据中断号去中断向量表找出对应的中断处理程序并调用。中断处理程序执行完成后，会继续执行之前的代码。</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602497725969.gif" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602497768966.png" alt="" loading="lazy"></figure>
+<ul>
+<li>3.DMA</li>
+</ul>
+<h2 id="总线">总线</h2>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602497762716.png" alt="" loading="lazy"></figure>
+<p>https://zh.wikipedia.org/wiki/%E6%80%BB%E7%BA%BF</p>
+<p>PC上一般有五种总线：</p>
+<ul>
+<li>
+<p>数据总线（Data Bus）</p>
+<p>在CPU与RAM之间来回传送需要处理或是需要储存的数据。</p>
+</li>
+<li>
+<p>地址总线（Address Bus）</p>
+<p>用来指定在RAM（Random Access Memory）之中储存的数据的地址。</p>
+</li>
+<li>
+<p>控制总线（Control Bus）</p>
+<p>将微处理器控制单元（Control Unit）的信号，传送到周边设备，一般常见的为USB Bus和1394 Bus。</p>
+</li>
+<li>
+<p>扩展总线（Expansion Bus）</p>
+<p>可连接扩展槽和电脑。</p>
+</li>
+<li>
+<p>局部总线（Local Bus）</p>
+<p>取代更高速数据传输的扩展总线。</p>
+</li>
+</ul>
+<p>例如：</p>
+<ul>
+<li>PCL</li>
+<li>ISA</li>
+<li>SATA</li>
+<li>...</li>
+</ul>
+<h1 id="2操作系统">2.操作系统</h1>
+<ul>
+<li>进程管理</li>
+<li>内存管理</li>
+<li>存储管理</li>
+<li>...</li>
+</ul>
+<p>功能：</p>
+<ul>
+<li>用户界面</li>
+<li>程序执行</li>
+<li>IO</li>
+<li>文件系统操作</li>
+<li>通信</li>
+<li>资源分配</li>
+<li>错误检测</li>
+<li>统计和安全</li>
+</ul>
+<p>分类：</p>
+<ul>
+<li>单用户操作系统</li>
+</ul>
+<blockquote>
+<p>单用户操作系统一次只能支持一个用户程序的运行。单用户操作系统向用户提供联机交互式的工作环境，比如MS-DOS就是一个经典的单用户操作系统。</p>
+</blockquote>
+<ul>
+<li>批处理操作系统</li>
+</ul>
+<blockquote>
+<p>可对用户作业成批处理，期间勿需用户干预，分为单道批处理系统和多道批处理系统。</p>
+</blockquote>
+<ul>
+<li>分时操作系统</li>
+</ul>
+<blockquote>
+<p>利用分时技术的一种联机的多用户交互式操作系统，每个用户可以通过自己的终端向系统发出各种操作控制命令，完成作业的运行。分时是指把处理机的运行时间分成很短的时间片，按时间片轮流把处理机分配给各联机作业使用。</p>
+</blockquote>
+<ul>
+<li>实时操作系统</li>
+</ul>
+<blockquote>
+<p>一个能够在指定或者确定的时间内完成系统功能以及对外部或内部事件在同步或异步时间内做出响应的系统,实时意思就是对响应时间有严格要求,要以足够快的速度进行处理.分为硬实时和软实时两种。</p>
+</blockquote>
+<ul>
+<li>通用操作系统</li>
+</ul>
+<blockquote>
+<p>同时兼有多道批处理、分时、实时处理的功能，或者其中两种以上功能的操作系统。</p>
+</blockquote>
+<ul>
+<li>网络操作系统</li>
+</ul>
+<blockquote>
+<p>一种在通常操作系统功能的基础上提供网络通信和网络服务功能的操作系统。</p>
+</blockquote>
+<ul>
+<li>分布式操作系统</li>
+<li>嵌入式操作系统</li>
+</ul>
+<h1 id="3系统调用">3.系统调用</h1>
+<p>类型：</p>
+<ul>
+<li>进程控制</li>
+<li>文件管理</li>
+<li>设备管理</li>
+<li>信息维护</li>
+<li>通信</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602497779683.png" alt="" loading="lazy"></figure>
+<h1 id="4其他基本概念">4.其他基本概念</h1>
+<h2 id="进程">进程</h2>
+<p>进程本质上是正在执行的一个程序。与每个进程相关的是进程的地址空间（address space），这是从某个最小值的存储位置（通常是零）到某个最大值存储位置的列表。在这个地址空间中，进程可以进行读写。该地址空间中存放有可执行程序、程序的数据以及程序的堆栈。与每个进程相关的还有资源集，通常包括寄存器（含有程序计数器和堆栈指针）、打开文件的清单、突出的报警、有关进程清单，以及运行该程序所需要的所有其他信息。进程基本上是容纳运行一个程序所需要所有信息的容器。</p>
+<h2 id="线程">线程</h2>
+<h2 id="地址空间">地址空间</h2>
+<p>通常，每个进程有一些可以使用的地址集合，典型值从0开始直到某个最大值。在最简单的情形下，一个进程可拥有的最大地址空间小于主存。</p>
+<p>虚拟内存<br>
+操作系统可以把部分地址空间装入主存，部分留在磁盘上。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[0.大纲]]></title>
+        <id>https://sparkfengbo.github.io/post/czxt-0da-gang/</id>
+        <link href="https://sparkfengbo.github.io/post/czxt-0da-gang/">
+        </link>
+        <updated>2020-10-12T10:13:38.000Z</updated>
+        <content type="html"><![CDATA[<ul>
+<li>现代操作系统
+<ul>
+<li>链接:https://pan.baidu.com/s/10XBhqqwUrbw0VnaD6_LWaA  密码:jrjz</li>
+</ul>
+</li>
+<li>操作系统概念
+<ul>
+<li>链接:https://pan.baidu.com/s/1aEszxfSZczMxmL1j8HC3sQ  密码:3w3w</li>
+</ul>
+</li>
+<li>Linux内核完全解析 赵炯
+<ul>
+<li>链接:https://pan.baidu.com/s/1mois7h8tNFL_FHkWmVpu7A  密码:n9xd</li>
+</ul>
+</li>
+<li><a href="https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/59.html">鸟哥的Linux私房菜</a></li>
+<li>程序员的自我修养
+<ul>
+<li>链接:https://pan.baidu.com/s/1-Lco9gd-32aKfvlhFTL66w  密码:bocy</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="1计算机的整体结构和基本概念">1.计算机的整体结构和基本概念</h2>
+<ul>
+<li>总线等</li>
+<li>中断</li>
+<li>内核空间、用户空间</li>
+<li>进程、线程</li>
+</ul>
+<h2 id="2进程和线程">2.进程和线程</h2>
+<ul>
+<li>同步、死锁</li>
+<li>调度算法</li>
+</ul>
+<h2 id="3内存">3.内存</h2>
+<ul>
+<li>MMU、TLB</li>
+</ul>
+<h2 id="4存储">4.存储</h2>
+<h2 id="5io相关">5.IO相关</h2>
+<h2 id="6安全相关">6.安全相关</h2>
+<h2 id="7其他">7.其他</h2>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Q1/session、cookie、token]]></title>
+        <id>https://sparkfengbo.github.io/post/jsjwl-q1sessioncookietoken/</id>
+        <link href="https://sparkfengbo.github.io/post/jsjwl-q1sessioncookietoken/">
+        </link>
+        <updated>2020-10-12T10:06:16.000Z</updated>
+        <content type="html"><![CDATA[<h1 id="session-cookie">Session、Cookie</h1>
+<ul>
+<li><a href="https://www.toutiao.com/i6797963155034079755/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1587090932&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202004171035320100140400921D0F3D3D&amp;group_id=6797963155034079755">从session、cookie到token以及JWT</a></li>
+<li><a href="https://segmentfault.com/a/1190000017831088?tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">彻底弄懂session，cookie，token</a></li>
+</ul>
+<p>HTTP是无状态的，为了维护状态，服务器端记录一个会话id（sessionId），记录一下用户及其状态。然后把sessionId回给客户端。浏览器将这个sessionId记录到cookie里，下一次请求再带上。这样服务器从请求中拿到cookie里的sessionId，到自己的存储（一般是用redis）里查一下，得到用户的状态。之后就可以愉快的进行下面的操作了。</p>
+<blockquote>
+<p>session是服务器端的，cookie是浏览器端的<br>
+cookie只是实现session的其中一种方案。虽然是最常用的，但并不是唯一的方法。禁用cookie后还有其他方法存储，比如放在url中<br>
+现在后端服务都是分布式部署，session一般统一放在redis集群中。这样有个问题就是一旦redis故障，可能会影响所有的用户请求。</p>
+</blockquote>
+<p><strong>所有session都要落地到session服务的存储上，服务压力巨大，任何redis的扩容修改都有可能造成服务端的雪崩。</strong></p>
+<h1 id="cookie">Cookie</h1>
+<ul>
+<li>客户端cookie管理存在丢失情况，并且一直难以排查根除，造成用户掉线情况。</li>
+<li>cookie具有域名特性，业务域名多域名同步存在问题，目前客户端为手动进行同步。</li>
+<li>cookie的修改，一切api接口客户端均认可，容易发生串号的情况。</li>
+</ul>
+<h1 id="token">Token</h1>
+<p>那么，我们有没有可能不存储session呢？</p>
+<ul>
+<li>如果我们讲所有信息全部放在cookie里，那么只要cookie将用户的id和状态给服务器传过去就好了。</li>
+<li>但是，这样非常危险。用户可以随意伪造cookie，并且非常容易被劫持</li>
+<li>所以，问题变成了，怎么确保安全性？</li>
+<li>答案就是做签名。在用户第一次登录时，服务端使用如SHA256算法对数据进行加密。就称之为token。</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497226624.jpeg" alt="" loading="lazy"></figure>
+<p>下一次浏览器把加密后的token带过来，服务器再使用相同的算法对数据进 行一次加密，比较两次加密的结果，相等即为验证通过。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602497235639.jpeg" alt="" loading="lazy"></p>
+<p>因为私钥只要服务器知道。所以用户过来的请求是无法伪造的。</p>
+<p>这样一来，服务器不需要再费力的保存session数据。服务器端是无状态的。</p>
+<p>token的优势：</p>
+<ul>
+<li>无状态、可扩展</li>
+<li>支持移动设备（移动设备是没有cookie的）</li>
+<li>跨程序调用</li>
+<li>安全</li>
+</ul>
+<h3 id="token认证流程">token认证流程</h3>
+<p>token 的认证流程与cookie很相似</p>
+<ul>
+<li>用户登录，成功后服务器返回Token给客户端。</li>
+<li>客户端收到数据后保存在客户端</li>
+<li>客户端再次访问服务器，将token放入headers中</li>
+<li>服务器端采用filter过滤器校验。校验成功则返回请求数据，校验失败则返回错误码</li>
+</ul>
+<h2 id="分布式情况下的session和token">分布式情况下的session和token</h2>
+<p>我们已经知道session时有状态的，一般存于服务器内存或硬盘中，当服务器采用分布式或集群时，session就会面对负载均衡问题。</p>
+<ul>
+<li>负载均衡多服务器的情况，不好确认当前用户是否登录，因为多服务器不共享session。这个问题也可以将session存在一个服务器中来解决，但是就不能完全达到负载均衡的效果。当今的几种解决session负载均衡的方法。</li>
+</ul>
+<p>而token是无状态的，token字符串里就保存了所有的用户信息</p>
+<ul>
+<li>客户端登陆传递信息给服务端，服务端收到后把用户信息加密（token）传给客户端，客户端将token存放于localStroage等容器中。客户端每次访问都传递token，服务端解密token，就知道这个用户是谁了。通过cpu加解密，服务端就不需要存储session占用存储空间，就很好的解决负载均衡多服务器的问题了。这个方法叫做JWT(Json Web Token)</li>
+</ul>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[7.Web页面请求过程]]></title>
         <id>https://sparkfengbo.github.io/post/jsjwl-7web-ye-mian-qing-qiu-guo-cheng/</id>
@@ -623,664 +1376,6 @@ UDP打包即发出，没有TCP的拥塞控制等限制，TCP可靠交付可能�
 端口号 3306 TCP</li>
 </ul>
 <p>0~1023是周知端口号，受限制，给HTTP或者FTP这种预留使用的。</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[2.3 加密算法、摘要、数字签名、CA证书]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-23-jia-mi-suan-fa-zhai-yao-shu-zi-qian-ming-ca-zheng-shu/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-23-jia-mi-suan-fa-zhai-yao-shu-zi-qian-ming-ca-zheng-shu/">
-        </link>
-        <updated>2020-10-12T09:48:35.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="1对称加密">1.对称加密</h1>
-<h2 id="11-含义">1.1 含义</h2>
-<blockquote>
-<p>加密和解密使用的是<strong>同样</strong>的密钥，加密和解密算法是公开的，密钥必须严格保存，如果密钥泄漏，就能使用密文+密钥还原成明文。</p>
-</blockquote>
-<h2 id="12-优缺点">1.2 优缺点</h2>
-<p>优点：算法公开、计算量小、加密速度快、效率高</p>
-<p>缺点：密钥管理和分发困难，不够安全</p>
-<h2 id="13-常见算法">1.3 常见算法</h2>
-<ul>
-<li>DES</li>
-<li>AES</li>
-<li>3DES</li>
-<li>RC2</li>
-<li>RC4</li>
-<li>RC5</li>
-<li>Blowfish</li>
-<li>ChaCha20-Poly1305</li>
-</ul>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496131619.png" alt="" loading="lazy"></figure>
-<h2 id="14-可参考文章">1.4 可参考文章</h2>
-<ul>
-<li><a href="http://blog.csdn.net/happylee6688/article/details/44455407">Java 加解密技术系列之 DES</a></li>
-<li><a href="https://www.cnblogs.com/txw1958/p/aes.html">AES对称加密算法原理</a></li>
-</ul>
-<h1 id="2非对称加密">2.非对称加密</h1>
-<h2 id="21-含义">2.1 含义</h2>
-<blockquote>
-<p>非对称加密需要两个密钥进行加密解密，这两个密钥分别是公钥和私钥。私钥只能由一方安全保管，不能外泄，而公钥则可以发给任何请求它的人。公开密钥与私有密钥是一对，如果用公开密钥对数据进行加密，只有用对应的私有密钥才能解密;如果用私有密钥对数据进行加密，那么只有用对应的公开密钥才能解密。</p>
-</blockquote>
-<blockquote>
-<p>两个用途<br>
-<strong>1.机密信息交换</strong>： 非对称加密算法实现机密信息交换的基本过程是：甲方生成一对密钥并将其中的一把作为公用密钥向其它方公开；得到该公用密钥的乙方使用该密钥对机密信息进行加密后再发送给甲方；甲方再用自己保存的另一把专用密钥对加密后的信息进行解密。(消息加密利用公钥加密，使用私钥来解密)<br>
-<strong>2.数字签名</strong>：甲方可以使用乙方的公钥对机密信息进行签名后再发送给乙方；乙方再用自己的私匙对数据进行验签。(数字签名,使用私钥加密，使用公钥来解密)</p>
-</blockquote>
-<h2 id="22-优缺点">2.2 优缺点</h2>
-<p>优点：安全性高，公钥是公开的，私钥是自己保存的。<br>
-缺点：加密和解密花费时间长、速度慢（非对称加密一般比对称加密慢2到3个数量级），只适合少量数据进行加密</p>
-<h2 id="23常见算法">2.3常见算法</h2>
-<ul>
-<li>RSA</li>
-<li>DSA</li>
-<li>Elgamal</li>
-<li>背包算法</li>
-<li>Rabin</li>
-<li>D-H</li>
-<li>ECC（椭圆曲线加密算法）</li>
-<li>ECDSA</li>
-<li>ECDHE。</li>
-</ul>
-<h2 id="24-可参考文章">2.4 可参考文章</h2>
-<ul>
-<li><a href="http://www.ruanyifeng.com/blog/2013/06/rsa_algorithm_part_one.html">RSA算法原理（一）</a></li>
-</ul>
-<h1 id="3消息摘要">3.消息摘要</h1>
-<h2 id="31-含义">3.1 含义</h2>
-<blockquote>
-<p>将任意长度的信息转换为较短的固定长度的值，通常其长度要比信息小得多，且算法不可逆。</p>
-</blockquote>
-<ul>
-<li>函数必须是容易计算的</li>
-<li>输入可以是任意长度的数据</li>
-<li>输出必须是固定长度的</li>
-<li>函数是不可逆的（区别于加密算法）</li>
-<li>不同输入产生的碰撞冲突可能性要尽可能低</li>
-</ul>
-<h2 id="32常见算法">3.2常见算法</h2>
-<ul>
-<li>MD5(不安全)</li>
-<li>SHA-1（不安全）</li>
-<li>SHA-2</li>
-<li>SHA-256</li>
-</ul>
-<h1 id="4数字签名">4.数字签名</h1>
-<h2 id="41-含义">4.1 含义</h2>
-<blockquote>
-<p>签名就是在信息的后面再加上一段内容（信息经过hash后的值），可以证明信息没有被修改过。hash值一般都会加密后（也就是签名）再和信息一起发送，以保证这个hash值不被修改。</p>
-<p>签名在网络通讯中的应用称为数字签名，当服务器向客户端发送信息时，会将报文生成报文摘要，同时对报文摘要进行hash计算，得到hash值，然后对hash值进行加密，然后将加密的hash值放置在报文后面，这个加密后的hash值就称为签名。服务器将报文、签名和数字证书一同发送给客户端。客户端收到这些信息后，会首先验证签名，利用签名算法对签名进行解密，得到报文摘要的hash值，然后将得到的报文生成报文摘要并利用签名hash算法生成新的hash值，通过对比这两个hash值是否一致，就能判断信息是否完整，是否是由真正的服务器发送的。可知签名有两个作用确认消息发送方可靠，确认消息完整准确。</p>
-</blockquote>
-<h2 id="42-过程">4.2 过程</h2>
-<p><strong>一个具体的签名过程如下：</strong></p>
-<blockquote>
-<p>小明对外发布公钥，并声明对应的私钥在自己手上<br>
-小明对消息M计算摘要，得到摘要D<br>
-小明使用私钥对D进行签名，得到签名S<br>
-将M和S一起发送出去</p>
-</blockquote>
-<p><strong>验签证过程如下：</strong></p>
-<blockquote>
-<p>接收者首先对M计算摘要，得到D’<br>
-使用小明公钥对S进行解签，得到D<br>
-如果D和D’相同，那么证明M确实是小明发出的，并且没有被篡改过</p>
-</blockquote>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496147952.png" alt="" loading="lazy"></figure>
-<h2 id="43-应用">4.3 应用</h2>
-<ul>
-<li>网站认证</li>
-<li>代码签名</li>
-</ul>
-<h2 id="44-可参考文章">4.4 可参考文章</h2>
-<ul>
-<li><a href="https://blog.csdn.net/qmickecs/article/details/73696954">数字签名原理及其应用</a></li>
-<li><a href="https://blog.csdn.net/lycb_gz/article/details/78081536">数字签名工作原理</a></li>
-</ul>
-<h1 id="5ca证书">5.CA证书</h1>
-<h2 id="51-含义">5.1 含义</h2>
-<blockquote>
-<p>CA证书顾名思义就是由CA（Certification Authority）机构发布的数字证书</p>
-</blockquote>
-<blockquote>
-<p>数字证书无法保证公钥被篡改，可能有中间人攻击替换公钥<br>
-如何保证公钥不被人篡改？<br>
-将公钥放入数字证书中，只要证书是可信的，公钥就是可信的</p>
-</blockquote>
-<blockquote>
-<ul>
-<li>权威机构必须是存在的</li>
-<li>权威机构使用自己的私钥加密的内容是可信任的</li>
-<li>信任是可传递的，机构 A 的公钥由 A 的上一级权威使用自己的私钥加密签发，直到最高权威机构</li>
-<li>证书链成树状，最高处为根(root)证书，根证书和节点之间的叫中间证书</li>
-<li>权威证书链每个 client 端都会内置一份（操作系统、浏览器或者应用内部）</li>
-</ul>
-</blockquote>
-<p><strong>CA证书具体包括哪些内容：</strong></p>
-<ul>
-<li>颁发者</li>
-<li>使用者</li>
-<li>版本</li>
-<li>签名算法</li>
-<li>签名哈希算法</li>
-<li>使用者</li>
-<li>公钥</li>
-<li>指纹</li>
-<li>指纹算法</li>
-<li>……</li>
-</ul>
-<h2 id="52-校验过程">5.2 校验过程</h2>
-<blockquote>
-<p>以浏览器为例说明如下：<br>
-（1）首先浏览器读取证书中的证书所有者、有效期等信息进行一一校验<br>
-（2）浏览器开始查找操作系统中已内置的受信任的证书发布机构CA，与服务器发来的证书中的颁发者CA比对，用于校验证书是否为合法机构颁发<br>
-（3）如果找不到，浏览器就会报错，说明服务器发来的证书是不可信任的。<br>
-（4）如果找到，那么浏览器就会从操作系统中取出 颁发者CA 的公钥，然后对服务器发来的证书里面的签名进行解密<br>
-（5）浏览器使用相同的hash算法计算出服务器发来的证书的hash值，将这个计算的hash值与证书中签名做对比<br>
-（6）对比结果一致，则证明服务器发来的证书合法，没有被冒充<br>
-（7）此时浏览器就可以读取证书中的公钥，用于后续加密了</p>
-</blockquote>
-<h2 id="53-可参考文章">5.3 可参考文章</h2>
-<ul>
-<li><a href="CA%E8%AF%81%E4%B9%A6%E7%90%86%E8%A7%A3%EF%BC%9FCA%E8%AF%81%E4%B9%A6%E7%9A%84%E4%BD%9C%E7%94%A8%EF%BC%9F">CA证书理解？CA证书的作用？</a></li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[2.2 HTTPS]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-22-https/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-22-https/">
-        </link>
-        <updated>2020-10-12T09:46:39.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="概念">概念</h1>
-<p>HyperText Transfer Protocol over Secure Socket Layer。在 HTTPS 中，使用传输层安全性(TLS)或安全套接字层(SSL)对通信协议进行加密。也就是 HTTP + SSL(TLS) = HTTPS。</p>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602496015921.png" alt="" loading="lazy"></figure>
-<p>默认端口号443</p>
-<h2 id="ssl-tsl">SSL、TSL</h2>
-<p><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/%E7%BD%91%E7%BB%9C/SSL%E4%B8%8ETSL.md">很久之前的笔记</a></p>
-<blockquote>
-<p>1994年，NetScape公司设计了SSL协议1.0版，但是未发布<br>
-1995年，NetScape公司发布SSL 2.0版，很快发现有严重漏洞<br>
-1996年，SSL 3.0版问世，得到大规模应用，目前已被发现有安全漏洞<br>
-1999年，互联网标准化组织接替NetScape公司，在SSL3.0的基础上发布了TLS 1.0版<br>
-2006年和2008年，TLS进行了两次升级，分别为TLS 1.1版和TLS 1.2版。最新的变动是2018年TLS 1.3正式版发布</p>
-</blockquote>
-<h1 id="为什么会出现能够解决什么问题">为什么会出现，能够解决什么问题</h1>
-<p>主要为了解决HTTP不能解决的问题</p>
-<p>HTTPS 协议提供了三个关键的指标</p>
-<ul>
-<li>防窃听：数据加密(Encryption)</li>
-</ul>
-<blockquote>
-<p>HTTPS 通过对数据加密来使其免受窃听者对数据的监听，这就意味着当用户在浏览网站时，没有人能够监听他和网站之间的信息交换，或者跟踪用户的活动，访问记录等，从而窃取用户信息。</p>
-</blockquote>
-<ul>
-<li>防篡改：数据一致性(Data integrity)</li>
-</ul>
-<blockquote>
-<p>数据在传输的过程中不会被窃听者所修改，用户发送的数据会完整的传输到服务端，保证用户发的是什么，服务器接收的就是什么。</p>
-</blockquote>
-<ul>
-<li>防冒充：身份认证(Authentication)</li>
-</ul>
-<blockquote>
-<p>是指确认对方的真实身份，也就是证明你是你（可以比作人脸识别），它可以防止中间人攻击并建立用户信任。</p>
-</blockquote>
-<h1 id="加密算法">加密算法</h1>
-<p>参考<a href="">2.3 加密算法、摘要、数字签名、CA证书</a></p>
-<h1 id="https发展过程">HTTPS发展过程</h1>
-<h2 id="1内容为什么不使用对称加密">1.内容为什么不使用对称加密？</h2>
-<blockquote>
-<ul>
-<li>
-<p>不同的客户端、服务器数量庞大，所以双方都需要维护大量的密钥，维护成本很高</p>
-</li>
-<li>
-<p>因每个客户端、服务器的安全级别不同，密钥极易泄露</p>
-</li>
-</ul>
-</blockquote>
-<h2 id="2内容为什么不使用非对称加密">2.内容为什么不使用非对称加密？</h2>
-<blockquote>
-<p>公钥是公开的（也就是黑客也会有公钥），如果被黑客截获，其可以使用公钥进行解密，获取其中的内容</p>
-</blockquote>
-<h2 id="3非对称加密和对称机密结合">3.非对称加密和对称机密结合</h2>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602496031486.png" alt="" loading="lazy"></figure>
-<p><strong>通过非对称加密 交换 对称加密的秘钥</strong><br>
-<strong>回话内容通过对称加密进行加密解密</strong></p>
-<p>问题：</p>
-<ul>
-<li>客户端如何获得公钥 (SSL证书)</li>
-<li>如何确认服务器是真实的而不是黑客(CA证书)</li>
-</ul>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602496040769.png" alt="" loading="lazy"></figure>
-<blockquote>
-<p>以浏览器为例说明如下：<br>
-（1）首先浏览器读取证书中的证书所有者、有效期等信息进行一一校验<br>
-（2）浏览器开始查找操作系统中已内置的受信任的证书发布机构CA，与服务器发来的证书中的颁发者CA比对，用于校验证书是否为合法机构颁发<br>
-（3）如果找不到，浏览器就会报错，说明服务器发来的证书是不可信任的。<br>
-（4）如果找到，那么浏览器就会从操作系统中取出 颁发者CA 的公钥，然后对服务器发来的证书里面的签名进行解密<br>
-（5）浏览器使用相同的hash算法计算出服务器发来的证书的hash值，将这个计算的hash值与证书中签名做对比<br>
-（6）对比结果一致，则证明服务器发来的证书合法，没有被冒充<br>
-（7）此时浏览器就可以读取证书中的公钥，用于后续加密了</p>
-</blockquote>
-<p>此处也可以参考<a href="http://www.52im.net/thread-2866-1-1.html">即时通讯安全篇（八）：你知道，HTTPS用的是对称加密还是非对称加密？</a></p>
-<h1 id="https实现原理">HTTPS实现原理</h1>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602496057019.png" alt="" loading="lazy"></figure>
-<p><strong>证书验证阶段：</strong></p>
-<ul>
-<li>1）浏览器发起 HTTPS 请求；</li>
-<li>2）服务端返回 HTTPS 证书；</li>
-<li>3）客户端验证证书是否合法，如果不合法则提示告警。</li>
-</ul>
-<p><strong>数据传输阶段：</strong></p>
-<ul>
-<li>1）当证书验证合法后，在本地生成随机数；</li>
-<li>2）通过公钥加密随机数，并把加密后的随机数传输到服务端；</li>
-<li>3）服务端通过私钥对随机数进行解密；</li>
-<li>4）服务端通过客户端传入的随机数构造对称加密算法，对返回结果内容进行加密后传输。</li>
-</ul>
-<h1 id="ssltsl握手过程">SSL/TSL握手过程</h1>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602496068286.png" alt="" loading="lazy"></figure>
-<h2 id="client-hello">Client Hello</h2>
-<ul>
-<li>支持的协议版本，比如TLS 1.0版</li>
-<li>一个客户端生成的随机数，稍后用于生成&quot;对话密钥&quot;</li>
-<li>支持的加密方法</li>
-<li>支持的压缩方法，一般为 null</li>
-<li>SNI(Server Name Indication)支持</li>
-</ul>
-<h2 id="server-hello">Server Hello</h2>
-<ul>
-<li>确认使用的TLS协议版本，如果两端支持的版本不一致，服务器关闭加密通信</li>
-<li>一个服务器生成的随机数，稍后用于生成&quot;对话密钥&quot;</li>
-<li>确认使用的加密方法，比如RSA公钥加密</li>
-<li>服务器数字证书</li>
-<li>请求客户端发送证书[可选]</li>
-</ul>
-<h2 id="服务证书验证">服务证书验证</h2>
-<ul>
-<li>证书的签发机构是否权威(内置CA证书链)</li>
-<li>证书对应的域名是否正确</li>
-<li>证书是否过期</li>
-</ul>
-<h2 id="回应-server-hello">回应 Server Hello</h2>
-<ul>
-<li>服务端证书通过验证，从中取得公钥</li>
-<li>一个随机数，又称&quot;pre-master key”，该随机数用服务器公钥加密，防止被窃听</li>
-<li>编码改变通知，表示随后的信息都将用双方商定的加密方法和密钥发送</li>
-<li>客户端握手结束通知，表示客户端的握手阶段已经结束。这一项同时也是前面发送的所有内容的hash值，用来供服务器校验</li>
-</ul>
-<h2 id="ssltls-握手总结">SSL/TLS 握手总结</h2>
-<ul>
-<li>Server 端决定使用 TLS 版本及加密套件</li>
-<li>整个握手过程，client 端生成2个随机数，server 端生成1个随机数，一共3个随机数。前两个未加密，第三个使用服务端公钥加密。最终的会话密钥来自这3个随机数</li>
-<li>整个 SSL/TLS 握手过程几乎都是明文</li>
-</ul>
-<h2 id="可参考">可参考</h2>
-<ul>
-<li><a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/network/HTTPS%E4%B8%AD%E7%9A%84TLS.md#1-ssl-%E4%B8%8E-tls">HTTPS中的TLS.md</a></li>
-</ul>
-<h1 id="重要的问题">重要的问题</h1>
-<ul>
-<li>Q: HTTPS用的是对称加密还是非对称加密？</li>
-</ul>
-<blockquote>
-<p>HTTPS 在内容传输的加密上使用的是对称加密，非对称加密只作用在证书验证阶段。</p>
-</blockquote>
-<ul>
-<li>Q: 为什么需要证书？</li>
-</ul>
-<blockquote>
-<p>防止”中间人“攻击，同时可以为网站提供身份证明。</p>
-</blockquote>
-<ul>
-<li>Q: 使用 HTTPS 会被抓包吗？</li>
-</ul>
-<blockquote>
-<p>HTTPS 的数据是加密的，常规下抓包工具代理请求后抓到的包内容是加密状态，无法直接查看。<br>
-但是，正如前文所说，浏览器只会提示安全风险，如果用户授权仍然可以继续访问网站，完成请求。因此，只要客户端是我们自己的终端，我们授权的情况下，便可以组建中间人网络，而抓包工具便是作为中间人的代理。通常 HTTPS 抓包工具的使用方法是会生成一个证书，用户需要手动把证书安装到客户端中，然后终端发起的所有请求通过该证书完成与抓包工具的交互，然后抓包工具再转发请求到服务器，最后把服务器返回的结果在控制台输出后再返回给终端，从而完成整个请求的闭环。</p>
-<p>既然 HTTPS 不能防抓包，那 HTTPS 有什么意义？</p>
-<p>HTTPS 可以防止用户在不知情的情况下通信链路被监听，对于主动授信的抓包操作是不提供防护的，因为这个场景用户是已经对风险知情。要防止被抓包，需要采用应用级的安全防护，例如采用私有的对称加密，同时做好移动端的防反编译加固，防止本地算法被破解。</p>
-</blockquote>
-<ul>
-<li>Q: HTTPS 的传输过程是怎样的？</li>
-</ul>
-<blockquote>
-<p>A: 客户端发起 HTTPS 请求，服务端返回证书，客户端对证书进行验证，验证通过后本地生成用于改造对称加密算法的随机数，通过证书中的公钥对随机数进行加密传输到服务端，服务端接收后通过私钥解密得到随机数，之后的数据交互通过对称加密算法进行加解密。</p>
-</blockquote>
-<h1 id="参考文章">参考文章</h1>
-<ul>
-<li><a href="https://www.toutiao.com/i6803891048046133773/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501755&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202003181122340100140470311FC1C046&amp;group_id=6803891048046133773">这篇 HTTPS 把你不知道的所有都讲清楚了</a></li>
-<li><a href="http://www.52im.net/thread-2866-1-1.html">即时通讯安全篇（八）：你知道，HTTPS用的是对称加密还是非对称加密？</a></li>
-<li><a href="https://zhuanlan.zhihu.com/p/27395037?tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">HTTPS系列干货（一）：HTTPS 原理详解</a></li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[2.1 HTTP]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-21-http/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-21-http/">
-        </link>
-        <updated>2020-10-12T09:45:12.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="1简介">1.简介</h1>
-<p>端口号80，应用层协议</p>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602495937556.png" alt="" loading="lazy"></figure>
-<h2 id="方法">方法</h2>
-<ul>
-<li>GET ： 获取资源</li>
-<li>POST ： 传输实体主体</li>
-<li>PUT ： 传输文件</li>
-<li>HEAD ： 获得报文首部</li>
-<li>DELETE ： 删除文件</li>
-<li>OPTIONS ： 询问支持的方法</li>
-<li>TRACE ： 追踪路径</li>
-<li>CONNECT ： 要求使用隧道协议链接代理（使用SSL Secure Sockets Layer 安全套接层、或 TLS Transport Layer Security 传输层安全）</li>
-</ul>
-<p><strong>持久连接节省通信量 HTTP keep-alive或connection reuse，只要任意一方没有明确提出断开连接，则保持TCP状态</strong></p>
-<h1 id="2瓶颈和缺点">2.瓶颈和缺点</h1>
-<h2 id="缺点">缺点</h2>
-<ul>
-<li>明文传输 （容易窃听）</li>
-<li>缺乏服务认证手段 （容易被中间人攻击）</li>
-<li>缺乏完整性校验 （容易被篡改）</li>
-</ul>
-<h2 id="瓶颈">瓶颈</h2>
-<ul>
-<li>不保存状态</li>
-<li>一条连接上只能发送一个请求</li>
-<li>请求只能从客户端开发，客户端不能接收除响应外的指令</li>
-<li>请求、响应首部未经压缩就发送。首部信息越多延迟越长</li>
-<li>发送冗长的首部。每次互相发送相同的首部造成的浪费较多</li>
-<li>可任意选择数据压缩格式。非强制压缩发送</li>
-</ul>
-<h1 id="3版本区别">3.版本区别</h1>
-<p><a href="https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A?">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></p>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602495954703.png" alt="" loading="lazy"></figure>
-<blockquote>
-<p>影响一个 HTTP 网络请求的因素主要有两个：带宽和延迟。</p>
-<p>带宽：如果说我们还停留在拨号上网的阶段，带宽可能会成为一个比较严重影响请求的问题，但是现在网络基础建设已经使得带宽得到极大的提升，我们不再会担心由带宽而影响网速，那么就只剩下延迟了。</p>
-<p>延迟：</p>
-<ul>
-<li>
-<p>浏览器阻塞（HOL blocking）：浏览器会因为一些原因阻塞请求。浏览器对于同一个域名，同时只能有 4 个连接（这个根据浏览器内核不同可能会有所差异），超过浏览器最大连接数限制，后续请求就会被阻塞。</p>
-</li>
-<li>
-<p>DNS 查询（DNS Lookup）：浏览器需要知道目标服务器的 IP 才能建立连接。将域名解析为 IP 的这个系统就是 DNS。这个通常可以利用DNS缓存结果来达到减少这个时间的目的。</p>
-</li>
-<li>
-<p>建立连接（Initial connection）：HTTP 是基于 TCP 协议的，浏览器最快也要在第三次握手时才能捎带 HTTP 请求报文，达到真正的建立连接，但是这些连接无法复用会导致每次请求都经历三次握手和慢启动。三次握手在高延迟的场景下影响较明显，慢启动则对文件类大请求影响较大。</p>
-</li>
-</ul>
-</blockquote>
-<h2 id="11-和-10和的区别">1.1 和 1.0和的区别</h2>
-<ul>
-<li>
-<p><strong>缓存处理</strong><br>
-在HTTP1.0中主要使用header里的If-Modified-Since,Expires来做为缓存判断的标准，HTTP1.1则引入了更多的缓存控制策略例如Entity tag，If-Unmodified-Since, If-Match, If-None-Match等更多可供选择的缓存头来控制缓存策略。</p>
-</li>
-<li>
-<p><strong>带宽优化及网络连接的使用</strong><br>
-HTTP1.0中，存在一些浪费带宽的现象，例如客户端只是需要某个对象的一部分，而服务器却将整个对象送过来了，并且不支持断点续传功能，HTTP1.1则在请求头引入了range头域，它允许只请求资源的某个部分，即返回码是206（Partial Content），这样就方便了开发者自由的选择以便于充分利用带宽和连接。</p>
-</li>
-<li>
-<p><strong>错误通知的管理</strong><br>
-在HTTP1.1中新增了24个错误状态响应码，如409（Conflict）表示请求的资源与资源的当前状态发生冲突；410（Gone）表示服务器上的某个资源被永久性的删除。</p>
-</li>
-<li>
-<p><strong>Host头处理</strong><br>
-在HTTP1.0中认为每台服务器都绑定一个唯一的IP地址，因此，请求消息中的URL并没有传递主机名（hostname）。但随着虚拟主机技术的发展，在一台物理服务器上可以存在多个虚拟主机（Multi-homed Web Servers），并且它们共享一个IP地址。HTTP1.1的请求消息和响应消息都应支持Host头域，且请求消息中如果没有Host头域会报告一个错误（400 Bad Request）。</p>
-</li>
-<li>
-<p><strong>长连接</strong><br>
-HTTP 1.1支持长连接（PersistentConnection）和请求的流水线（Pipelining）处理，在一个TCP连接上可以传送多个HTTP请求和响应，减少了建立和关闭连接的消耗和延迟，在HTTP1.1中默认开启Connection： keep-alive，一定程度上弥补了HTTP1.0每次请求都要创建连接的缺点。</p>
-</li>
-</ul>
-<p><strong>Pipelining会造成队头阻塞</strong></p>
-<blockquote>
-<p>队头阻塞是指当顺序发送的请求序列中的一个请求因为某种原因被阻塞时，在后面排队的所有请求也一并被阻塞，会导致客户端迟迟收不到数据。</p>
-<p>针对队头阻塞：</p>
-<p>1.将同一页面的资源分散到不同域名下，提升连接上限。虽然能公用一个 TCP 管道，但是在一个管道中同一时刻只能处理一个请求，在当前的请求没有结束之前，其他的请求只能处于阻塞状态。<br>
-2.减少请求数量<br>
-3.内联一些资源：css、base64 图片等<br>
-4.合并小文件减少资源数</p>
-</blockquote>
-<h2 id="spdy-http1x的优化">SPDY: HTTP1.x的优化</h2>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602495966953.webp" alt="" loading="lazy"></figure>
-<blockquote>
-<p>SPDY位于HTTP之下，TCP和SSL之上，这样可以轻松兼容老版本的HTTP协议(将HTTP1.x的内容封装成一种新的frame格式)，同时可以使用已有的SSL功能。</p>
-</blockquote>
-<ul>
-<li>
-<p><strong>降低延迟</strong><br>
-针对HTTP高延迟的问题，SPDY优雅的采取了<strong>多路复用（multiplexing）</strong>。多路复用通过多个请求stream共享一个tcp连接的方式，解决了HOL blocking的问题，降低了延迟同时提高了带宽的利用率。</p>
-</li>
-<li>
-<p><strong>请求优先级（request prioritization）</strong><br>
-多路复用带来一个新的问题是，在连接共享的基础之上有可能会导致关键请求被阻塞。SPDY允许给每个request设置优先级，这样重要的请求就会优先得到响应。比如浏览器加载首页，首页的html内容应该优先展示，之后才是各种静态资源文件，脚本文件等加载，这样可以保证用户能第一时间看到网页内容。</p>
-</li>
-<li>
-<p><strong>header压缩</strong><br>
-前面提到HTTP1.x的header很多时候都是重复多余的。选择合适的压缩算法可以减小包的大小和数量。</p>
-</li>
-<li>
-<p><strong>基于HTTPS的加密协议传输</strong><br>
-大大提高了传输数据的可靠性。</p>
-</li>
-<li>
-<p><strong>服务端推送（server push）</strong><br>
-采用了SPDY的网页，例如我的网页有一个style.css的请求，在客户端收到style.css数据的同时，服务端会将style.js的文件推送给客户端，当客户端再次尝试获取style.js时就可以直接从缓存中获取到，不用再发请求了。</p>
-</li>
-</ul>
-<h2 id="20-和-spdy-的区别">2.0 和 SPDY 的区别</h2>
-<ul>
-<li>HTTP2.0 支持明文 HTTP 传输，而 SPDY 强制使用 HTTPS</li>
-<li>HTTP2.0 消息头的压缩算法采用 <a href="http://http2.github.io/http2-spec/compression.html">HPACK</a>，而非 SPDY 采用的 <a href="http://zh.wikipedia.org/wiki/DEFLATE">DEFLATE</a></li>
-</ul>
-<h2 id="20-和-1x-的区别">2.0 和 1.X 的区别</h2>
-<ul>
-<li>
-<p>新的二进制格式（Binary Format），HTTP1.x的解析是基于文本。基于文本协议的格式解析存在天然缺陷，文本的表现形式有多样性，要做到健壮性考虑的场景必然很多，二进制则不同，只认0和1的组合。基于这种考虑HTTP2.0的协议解析决定采用二进制格式，实现方便且健壮。</p>
-</li>
-<li>
-<p>多路复用（MultiPlexing），即连接共享，即每一个request都是是用作连接共享机制的。一个request对应一个id，这样一个连接上可以有多个request，每个连接的request可以随机的混杂在一起，接收方可以根据request的 id将request再归属到各自不同的服务端请求里面。</p>
-</li>
-<li>
-<p>header压缩，如上文中所言，对前面提到过HTTP1.x的header带有大量信息，而且每次都要重复发送，HTTP2.0使用encoder来减少需要传输的header大小，通讯双方各自cache一份header fields表，既避免了重复header的传输，又减小了需要传输的大小。</p>
-</li>
-<li>
-<p>服务端推送（server push），同SPDY一样，HTTP2.0也具有server push功能。</p>
-</li>
-</ul>
-<h1 id="4状态码">4.状态码</h1>
-<h2 id="类别">类别</h2>
-<ul>
-<li>1XX：信息性状态码（接收的请求正在处理）</li>
-<li>2XX：成功状态码 （请求正常处理完毕）</li>
-<li>3XX：重定向状态码 （需要进行附加操作以完成请求）</li>
-<li>4XX：客户端错误状态码 （服务器无法处理请求）</li>
-<li>5XX：服务端错误状态码 （服务器处理请求出错）</li>
-</ul>
-<h2 id="摘要">摘要</h2>
-<ul>
-<li>
-<p>200 OK，请求被正常处理</p>
-</li>
-<li>
-<p>204 Not Content 响应报文不包含注意部分</p>
-</li>
-<li>
-<p>206 Partial Content 客户端进行了范围请求</p>
-</li>
-<li>
-<p>301 Moved Permanently 永久重定向</p>
-</li>
-<li>
-<p>302 Found 临时重定向，请求的资源被分配了新的URI，希望用户能使用新的URI访问</p>
-</li>
-<li>
-<p>303 See Other</p>
-</li>
-<li>
-<p>304 Not Modified 与请求报文包含If-Match、If-Modified-Since等对应，返回304状态码的报文不包含主体部分</p>
-</li>
-<li>
-<p>307 Temporary Redirect 临时重定向</p>
-</li>
-<li>
-<p>400 Bad Request 请求报文中存在语法错误</p>
-</li>
-<li>
-<p>401 Unauthorized 需要有通过HTTP认证的认证信息</p>
-</li>
-<li>
-<p>403 Forbidden 对请求资源的访问被拒绝</p>
-</li>
-<li>
-<p>404 Not Found 服务器无法找到请求的资源</p>
-</li>
-<li>
-<p>500 Internal Server Error，服务器执行请求时出错</p>
-</li>
-<li>
-<p>503 Service Unavailable，服务器暂时处于超负载或正在停机维护，无法处理请求</p>
-</li>
-</ul>
-<h1 id="5参考文章">5.参考文章</h1>
-<ul>
-<li><a href="https://mp.weixin.qq.com/s/GICbiyJpINrHZ41u_4zT-A?">HTTP1.0、HTTP1.1 和 HTTP2.0 的区别</a></li>
-<li><a href="https://github.com/Snailclimb/JavaGuide/blob/master/docs/network/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C.md">JavaGuid/计算机网络.md</a></li>
-<li><a href="https://www.toutiao.com/i6799544609371324932/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501771&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202003181122500100140400932AA62FFD&amp;group_id=6799544609371324932">一文读懂 HTTP/1、HTTP/2、HTTP/3</a></li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[2.0 应用层]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-20-ying-yong-ceng/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-20-ying-yong-ceng/">
-        </link>
-        <updated>2020-10-12T09:42:01.000Z</updated>
-        <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="概述">概述</h1>
-<p><strong>体系结构</strong></p>
-<p>CS结构、P2P体系结构</p>
-<p><strong>进程寻址</strong></p>
-<p>IP地址、端口号</p>
-<p><strong>可靠数据传输、吞吐量、定时、安全性</strong></p>
-<p><strong>应用层协议定义了：</strong></p>
-<ul>
-<li>交换的报文类型，例如请求报文和响应报文</li>
-<li>报文类型的语法，如各个字段和这些字段是如何额描述的</li>
-<li>字段的语义</li>
-<li>一个进程何时以及如何发送报文，对报文进行响应的规则</li>
-</ul>
-<p>RTT(Round0Trip Time)包括分组传播时延、分组在中间路由器和交换机上的排队时延以及分组处理时延。</p>
-<h1 id="http">HTTP</h1>
-<p>详见</p>
-<ul>
-<li><a href="">2.1 HTTP</a></li>
-<li><a href="">2.2 HTTPS</a></li>
-</ul>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602495760738.png" alt="" loading="lazy"></figure>
-<h2 id="请求报文">请求报文</h2>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602495772288.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602495781388.png" alt="" loading="lazy"></figure>
-<h2 id="响应报文">响应报文</h2>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602495791638.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602495800504.png" alt="" loading="lazy"></figure>
-<h2 id="cookie">cookie</h2>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602495816155.png" alt="" loading="lazy"></figure>
-<h2 id="web缓存">Web缓存</h2>
-<p>Web缓存器（Web cache）也叫代理服务器 （proxy server）</p>
-<p>CDN（内容分发网络  Content Distribution Network）</p>
-<h1 id="dns">DNS</h1>
-<h2 id="介绍">介绍</h2>
-<p>Domain Name System  域名系统，提供主机名到IP地址的转换服务。</p>
-<p><strong>DNS运行在UDP之上，端口号53</strong></p>
-<p>DNS是</p>
-<ul>
-<li>一个由分层的DNS服务器实现的分布式数据库</li>
-<li>一个使得主机能够查询分布式数据库的应用层协议</li>
-</ul>
-<p>还提供</p>
-<ul>
-<li>主机别名</li>
-<li>邮件服务器别名</li>
-<li><strong>负载分配</strong><br>
-例如 cnn.com冗余分布在多台服务器上，每个都有不同的IP地址</li>
-</ul>
-<h2 id="实现">实现</h2>
-<h3 id="分布式-层次数据库">分布式、层次数据库</h3>
-<ul>
-<li>根DNS服务器</li>
-<li>顶级域（Top-Level Domain， TLD）DNS服务器</li>
-<li>权威DNS服务器</li>
-<li>本地DNS服务器（严格的说不属于DNS服务器的层次结构）
-<blockquote>
-<p>DHCP</p>
-</blockquote>
-</li>
-</ul>
-<p><img src="https://sparkfengbo.github.io/post-images/1602495837438.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602495846921.png" alt="" loading="lazy"></p>
-<blockquote>
-<p>DNS服务器存储了资源记录（Resource Record， RR）<br>
-每个RR是一个四元组<br>
-（Name， Value， Type， TTL）<br>
-TTL是该记录的生存时间</p>
-</blockquote>
-<h3 id="dns缓存">DNS缓存</h3>
-<h3 id="报文">报文</h3>
-<p>DNS只有查询报文和回答报文，并且格式相同</p>
-<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602495854987.png" alt="" loading="lazy"></figure>
-<h1 id="ftp">FTP</h1>
-<p>FTP使用两个并行的TCP连接，一个是<strong>控制连接</strong>，一个是<strong>数据连接</strong></p>
-<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602495864487.png" alt="" loading="lazy"></figure>
-<p>控制连接贯穿整个用户会话期间，但是每一次文件传输都需要新建数据连接（数据连接是非持续的）</p>
-<p>FTP服务器必须在整个会话期间保留用户的状态。</p>
-<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602495872120.png" alt="" loading="lazy"></figure>
-<h1 id="smtp">SMTP</h1>
-<ul>
-<li>用户代理</li>
-<li>邮件服务器</li>
-<li>简单邮件传输协议 Simple Mail Transfer Protocol SMTP</li>
-</ul>
-<p><strong>端口号25</strong><br>
-<img src="https://sparkfengbo.github.io/post-images/1602495880754.png" alt="" loading="lazy"></p>
-<h2 id="邮件报文格式">邮件报文格式</h2>
-<p>暂无</p>
-<h2 id="邮件访问协议">邮件访问协议</h2>
-<ul>
-<li>第三版的邮局协议 Post Office Protocol-Version 3 POP3
-<blockquote>
-<p>极简的邮件访问协议</p>
-</blockquote>
-</li>
-<li>因特网邮件访问协议 Internet Mail Access Protocol IMAP
-<blockquote>
-<p>POP3用户不能创建远程文件夹，并为报文指派文件夹<br>
-IMAP 比 POP3复杂的多<br>
-IMAP 提供 创建文件夹以及将邮件从一个文件夹移动到另一个文件夹<br>
-IMAP 还提供了 在远程文件夹按指定的条件查询邮件的命令<br>
-IMAP 允许用户代理获取报文组件的命令，例如，只读取一个报文的报文首部</p>
-</blockquote>
-</li>
-<li>HTTP<br>
-基于Web的电子邮件</li>
-</ul>
-<h1 id="p2p">P2P</h1>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[1.计算机网络整体概要]]></title>
-        <id>https://sparkfengbo.github.io/post/jsjwl-1ji-suan-ji-wang-luo-zheng-ti-gai-yao/</id>
-        <link href="https://sparkfengbo.github.io/post/jsjwl-1ji-suan-ji-wang-luo-zheng-ti-gai-yao/">
-        </link>
-        <updated>2020-10-12T09:12:36.000Z</updated>
-        <content type="html"><![CDATA[<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602493980490.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602493986156.png" alt="" loading="lazy"></figure>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602493993239.png" alt="" loading="lazy"></figure>
 ]]></content>
     </entry>
 </feed>

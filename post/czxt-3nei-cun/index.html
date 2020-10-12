@@ -1,0 +1,351 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3.内存 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602498168805">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="3.内存 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+1.地址空间
+如果将物理地址空间暴露给进程会有如下问题：
+
+如果用户程序可以寻址内存的每个字节，它们就可以很容易地（故意地或偶然地）破坏操作系统，从而使系统慢慢地停止运行
+想要同时（如果只有一个CPU就轮流执行）运行多个程序是很..." />
+    <meta name="keywords" content="操作系统" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602498168805" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              3.内存
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/IK7I4uoJQ/" class="post-tag">
+                  # 操作系统
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="1地址空间">1.地址空间</h1>
+<p>如果将物理地址空间暴露给进程会有如下问题：</p>
+<ul>
+<li>如果用户程序可以寻址内存的每个字节，它们就可以很容易地（故意地或偶然地）破坏操作系统，从而使系统慢慢地停止运行</li>
+<li>想要同时（如果只有一个CPU就轮流执行）运行多个程序是很困难的</li>
+</ul>
+<blockquote>
+<ul>
+<li>地址空间不隔离</li>
+<li>内存使用效率低</li>
+<li>程序运行的地址不确定</li>
+</ul>
+</blockquote>
+<p>地址空间是一个进程可用于寻址内存的一套地址集合。每个进程都有一个自己的地址空间，并且这个地址空间独立于其他进程的地址空间（除了在一些特殊情况下进程需要共享它们的地址空间外）。</p>
+<p><strong>一种简单的解决方案：</strong></p>
+<p>基址寄存器和界限寄存器</p>
+<h1 id="2空闲内存的管理方法">2.空闲内存的管理方法</h1>
+<h2 id="使用位图进行管理">使用位图进行管理</h2>
+<p>使用位图方法时，内存可能被划分成小到几个字或大到几千字节的分配单元。每个分配单元对应于位图中的一位，0表示空闲，1表示占用 。</p>
+<p>分配单元的大小是一个重要的设计因素。分配单元越小，位图越大。搜索位图也可能比较耗时。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498066200.png" alt="" loading="lazy"></p>
+<h2 id="使用链表进行管理">使用链表进行管理</h2>
+<p>维护一个记录已分配内存段和空闲内存段的链表。其中链表中的一个结点或者包含一个进程，或者是两个进程间的一个空的空闲区。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498066200.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498087712.png" alt="" loading="lazy"></figure>
+<ul>
+<li>首次适配算法
+<ul>
+<li>存储管理器沿着段链表进行搜索，直到找到一个足够大的空闲区，除非空闲区大小和要分配的空间大小正好一样，否则将该空闲区分为两部分，一部分供进程使用，另一部分形成新的空闲区。首次适配算法是一种速度很快的算法，因为它尽可能少地搜索链表结点。</li>
+</ul>
+</li>
+<li>最佳适配算法
+<ul>
+<li>最佳适配算法搜索整个链表（从开始到结束），找出能够容纳进程的最小的空闲区。</li>
+</ul>
+</li>
+<li>最差适配算法
+<ul>
+<li>即总是分配最大的可用空闲区，使新的空闲区比较大从而可以继续使用</li>
+</ul>
+</li>
+<li>快速适配算法
+<ul>
+<li>它为那些常用大小的空闲区维护单独的链表。例如，有一个n项的表，该表的第一项是指向大小为4KB的空闲区链表表头的指针，第二项是指向大小为8KB的空闲区链表表头的指针，第三项是指向大小为12KB的空闲区链表表头的指针，以此类推。像21KB这样的空闲区既可以放在20KB的链表中，也可以放在一个专门存放大小比较特别的空闲区的链表中。</li>
+</ul>
+</li>
+</ul>
+<h1 id="3处理内存超载的方法">3.处理内存超载的方法</h1>
+<p>有两种处理内存超载的通用方法。最简单的策略是<strong>交换（swapping）技术</strong>，即把一个进程完整调入内存，使该进程运行一段时间，然后把它存回磁盘。空闲进程主要存储在磁盘上，所以当它们不运行时就不会占用内存（尽管它们的一些进程会周期性地被唤醒以完成相关工作，然后就又进入睡眠状态）。另一种策略是<strong>虚拟内存（virtual memory）</strong></p>
+<h1 id="4虚拟内存">4.虚拟内存</h1>
+<p>虚拟内存的基本思想是：每个程序拥有自己的地址空间，这个空间被分割成多个块，每一块称作一页或页面（page）。每一页有连续的地址范围。这些页被映射到物理内存，但并不是所有的页都必须在内存中才能运行程序。当程序引用到一部分在物理内存中的地址空间时，由硬件立刻执行必要的映射。当程序引用到一部分不在物理内存中的地址空间时，由操作系统负责将缺失的部分装入物理内存并重新执行失败的指令。</p>
+<p>从某个角度来讲，虚拟内存是对基址寄存器和界限寄存器的一种综合。</p>
+<h2 id="41-分页">4.1 分页</h2>
+<h3 id="mmu-内存管理单元memory-management-unitmmu">MMU - 内存管理单元（Memory Management Unit，MMU）</h3>
+<blockquote>
+<p>在任何一台计算机上，程序引用了一组内存地址。当程序执行指令</p>
+<p>MOV REG,1000</p>
+<p>时，它把地址为1000的内存单元的内容复制到REG中（或者相反，这取决于计算机的型号）。地址可以通过索引、基址寄存器、段寄存器或其他方式产生。</p>
+<p><strong>由程序产生的这些地址称为虚拟地址（virtual address），它们构成了一个虚拟地址空间（virtual address space）。在没有虚拟内存的计算机上，系统直接将虚拟地址送到内存总线上，读写操作使用具有同样地址的物理内存字；而在使用虚拟内存的情况下，虚拟地址不是被直接送到内存总线上，而是被送到内存管理单元（Memory Management Unit，MMU），MMU把虚拟地址映射为物理内存地址</strong></p>
+</blockquote>
+<p><strong>缺页中断</strong></p>
+<p>MMU注意到该页面没有被映射（在图中用叉号表示），于是使CPU陷入到操作系统，这个陷阱称为缺页中断（page fault）。操作系统找到一个很少使用的页框且把它的内容写入磁盘（如果它不在磁盘上）。随后把需要访问的页面读到刚才回收的页框中，修改映射关系，然后重新启动引起陷阱的指令。</p>
+<h3 id="页面和页框">页面和页框</h3>
+<p>虚拟地址空间按照固定大小划分成称为页面（page）的若干单元。在物理内存中对应的单元称为页框（page frame）。页面和页框的大小通常是一样的。</p>
+<h3 id="工作流程">工作流程</h3>
+<p>这个例子中，有一台可以产生16位地址的计算机，地址范围从0到64K，且这些地址是虚拟地址。然而，这台计算机只有32KB的物理内存，因此，虽然可以编写64KB的程序，但它们却不能被完全调入内存运行。在磁盘上必须有一个可以大到64KB的程序核心映像的完整副本，以保证程序片段在需要时能被调入内存。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498101162.png" alt="" loading="lazy"></figure>
+<h2 id="42-页表">4.2 页表</h2>
+<blockquote>
+<p>虚拟地址被分成虚拟页号（高位部分）和偏移量（低位部分）两部分。</p>
+</blockquote>
+<p>虚拟地址8196（二进制是0010000000000100）用图3-9所示的MMU映射机制进行映射，输入的16位虚拟地址被分为4位的页号和12位的偏移量。4位的页可以表示16个页面，12位的偏移可以为一页内的全部4096个字节编址。</p>
+<p>可用页号作为页表（page table）的索引，以得出对应于该虚拟页面的页框号。如果“在/不在”位是0，则将引起一个操作系统陷阱。如果该位是1，则将在页表中查到的页框号复制到输出寄存器的高3位中，再加上输入虚拟地址中的低12位偏移量。如此就构成了15位的物理地址。输出寄存器的内容随即被作为物理地址送到内存总线。</p>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498109529.png" alt="" loading="lazy"></figure>
+<p><strong>页表项结构</strong></p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498116580.png" alt="" loading="lazy"></figure>
+<p><strong>大内存分页</strong></p>
+<ul>
+<li>多级页表
+<ul>
+<li>引入多级页表的原因是避免把全部页表一直保存在内存中。特别是那些从不需要的页表就不应该保留。</li>
+</ul>
+</li>
+<li>倒排页面
+<ul>
+<li>在实际内存中每一个页框有一个表项，而不是每一个虚拟页面有一个表项</li>
+</ul>
+</li>
+</ul>
+<h2 id="43-加速分页-tlbtranslation-lookaside-buffer">4.3 加速分页 - TLB（translation lookaside buffer）</h2>
+<p><strong>问题</strong></p>
+<ul>
+<li>1)虚拟地址到物理地址的映射必须非常快。</li>
+<li>2)如果虚拟地址空间很大，页表也会很大。</li>
+</ul>
+<blockquote>
+<p>最简单的设计（至少从概念上）是使用由一组“快速硬件寄存器”组成的单一页表，每一个表项对应一个虚页，虚页号作为索引，如图3-10所示。当启动一个进程时，操作系统把保存在内存中的进程页表的副本载入到寄存器中。在进程运行过程中，不必再为页表而访问内存。这个方法的优势是简单并且在映射过程中不需要访问内存。而缺点是在页表很大时，代价高昂。而且每一次上下文切换都必须装载整个页表，这样会降低性能。<br>
+另一种极端方法是，整个页表都在内存中。那时所需的硬件仅仅是一个指向页表起始位置的寄存器。这样的设计使得在上下文切换时，进行“虚拟地址到物理地址”的映射只需重新装入一个寄存器。当然，这种做法的缺陷是在执行每条指令时，都需要一次或多次内存访问，以完成页表项的读入，速度非常慢。</p>
+</blockquote>
+<p><strong>转换检测缓冲区</strong></p>
+<blockquote>
+<p><strong>这种解决方案的建立基于这样一种现象：大多数程序总是对少量的页面进行多次的访问，而不是相反的。因此，只有很少的页表项会被反复读取，而其他的页表项很少被访问。</strong></p>
+<p>上面提到的解决方案是为计算机设置一个小型的硬件设备，将虚拟地址直接映射到物理地址，而不必再访问页表。这种设备称为转换检测缓冲区 <strong>（Translation Lookaside Buffer，TLB）</strong>，有时又称为相联存储器（associate memory）<br>
+它通常在MMU中，包含少量的表项，在此例中为8个，在实际中很少会超过64个。每个表项记录了一个页面的相关信息，包括虚拟页号、页面的修改位、保护码（读/写/执行权限）和该页所对应的物理页框。除了虚拟页号（不是必须放在页表中的），这些域与页表中的域是一一对应的。另外还有一位用来记录这个表项是否有效（即是否在使用）。</p>
+</blockquote>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498127313.png" alt="" loading="lazy"></figure>
+<h1 id="5页面置换算法">5.页面置换算法</h1>
+<ul>
+<li>
+<p>最优页面置换算法</p>
+<ul>
+<li>无法实现，需要提前知道页面什么时候被访问，将最不可能被访问的页面置换出去</li>
+</ul>
+</li>
+<li>
+<p>最近未使用页面置换算法</p>
+<ul>
+<li>NRU（Not Recently Used）</li>
+</ul>
+</li>
+<li>
+<p>先进先出页面置换算法</p>
+<ul>
+<li>FIFO</li>
+<li>简单，FIFO算法可能会把经常使用的页面置换出去”</li>
+</ul>
+</li>
+<li>
+<p>第二次机会页面置换算法</p>
+<ul>
+<li>FIFO的改进算法</li>
+<li>检查最老页面的R位。如果R位是0，那么这个页面既老又没有被使用，可以立刻置换掉；如果是1，就将R位清0，并把该页面放到链表的尾端，修改它的装入时间使它就像刚装入的一样，然后继续搜索。</li>
+<li>一个比较合理的算法，但它经常要在链表中移动页面，既降低了效率又不是很有必要。</li>
+</ul>
+</li>
+<li>
+<p>时钟页面置换算法<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498138629.png" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>最近最少使用算法</p>
+<ul>
+<li>LRU<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498149098.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+</ul>
+<h1 id="6分段">6.分段</h1>
+<p>段表，段基地址，段界限<br>
+<img src="https://sparkfengbo.github.io/post-images/1602498156978.png" alt="" loading="lazy"></p>
+<p><strong>为什么不用分段？</strong></p>
+<p>因为分段粒度太大，以程序的单位，内存不足都是换入换出整个程序，有大量的磁盘访问操作，效率比分页低，实际上分页是从分段发展而来。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4">1.地址空间</a></li>
+<li><a href="#2%E7%A9%BA%E9%97%B2%E5%86%85%E5%AD%98%E7%9A%84%E7%AE%A1%E7%90%86%E6%96%B9%E6%B3%95">2.空闲内存的管理方法</a>
+<ul>
+<li><a href="#%E4%BD%BF%E7%94%A8%E4%BD%8D%E5%9B%BE%E8%BF%9B%E8%A1%8C%E7%AE%A1%E7%90%86">使用位图进行管理</a></li>
+<li><a href="#%E4%BD%BF%E7%94%A8%E9%93%BE%E8%A1%A8%E8%BF%9B%E8%A1%8C%E7%AE%A1%E7%90%86">使用链表进行管理</a></li>
+</ul>
+</li>
+<li><a href="#3%E5%A4%84%E7%90%86%E5%86%85%E5%AD%98%E8%B6%85%E8%BD%BD%E7%9A%84%E6%96%B9%E6%B3%95">3.处理内存超载的方法</a></li>
+<li><a href="#4%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98">4.虚拟内存</a>
+<ul>
+<li><a href="#41-%E5%88%86%E9%A1%B5">4.1 分页</a>
+<ul>
+<li><a href="#mmu-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%8D%95%E5%85%83memory-management-unitmmu">MMU - 内存管理单元（Memory Management Unit，MMU）</a></li>
+<li><a href="#%E9%A1%B5%E9%9D%A2%E5%92%8C%E9%A1%B5%E6%A1%86">页面和页框</a></li>
+<li><a href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B">工作流程</a></li>
+</ul>
+</li>
+<li><a href="#42-%E9%A1%B5%E8%A1%A8">4.2 页表</a></li>
+<li><a href="#43-%E5%8A%A0%E9%80%9F%E5%88%86%E9%A1%B5-tlbtranslation-lookaside-buffer">4.3 加速分页 - TLB（translation lookaside buffer）</a></li>
+</ul>
+</li>
+<li><a href="#5%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95">5.页面置换算法</a></li>
+<li><a href="#6%E5%88%86%E6%AE%B5">6.分段</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/czxt-2jin-cheng/">
+              <h3 class="post-title">
+                2.进程
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

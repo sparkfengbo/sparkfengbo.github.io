@@ -1,0 +1,558 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2.进程 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602498168805">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="2.进程 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+1.进程
+状态
+
+1)运行态（该时刻进程实际占用CPU）。
+2)就绪态（可运行，但因为其他进程正在运行而暂时停止）。
+3)阻塞态（除非某种外部事件发生，否则进程不能运行）。
+
+
+转换2和3是由进程调度程序引起的，进程调度程序是操..." />
+    <meta name="keywords" content="操作系统" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602498168805" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              2.进程
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-12
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/IK7I4uoJQ/" class="post-tag">
+                  # 操作系统
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="1进程">1.进程</h1>
+<h2 id="状态">状态</h2>
+<ul>
+<li>1)运行态（该时刻进程实际占用CPU）。</li>
+<li>2)就绪态（可运行，但因为其他进程正在运行而暂时停止）。</li>
+<li>3)阻塞态（除非某种外部事件发生，否则进程不能运行）。</li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602497825302.png" alt="" loading="lazy"></figure>
+<p>转换2和3是由进程调度程序引起的，进程调度程序是操作系统的一部分，进程甚至感觉不到调度程序的存在。</p>
+<h2 id="pcb">PCB</h2>
+<p>每个进程在操作系统内用进程控制块（PCB）表示。</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602497835899.png" alt="" loading="lazy"></figure>
+<ul>
+<li>进程状态 新建、就绪、停止、运行、等待</li>
+<li>程序计数器</li>
+<li>CPU寄存器</li>
+<li>CPU调度信息
+<ul>
+<li>进程优先级、调度队列指针、调度参数</li>
+</ul>
+</li>
+<li>内存管理信息
+<ul>
+<li>基址、界限寄存器的值、页表、段表</li>
+</ul>
+</li>
+<li>I/O状态信息
+<ul>
+<li>IO设备列表、打开的文件列表等</li>
+</ul>
+</li>
+</ul>
+<h1 id="2线程">2.线程</h1>
+<blockquote>
+<p><strong>进程和线程的区别?</strong></p>
+<p>进程是资源分配的最小单位，线程是程序执行的最小单位。</p>
+<p>进程有自己的独立地址空间。线程是共享进程中的数据的，使用相同的地址空间，因此CPU切换一个线程的花费远比进程要小很多，同时创建一个线程的开销也比进程要小很多。</p>
+<p>线程之间的通信更方便，同一进程下的线程共享全局变量、静态变量等数据，而进程之间的通信需要以通信的方式（IPC)进行。不过如何处理好同步与互斥是编写多线程程序的难点。<br>
+但是多进程程序更健壮，多线程程序只要有一个线程死掉，整个进程也死掉了，而一个进程死掉并不会对另外一个进程造成影响，因为进程有自己独立的地址空间。</p>
+</blockquote>
+<h2 id="线程访问权限">线程访问权限</h2>
+<p>私有的存储空间：</p>
+<ul>
+<li>栈</li>
+<li>线程局部存储（Thread Local Storage）</li>
+<li>寄存器</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602497852100.png" alt="" loading="lazy"></figure>
+<h2 id="并发与并行">并发与并行</h2>
+<blockquote>
+<p>并发的关键是你有处理多个任务的能力，不一定要同时。<br>
+并行的关键是你有同时处理多个任务的能力。</p>
+<p>所以我认为它们最关键的点就是：是否是『同时』。</p>
+</blockquote>
+<h2 id="实现">实现</h2>
+<h3 id="在用户空间中">在用户空间中</h3>
+<ul>
+<li>优点：
+<ul>
+<li>用户级线程包可以在不支持线程的操作系统上实现</li>
+<li>它允许每个进程有自己定制的调度算法</li>
+</ul>
+</li>
+<li>缺点：
+<ul>
+<li>如果一个线程开始运行，那么在该进程中的其他线程就不能运行，除非第一个线程自动放弃CPU。在一个单独的进程内部，没有时钟中断，所以不可能用轮转调度（轮流）的方式调度进程</li>
+<li>阻塞系统调用，进程会被阻塞</li>
+</ul>
+</li>
+</ul>
+<p><strong>多对一模型</strong>，例如Green thread、GNU Portable thread</p>
+<blockquote>
+<p>线程管理由线程库在用户空间进行，效率高。但是如果一个线程执行了阻塞系统调用，任意时刻只有一个线程能够访问内核，多个线程不能并行的运行在多处理器上，所以整个进程会被阻塞。</p>
+</blockquote>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602497866182.png" alt="" loading="lazy"></figure>
+<h3 id="在内核中间中">在内核中间中</h3>
+<blockquote>
+<p>在内核中有用来记录系统中所有线程的线程表。</p>
+</blockquote>
+<ul>
+<li>
+<p>优点：</p>
+<ul>
+<li>更好的并发功能</li>
+</ul>
+</li>
+<li>
+<p>缺点：</p>
+<ul>
+<li>每创建一个用户线程就需要创建一个内核线程</li>
+</ul>
+</li>
+</ul>
+<p><strong>一对一模型</strong>，Linux和Windows</p>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602497879332.png" alt="" loading="lazy"></figure>
+<h3 id="混合实现">混合实现</h3>
+<p><strong>多对多模型</strong>多路复用了用户线程到同样数量或更小数量的内核线程上。</p>
+<h2 id="线程状态">线程状态</h2>
+<ul>
+<li>运行</li>
+<li>就绪</li>
+<li>等待</li>
+</ul>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602497891365.png" alt="" loading="lazy"></figure>
+<h2 id="线程调度">线程调度</h2>
+<p>都带有优先级调度和轮转法</p>
+<p>一般IO密集型比CPU密集型线程更容易得到优先级提升。</p>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602497900748.png" alt="" loading="lazy"></figure>
+<h2 id="可抢占式线程和非可抢占式线程">可抢占式线程和非可抢占式线程</h2>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602497910265.png" alt="" loading="lazy"></figure>
+<h2 id="同步与锁">同步与锁</h2>
+<ul>
+<li>锁</li>
+<li>信号量</li>
+<li>互斥量
+<ul>
+<li>和信号量不同的是，信号量可以被一个线程获取后，另一个线程释放。而互斥量是哪个线程获取，哪个线程释放。</li>
+</ul>
+</li>
+<li>临界区</li>
+<li>读写锁</li>
+</ul>
+<figure data-type="image" tabindex="9"><img src="https://sparkfengbo.github.io/post-images/1602497923265.png" alt="" loading="lazy"></figure>
+<h3 id="volatile">volatile</h3>
+<figure data-type="image" tabindex="10"><img src="https://sparkfengbo.github.io/post-images/1602497934632.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="11"><img src="https://sparkfengbo.github.io/post-images/1602497947148.png" alt="" loading="lazy"></figure>
+<h1 id="3调度">3.调度</h1>
+<h2 id="抢占式和非抢占式">抢占式和非抢占式</h2>
+<ul>
+<li>
+<p>非抢占式</p>
+<ul>
+<li>让进程运行直到结束或阻塞的调度方式</li>
+<li>容易实现 适合专用系统，不适合通用系统</li>
+</ul>
+</li>
+<li>
+<p>抢占式</p>
+<ul>
+<li>允许将逻辑上可继续运行的在运行过程暂停的调度方式</li>
+<li>可防止单一进程长时间独占CPU 系统开销大</li>
+</ul>
+</li>
+</ul>
+<h2 id="进程调度">进程调度</h2>
+<h3 id="批处理系统"><a href="https://baike.baidu.com/item/%E6%89%B9%E5%A4%84%E7%90%86%E7%B3%BB%E7%BB%9F/3702274?fr=aladdin">批处理系统</a>调度</h3>
+<ul>
+<li>
+<p>先来先服务 first-come first-severd （FCFS）</p>
+<ul>
+<li>优点 简单</li>
+<li>缺点 不够灵活，尤其是前面有占用时间很长的任务，而后面的任务耗时较短</li>
+</ul>
+</li>
+<li>
+<p>最短作业优先 shortest job first （SJF）</p>
+</li>
+<li>
+<p>最短剩余时间优先 shortest remaining time next</p>
+<p>调度程序总是选择剩余运行时间最短的那个进程运行。再次提醒，有关的运行时间必须提前掌握</p>
+</li>
+</ul>
+<h3 id="交互系统调度">交互系统调度</h3>
+<ul>
+<li>轮转调度</li>
+</ul>
+<blockquote>
+<p>轮转调度做了一个隐含的假设，即所有的进程同等重要</p>
+<p>每个进程被分配一个时间段，称为时间片（quantum），即允许该进程在该时间段中运行。如果在时间片结束时该进程还在运行，则将剥夺CPU并分配给另一个进程。</p>
+<p>从一个进程切换到另一个进程是需要一定时间进行管理事务处理的——保存和装入寄存器值及内存映像、更新各种表格和列表、清除和重新调入内存高速缓存等。假如进程切换（process switch），有时称为上下文切换（context switch），需要1ms，包括切换内存映像、清除和重新调入高速缓存等。</p>
+</blockquote>
+<ul>
+<li>优先级调度</li>
+<li>多级队列</li>
+</ul>
+<figure data-type="image" tabindex="12"><img src="https://sparkfengbo.github.io/post-images/1602497964129.gif" alt="" loading="lazy"></figure>
+<p>分成多个队列，队列优先级不同，每个队列有自己的调度算法</p>
+<ul>
+<li><s>最短进程优先</s></li>
+<li><s>保证调度</s></li>
+<li><s>彩票调度</s></li>
+<li><s>公平分享调度</s></li>
+</ul>
+<h2 id="线程调度-2">线程调度</h2>
+<h1 id="4进程通信">4.进程通信</h1>
+<ul>
+<li>共享内存</li>
+<li>消息传递
+<ul>
+<li>例如 socket、RPC、RMI</li>
+</ul>
+</li>
+</ul>
+<h1 id="5进程同步">5.进程同步</h1>
+<h2 id="51-概念">5.1 概念</h2>
+<h3 id="竞争条件">竞争条件</h3>
+<p>两个或多个进程读写某些共享数据，而最后的结果取决于进程运行的精确时序，称为竞争条件（race condition）</p>
+<h3 id="临界区">临界区</h3>
+<p>在某些时候进程可能需要访问共享内存或共享文件，或执行另外一些会导致竞争的操作。我们把对共享内存进行访问的程序片段称作临界区域（critical region）或临界区（critical section）。如果我们能够适当地安排，使得两个进程不可能同时处于临界区中，就能够避免竞争条件。</p>
+<ul>
+<li>1)任何两个进程不能同时处于其临界区。</li>
+<li>2)不应对CPU的速度和数量做任何假设。</li>
+<li>3)临界区外运行的进程不得阻塞其他进程。</li>
+<li>4)不得使进程无限期等待进入临界区。</li>
+</ul>
+<figure data-type="image" tabindex="13"><img src="https://sparkfengbo.github.io/post-images/1602497978515.png" alt="" loading="lazy"></figure>
+<h2 id="52-同步方法">5.2 同步方法</h2>
+<h3 id="521-屏蔽中断"><s>5.2.1 屏蔽中断</s></h3>
+<blockquote>
+<p>最简单的方法是使每个进程在刚刚进入临界区后立即屏蔽所有中断，并在就要离开之前再打开中断。屏蔽中断后，时钟中断也被屏蔽。CPU只有发生时钟中断或其他中断时才会进行进程切换，这样，在屏蔽中断之后CPU将不会被切换到其他进程。于是，一旦某个进程屏蔽中断之后，它就可以检查和修改共享内存，而不必担心其他进程介入。</p>
+</blockquote>
+<p>缺点：</p>
+<ul>
+<li>因为把屏蔽中断的权力交给用户进程是不明智的</li>
+</ul>
+<p>屏蔽中断对于操作系统本身而言是一项很有用的技术，但对于用户进程则不是一种合适的通用互斥机制。</p>
+<h3 id="522-锁变量"><s>5.2.2 锁变量</s></h3>
+<h3 id="523-严格轮换法">5.2.3 严格轮换法</h3>
+<p>浪费CPU时间，所以通常应该避免。<br>
+只有在有理由认为等待时间是非常短的情形下，才使用忙等待。用于忙等待的锁，称为<strong>自旋锁（spin lock）</strong>。</p>
+<figure data-type="image" tabindex="14"><img src="https://sparkfengbo.github.io/post-images/1602497988714.png" alt="" loading="lazy"></figure>
+<p>整型变量turn，初始值为0，用于记录轮到哪个进程进入临界区，并检查或更新共享内存。开始时，进程0检查turn，发现其值为0，于是进入临界区。进程1也发现其值为0，所以在一个等待循环中不停地测试turn，看其值何时变为1。连续测试一个变量直到某个值出现为止，称为忙等待（busy waiting）。</p>
+<h3 id="524-perterson解法">5.2.4 Perterson解法</h3>
+<figure data-type="image" tabindex="15"><img src="https://sparkfengbo.github.io/post-images/1602497999863.png" alt="" loading="lazy"></figure>
+<h3 id="525-tsl指令">5.2.5 TSL指令</h3>
+<p>测试并加锁（Test and Set Lock）</p>
+<blockquote>
+<p>Peterson解法和TSL或XCHG解法都是正确的，但它们都有忙等待的缺点。这些解法在本质上是这样的：当一个进程想进入临界区时，先检查是否允许进入，若不允许，则该进程将原地等待，直到允许为止。</p>
+<p>这种方法不仅浪费了CPU时间，而且还可能引起预想不到的结果。考虑一台计算机有两个进程，H优先级较高，L优先级较低。调度规则规定，只要H处于就绪态它就可以运行。在某一时刻，L处于临界区中，此时H变到就绪态，准备运行（例如，一条I/O操作结束）。现在H开始忙等待，但由于当H就绪时L不会被调度，也就无法离开临界区，所以H将永远忙等待下去。这种情况有时被称作优先级反转问题（priority inversion problem）。</p>
+</blockquote>
+<h3 id="526-信号量">5.2.6 信号量</h3>
+<p>参考Java的信号量</p>
+<ul>
+<li><a href="https://www.cnblogs.com/pony1223/p/9479299.html">Java并发编程原理与实战二十八：信号量Semaphore</a></li>
+</ul>
+<h3 id="527-互斥量">5.2.7 互斥量</h3>
+<p>如果不需要信号量的计数能力，有时可以使用信号量的一个简化版本，称为互斥量（mutex）。</p>
+<h3 id="528-屏障">5.2.8 屏障</h3>
+<p>可以参考Java的CyclicBarrier</p>
+<h2 id="53-管程">5.3 管程</h2>
+<p>https://zh.wikipedia.org/wiki/%E7%9B%A3%E8%A6%96%E5%99%A8_(%E7%A8%8B%E5%BA%8F%E5%90%8C%E6%AD%A5%E5%8C%96)</p>
+<p><a href="https://zhuanlan.zhihu.com/p/58766005">Java并发之Monitor实现</a></p>
+<blockquote>
+<p>管程 (英语：Monitors，也称为监视器) 是一种程序结构，结构内的多个子程序（对象或模块）形成的多个工作线程互斥访问共享资源。这些共享资源一般是硬件或一群变量。管程实现了在一个时间点，最多只有一个线程在执行管程的某个子程序。与那些通过修改数据结构实现互斥访问的并发程序设计相比，管程实现很大程度上简化了程序设计。</p>
+<p>管程提供了一种机制，线程可以临时放弃互斥访问，等待某些条件得到满足后，重新获得执行权恢复它的互斥访问。</p>
+</blockquote>
+<h1 id="6死锁">6.死锁</h1>
+<h2 id="死锁预防">死锁预防</h2>
+<p>死锁条件</p>
+<ul>
+<li>1)互斥条件。每个资源要么已经分配给了一个进程，要么就是可用的。</li>
+<li>2)占有和等待条件。已经得到了某个资源的进程可以再请求新的资源。</li>
+<li>3)不可抢占条件。已经分配给一个进程的资源不能强制性地被抢占，它只能被占有它的进程显式地释放。</li>
+<li>4)环路等待条件。死锁发生时，系统中一定有由两个或两个以上的进程组成的一条环路，该环路中的每个进程都在等待着下一个进程所占有的资源。</li>
+</ul>
+<p>通过限制资源申请，确保四个条件之一不会发生。缺点是低设备使用率和设备吞吐率。</p>
+<h2 id="死锁避免">死锁避免</h2>
+<p>获得以后如何申请资源的附加信息。动态的检测资源的分配状态以确保循环等待的条件不成立。</p>
+<p><strong>安全状态</strong></p>
+<p>通过跟踪哪一个状态是安全状态，哪一个状态是不安全状态，可以避免死锁。安全状态就是这样一个状态：存在一个事件序列，保证所有的进程都能完成。不安全状态就不存在这样的保证。银行家算法可以通过拒绝可能引起不安全状态的请求来避免死锁。</p>
+<blockquote>
+<p>死锁避免从本质上来说是不可能的，因为它需要获知未来的请求，而这些请求是不可知的。</p>
+</blockquote>
+<ul>
+<li>资源分配图算法</li>
+<li>银行家算法</li>
+</ul>
+<h2 id="死锁检测">死锁检测</h2>
+<ul>
+<li>每种类型一个资源的死锁检测</li>
+<li>每种类型多个资源的死锁检测</li>
+</ul>
+<h2 id="死锁恢复">死锁恢复</h2>
+<ul>
+<li>进程终止
+<ul>
+<li>终止所有进程</li>
+<li>一次只终止一个进程</li>
+</ul>
+</li>
+<li>资源抢占
+<ul>
+<li>逐步从进程中抢占资源给其他进程使用，直到死锁环被打破为止。</li>
+</ul>
+</li>
+</ul>
+<h2 id="活锁和饥饿">活锁和饥饿</h2>
+<p><a href="https://www.cnblogs.com/ktgu/p/3529143.html">死锁，活锁和饥饿</a></p>
+<h1 id="7线程同步">7.线程同步</h1>
+<p>Java并发编程实践</p>
+<p>链接:https://pan.baidu.com/s/1ukIEcJzUzPufJZFF7Rsrhg  密码:szwe</p>
+<h1 id="8经典问题">8.经典问题</h1>
+<h2 id="81-哲学家进餐">8.1 哲学家进餐</h2>
+<figure data-type="image" tabindex="16"><img src="https://sparkfengbo.github.io/post-images/1602498025163.png" alt="" loading="lazy"></figure>
+<p>可参考</p>
+<p>https://zhuanlan.zhihu.com/p/34553097</p>
+<h2 id="82-读者-写者问题">8.2 读者-写者问题</h2>
+<h2 id="83-生产者-消费者">8.3 生产者-消费者</h2>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#1%E8%BF%9B%E7%A8%8B">1.进程</a>
+<ul>
+<li><a href="#%E7%8A%B6%E6%80%81">状态</a></li>
+<li><a href="#pcb">PCB</a></li>
+</ul>
+</li>
+<li><a href="#2%E7%BA%BF%E7%A8%8B">2.线程</a>
+<ul>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E8%AE%BF%E9%97%AE%E6%9D%83%E9%99%90">线程访问权限</a></li>
+<li><a href="#%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%B9%B6%E8%A1%8C">并发与并行</a></li>
+<li><a href="#%E5%AE%9E%E7%8E%B0">实现</a>
+<ul>
+<li><a href="#%E5%9C%A8%E7%94%A8%E6%88%B7%E7%A9%BA%E9%97%B4%E4%B8%AD">在用户空间中</a></li>
+<li><a href="#%E5%9C%A8%E5%86%85%E6%A0%B8%E4%B8%AD%E9%97%B4%E4%B8%AD">在内核中间中</a></li>
+<li><a href="#%E6%B7%B7%E5%90%88%E5%AE%9E%E7%8E%B0">混合实现</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E7%8A%B6%E6%80%81">线程状态</a></li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6">线程调度</a></li>
+<li><a href="#%E5%8F%AF%E6%8A%A2%E5%8D%A0%E5%BC%8F%E7%BA%BF%E7%A8%8B%E5%92%8C%E9%9D%9E%E5%8F%AF%E6%8A%A2%E5%8D%A0%E5%BC%8F%E7%BA%BF%E7%A8%8B">可抢占式线程和非可抢占式线程</a></li>
+<li><a href="#%E5%90%8C%E6%AD%A5%E4%B8%8E%E9%94%81">同步与锁</a>
+<ul>
+<li><a href="#volatile">volatile</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3%E8%B0%83%E5%BA%A6">3.调度</a>
+<ul>
+<li><a href="#%E6%8A%A2%E5%8D%A0%E5%BC%8F%E5%92%8C%E9%9D%9E%E6%8A%A2%E5%8D%A0%E5%BC%8F">抢占式和非抢占式</a></li>
+<li><a href="#%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6">进程调度</a>
+<ul>
+<li><a href="#%E6%89%B9%E5%A4%84%E7%90%86%E7%B3%BB%E7%BB%9F">批处理系统</a></li>
+<li><a href="#%E4%BA%A4%E4%BA%92%E7%B3%BB%E7%BB%9F%E8%B0%83%E5%BA%A6">交互系统调度</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BA%BF%E7%A8%8B%E8%B0%83%E5%BA%A6-2">线程调度</a></li>
+</ul>
+</li>
+<li><a href="#4%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1">4.进程通信</a></li>
+<li><a href="#5%E8%BF%9B%E7%A8%8B%E5%90%8C%E6%AD%A5">5.进程同步</a>
+<ul>
+<li><a href="#51-%E6%A6%82%E5%BF%B5">5.1 概念</a>
+<ul>
+<li><a href="#%E7%AB%9E%E4%BA%89%E6%9D%A1%E4%BB%B6">竞争条件</a></li>
+<li><a href="#%E4%B8%B4%E7%95%8C%E5%8C%BA">临界区</a></li>
+</ul>
+</li>
+<li><a href="#52-%E5%90%8C%E6%AD%A5%E6%96%B9%E6%B3%95">5.2 同步方法</a>
+<ul>
+<li><a href="#521-%E5%B1%8F%E8%94%BD%E4%B8%AD%E6%96%AD"><s>5.2.1 屏蔽中断</s></a></li>
+<li><a href="#522-%E9%94%81%E5%8F%98%E9%87%8F"><s>5.2.2 锁变量</s></a></li>
+<li><a href="#523-%E4%B8%A5%E6%A0%BC%E8%BD%AE%E6%8D%A2%E6%B3%95">5.2.3 严格轮换法</a></li>
+<li><a href="#524-perterson%E8%A7%A3%E6%B3%95">5.2.4 Perterson解法</a></li>
+<li><a href="#525-tsl%E6%8C%87%E4%BB%A4">5.2.5 TSL指令</a></li>
+<li><a href="#526-%E4%BF%A1%E5%8F%B7%E9%87%8F">5.2.6 信号量</a></li>
+<li><a href="#527-%E4%BA%92%E6%96%A5%E9%87%8F">5.2.7 互斥量</a></li>
+<li><a href="#528-%E5%B1%8F%E9%9A%9C">5.2.8 屏障</a></li>
+</ul>
+</li>
+<li><a href="#53-%E7%AE%A1%E7%A8%8B">5.3 管程</a></li>
+</ul>
+</li>
+<li><a href="#6%E6%AD%BB%E9%94%81">6.死锁</a>
+<ul>
+<li><a href="#%E6%AD%BB%E9%94%81%E9%A2%84%E9%98%B2">死锁预防</a></li>
+<li><a href="#%E6%AD%BB%E9%94%81%E9%81%BF%E5%85%8D">死锁避免</a></li>
+<li><a href="#%E6%AD%BB%E9%94%81%E6%A3%80%E6%B5%8B">死锁检测</a></li>
+<li><a href="#%E6%AD%BB%E9%94%81%E6%81%A2%E5%A4%8D">死锁恢复</a></li>
+<li><a href="#%E6%B4%BB%E9%94%81%E5%92%8C%E9%A5%A5%E9%A5%BF">活锁和饥饿</a></li>
+</ul>
+</li>
+<li><a href="#7%E7%BA%BF%E7%A8%8B%E5%90%8C%E6%AD%A5">7.线程同步</a></li>
+<li><a href="#8%E7%BB%8F%E5%85%B8%E9%97%AE%E9%A2%98">8.经典问题</a>
+<ul>
+<li><a href="#81-%E5%93%B2%E5%AD%A6%E5%AE%B6%E8%BF%9B%E9%A4%90">8.1 哲学家进餐</a></li>
+<li><a href="#82-%E8%AF%BB%E8%80%85-%E5%86%99%E8%80%85%E9%97%AE%E9%A2%98">8.2 读者-写者问题</a></li>
+<li><a href="#83-%E7%94%9F%E4%BA%A7%E8%80%85-%E6%B6%88%E8%B4%B9%E8%80%85">8.3 生产者-消费者</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/czxt-1ji-suan-ji-zheng-ti-jie-gou-he-cao-zuo-xi-tong-geng-gai/">
+              <h3 class="post-title">
+                1.计算机整体结构和操作系统梗概
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
