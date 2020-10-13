@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-13T05:56:37.324Z</updated>
+    <updated>2020-10-13T06:09:16.200Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -16,7 +16,7 @@
         <link href="https://sparkfengbo.github.io/post/handler/">
         </link>
         <updated>2020-10-13T05:55:39.000Z</updated>
-        <content type="html"><![CDATA[<p>需要关注的点：</p>
+        <content type="html"><![CDATA[<h1 id="需要关注的点">需要关注的点：</h1>
 <ul>
 <li>
 <p>Handler</p>
@@ -48,36 +48,17 @@
 </blockquote>
 <ul>
 <li><a href="https://www.zhihu.com/question/34652589/answer/90344494">Android中为什么主线程不会因为Looper.loop()里的死循环卡死？</a></li>
-</ul>
-<hr>
-<h2 id="handlerthread">HandlerThread</h2>
-<blockquote>
-<p>继承自Thread，run的时候会调用Looper.prepare();有两个比较重要的方法</p>
-<p>public Looper getLooper()</p>
-<p>public Handler getThreadHandler()</p>
-<p>使用完成后需要调用quit()</p>
-</blockquote>
-<hr>
-<h2 id="intentservice">IntentService</h2>
-<blockquote>
-<p>onCreate()会创建HandlerThread并start，创建刚才的HandlerThread的Looper的ServiceHandler<br>
-Overide的onHandleIntent方法是在异步线程中执行</p>
-</blockquote>
-<hr>
-<ul>
-<li><a href="https://www.zhihu.com/question/34652589">Android中为什么主线程不会因为Looper.loop()里的死循环卡死？<br>
-</a></li>
 <li><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/Android/%E6%B6%88%E6%81%AF%E6%A1%86%E6%9E%B6.md">我自己很久之前写的一些笔记</a></li>
 </ul>
 <hr>
-<p>涉及到的4个类：</p>
+<h1 id="涉及到的4个类">涉及到的4个类：</h1>
 <ul>
 <li><code>Handler</code></li>
 <li><code>Looper</code></li>
 <li><code>ThreadLocal</code></li>
 <li><code>MessageQueue</code></li>
 </ul>
-<h3 id="1threadlocal">1.ThreadLocal</h3>
+<h2 id="1threadlocal">1.ThreadLocal</h2>
 <p>每个线程有一些和自己相关的变量，ThreadLocal的作用就是保存这些变量的。所有的变量是通过内部的静态类<code>Value</code>存储的。虽然，线程都是通过访问相同的<code>ThreadLocal</code>，但是每个线程保存的变量是分开的：</p>
 <pre><code>public void set(T value) {    
       Thread currentThread = Thread.currentThread();    
@@ -168,7 +149,7 @@ public class MainActivity extends Activity {
 01-09 14:28:36.412 29303-29331/com.sparkfengbo.app.javabcsxtest E/MainActivity: other_thread
 01-09 14:28:36.413 29303-29332/com.sparkfengbo.app.javabcsxtest E/MainActivity: local.get() is null
 </code></pre>
-<h3 id="2messagequeue">2.MessageQueue</h3>
+<h2 id="2messagequeue">2.MessageQueue</h2>
 <p>MessageQueue是一个消息队列，包含成员变量<code>Message mMessages;</code>，可以理解成链表的头部。存储的形式不是队列，而是单链表。<br>
 内部包含5个native方法：</p>
 <pre><code>private native static long nativeInit();
@@ -181,7 +162,7 @@ private native static boolean nativeIsIdling(long ptr);
 <p>在Java层面，</p>
 <p>主要是<code>next</code>方法，获得下一个消息；</p>
 <p>和<code>enqueueMessage</code> 将消息插入到队列中。</p>
-<h3 id="3looper">3.Looper</h3>
+<h2 id="3looper">3.Looper</h2>
 <p>Looper是做什么的？Looper的职能是为一个线程创建<code>MessageQueue</code>，绑定到这个线程，为此线程执行消息循环。</p>
 <p>Looper内部包含MessageQueue和Thread的引用</p>
 <p>MessageQueue在<code>prepare</code>方法中创建,在<code>loop</code>方法开始循环。</p>
@@ -248,7 +229,7 @@ Handler handler = new Handler(thread.getLooper(), new Handler.Callback() {
 <p>HandlerThread继承自Thread，自身会创建一个Looper。</p>
 <p>关于 HandlerThread可参考 <a href="http://blog.csdn.net/lmj623565791/article/details/47079737/">Android HandlerThread 完全解析</a></p>
 <p>大多数和消息循环的交互都是通过<code>Handler</code>去完成的，就像你在<code>Handler</code>那部分看到的那样。记得在你不再执行消息循环的时候调用<code>Looper</code>的<code>quit</code>方法。</p>
-<h3 id="4handler">4.Handler</h3>
+<h2 id="4handler">4.Handler</h2>
 <p><code>Handler</code>能够发送和处理和<code>MessageQueue</code>关联的 <code>Message</code> 或 <code>Runnable</code>。每个<code>Handler</code>和一个单独的线程关联，这个线程就是你创建这个<code>Handler</code>的时候所在的线程，需要处理的<code>MessageQueue</code>也是这个线程的<code>MessageQueue</code>。</p>
 <p>请看：</p>
 <pre><code>public Handler(Callback callback, boolean async) {    
@@ -292,13 +273,40 @@ public Handler(Looper looper, Callback callback, boolean async) {
         }
     }
 </code></pre>
-<h3 id="5-messagequeueidlehandler">5. MessageQueue.IdleHandler</h3>
+<h2 id="5-messagequeueidlehandler">5. MessageQueue.IdleHandler</h2>
 <ul>
 <li><a href="https://zhuanlan.zhihu.com/p/30601168">《你知道android的MessageQueue.IdleHandler吗？》</a></li>
 </ul>
 <blockquote>
 <p>简而言之，就是在looper里面的message暂时处理完了，这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完了的时候继续回调</p>
 </blockquote>
+<hr>
+<h1 id="handlerthread">HandlerThread</h1>
+<blockquote>
+<p>继承自Thread，run的时候会调用Looper.prepare();有两个比较重要的方法</p>
+<p>public Looper getLooper()</p>
+<p>public Handler getThreadHandler()</p>
+<p>使用完成后需要调用quit()</p>
+</blockquote>
+<hr>
+<h1 id="intentservice">IntentService</h1>
+<blockquote>
+<p>onCreate()会创建HandlerThread并start，创建刚才的HandlerThread的Looper的ServiceHandler<br>
+Overide的onHandleIntent方法是在异步线程中执行</p>
+</blockquote>
+<pre><code>    private final class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            onHandleIntent((Intent)msg.obj);
+            stopSelf(msg.arg1);
+        }
+    }
+</code></pre>
+<hr>
 ]]></content>
     </entry>
     <entry>
