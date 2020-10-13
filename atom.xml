@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-13T06:09:16.200Z</updated>
+    <updated>2020-10-13T11:48:11.532Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -11,786 +11,1255 @@
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, FengBo`s Blog</rights>
     <entry>
-        <title type="html"><![CDATA[Handler]]></title>
-        <id>https://sparkfengbo.github.io/post/handler/</id>
-        <link href="https://sparkfengbo.github.io/post/handler/">
+        <title type="html"><![CDATA[Android Matrix的使用]]></title>
+        <id>https://sparkfengbo.github.io/post/android-matrix-de-shi-yong/</id>
+        <link href="https://sparkfengbo.github.io/post/android-matrix-de-shi-yong/">
         </link>
-        <updated>2020-10-13T05:55:39.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="需要关注的点">需要关注的点：</h1>
-<ul>
-<li>
-<p>Handler</p>
-</li>
-<li>
-<p>Looper</p>
-</li>
-<li>
-<p>ThreadLocal</p>
-</li>
-<li>
-<p>MessageQueue</p>
-</li>
-<li>
-<p>HandlerThread</p>
-</li>
-<li>
-<p>IntentService</p>
-</li>
-<li>
-<p>MessageQueue.IdleHandler</p>
-<ul>
-<li><a href="https://zhuanlan.zhihu.com/p/30601168">《你知道android的MessageQueue.IdleHandler吗？》</a></li>
-</ul>
-</li>
-</ul>
-<blockquote>
-<p>简而言之，就是在looper里面的message暂时处理完了，这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完了的时候继续回调</p>
-</blockquote>
-<ul>
-<li><a href="https://www.zhihu.com/question/34652589/answer/90344494">Android中为什么主线程不会因为Looper.loop()里的死循环卡死？</a></li>
-<li><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/Android/%E6%B6%88%E6%81%AF%E6%A1%86%E6%9E%B6.md">我自己很久之前写的一些笔记</a></li>
-</ul>
-<hr>
-<h1 id="涉及到的4个类">涉及到的4个类：</h1>
-<ul>
-<li><code>Handler</code></li>
-<li><code>Looper</code></li>
-<li><code>ThreadLocal</code></li>
-<li><code>MessageQueue</code></li>
-</ul>
-<h2 id="1threadlocal">1.ThreadLocal</h2>
-<p>每个线程有一些和自己相关的变量，ThreadLocal的作用就是保存这些变量的。所有的变量是通过内部的静态类<code>Value</code>存储的。虽然，线程都是通过访问相同的<code>ThreadLocal</code>，但是每个线程保存的变量是分开的：</p>
-<pre><code>public void set(T value) {    
-      Thread currentThread = Thread.currentThread();    
-      Values values = values(currentThread);    
-      if (values == null) {        
-            values = initializeValues(currentThread);    }    
-      values.put(this, value);
-}
-</code></pre>
-<p>上面的set方法中，values方法返回当前线程的localValues成员变量：</p>
-<pre><code>/** 
-  * Gets Values instance for this thread and variable type. 
-  */
-Values values(Thread current) {    
-      return current.localValues;
-}
-</code></pre>
-<p>那么线程内部的localValues是什么？</p>
-<pre><code>public class Thread implements Runnable {
-    /** 
-      * Normal thread local values. 
-      */
-    ThreadLocal.Values localValues;
-    /*省略若干代码*/
-}
-</code></pre>
-<p>可以看到，<code>Thread</code>中的<code>localValues</code>是定义在<code>ThreadLocal</code>中线程本地的变量。如果在  <code>values ()</code>方法取得<code>null</code>值，就执行<code>initializeValues</code>方法。<br>
-<code>initializeValues</code>是如何实现的呢？</p>
-<pre><code>Values initializeValues(Thread current) {    
-      return current.localValues = new Values();
-}
-</code></pre>
-<p>然后将value的值放在当前线程的的<code>localValues</code>里。这样，虽然看起来访问的是用一个ThreadLocal，但是得到的值却是根据线程而不同的。</p>
-<blockquote>
-<p>注：不同sdk中ThreadLocal内部的实现时不一样的，比如在6.0的版本实现的方式就不是上面的方式，但是原理还是一样的</p>
-</blockquote>
-<p><strong>举个例子</strong></p>
-<pre><code>public class JsonTestMetaData {
-    public String json_str;
-}
-
-public class MainActivity extends Activity {
-
-    ThreadLocal&lt;JsonTestMetaData&gt; local = new ThreadLocal&lt;&gt;();
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d(TAG, &quot;onCreate&quot;);
-       
-        JsonTestMetaData data = new JsonTestMetaData();
-        data.json_str = &quot;main_thread&quot;;
-        local.set(data);
-
-        Log.e(TAG, local.get().json_str);
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                JsonTestMetaData data = new JsonTestMetaData();
-                data.json_str = &quot;other_thread&quot;;
-                local.set(data);
-                Log.e(TAG, local.get().json_str);
-            }
-        }).start();
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (local.get() != null) {
-                    Log.e(TAG, local.get().json_str);
-                } else {
-                    Log.e(TAG, &quot;local.get() is null&quot;);
-
-                }
-            }
-        }).start();
-
-
-        Log.e(TAG, local.get().json_str);
-
-    }
-}
-</code></pre>
-<p>得到的结果：</p>
-<pre><code>01-09 14:28:36.410 29303-29303/com.sparkfengbo.app.javabcsxtest E/MainActivity: main_thread
-01-09 14:28:36.412 29303-29303/com.sparkfengbo.app.javabcsxtest E/MainActivity: main_thread
-01-09 14:28:36.412 29303-29331/com.sparkfengbo.app.javabcsxtest E/MainActivity: other_thread
-01-09 14:28:36.413 29303-29332/com.sparkfengbo.app.javabcsxtest E/MainActivity: local.get() is null
-</code></pre>
-<h2 id="2messagequeue">2.MessageQueue</h2>
-<p>MessageQueue是一个消息队列，包含成员变量<code>Message mMessages;</code>，可以理解成链表的头部。存储的形式不是队列，而是单链表。<br>
-内部包含5个native方法：</p>
-<pre><code>private native static long nativeInit();
-private native static void nativeDestroy(long ptr);
-private native static void nativePollOnce(long ptr, int timeoutMillis);
-private native static void nativeWake(long ptr);
-private native static boolean nativeIsIdling(long ptr);
-</code></pre>
-<p>底层还是通过native代码完成的。</p>
-<p>在Java层面，</p>
-<p>主要是<code>next</code>方法，获得下一个消息；</p>
-<p>和<code>enqueueMessage</code> 将消息插入到队列中。</p>
-<h2 id="3looper">3.Looper</h2>
-<p>Looper是做什么的？Looper的职能是为一个线程创建<code>MessageQueue</code>，绑定到这个线程，为此线程执行消息循环。</p>
-<p>Looper内部包含MessageQueue和Thread的引用</p>
-<p>MessageQueue在<code>prepare</code>方法中创建,在<code>loop</code>方法开始循环。</p>
-<p>Java层的Looper和MessageQueue有在C++对应的类，分别是Looper（Native）和NativeMessageQueue类</p>
-<p>线程默认是没有looper的，除非你在线程调用<code>prepare</code>方法，然后才能执行<code>loop</code>方法才能进行消息处理。</p>
-<p><code>prepare</code>做了什么呢？</p>
-<pre><code>private static void prepare(boolean quitAllowed) {    
-      if (sThreadLocal.get() != null) {        
-          throw new RuntimeException(&quot;Only one Looper may be created per thread&quot;);    
-      }    
-      sThreadLocal.set(new Looper(quitAllowed));}
-</code></pre>
-<p>你可以看到<code>prepare()</code>方法只能调用一次。在最后会创建一个Looper放在ThreadLocal里保存。<br>
-Looper是如何创建的呢？</p>
-<pre><code>private Looper(boolean quitAllowed) {    
-      mQueue = new MessageQueue(quitAllowed);    
-      mThread = Thread.currentThread();
-}
-</code></pre>
-<p>可以看到，构造方法是私有的，新创建了一个MessageQueue，mThread就是当前线程。<br>
-那么Looper是如何执行消息循环的？</p>
-<pre><code>public static void loop() {    
-        /*中间省略若干代码*/
-        final Looper me = myLooper();    
-        if (me == null) {        
-              throw new RuntimeException(&quot;No Looper; Looper.prepare() wasn't called on this thread.&quot;);    
-        }    
-        final MessageQueue queue = me.mQueue;    
-        for (;;) {        
-              Message msg = queue.next();       
-              msg.target.dispatchMessage(msg);     
-              msg.recycleUnchecked();    
-        }
-}
-</code></pre>
-<p>可以看到，通过一个无限循环，不停的在消息队列中拿消息，将消息分发到指定的地方。</p>
-<blockquote>
-<p>Message的target其实就是Handler</p>
-</blockquote>
-<p>所以，在你写的线程中，可以这样使用：</p>
-<pre><code>class LooperThread extends Thread {     
-      public Handler mHandler;      
-      public void run() {          
-            Looper.prepare();
-            mHandler = new Handler() {
-                  public void handleMessage(Message msg) {
-                       // process incoming messages here
-                  }
-            };
-            Looper.loop();
-     }
-}
-</code></pre>
-<p>不过上述的方式太low，在代码中也不方便，可以这样写：</p>
-<p><strong>HandlerThread</strong></p>
-<pre><code>HandlerThread thread  = new HandlerThread(&quot;new_handler_thread&quot;);
-Handler handler = new Handler(thread.getLooper(), new Handler.Callback() {
-            @Override
-            public boolean handleMessage(Message msg) {
-                return false;
-            }
-});
-</code></pre>
-<p>HandlerThread继承自Thread，自身会创建一个Looper。</p>
-<p>关于 HandlerThread可参考 <a href="http://blog.csdn.net/lmj623565791/article/details/47079737/">Android HandlerThread 完全解析</a></p>
-<p>大多数和消息循环的交互都是通过<code>Handler</code>去完成的，就像你在<code>Handler</code>那部分看到的那样。记得在你不再执行消息循环的时候调用<code>Looper</code>的<code>quit</code>方法。</p>
-<h2 id="4handler">4.Handler</h2>
-<p><code>Handler</code>能够发送和处理和<code>MessageQueue</code>关联的 <code>Message</code> 或 <code>Runnable</code>。每个<code>Handler</code>和一个单独的线程关联，这个线程就是你创建这个<code>Handler</code>的时候所在的线程，需要处理的<code>MessageQueue</code>也是这个线程的<code>MessageQueue</code>。</p>
-<p>请看：</p>
-<pre><code>public Handler(Callback callback, boolean async) {    
-    /*省略若干代码*/
-    mLooper = Looper.myLooper();
-    if (mLooper == null) {    
-        throw new RuntimeException(        
-          &quot;Can't create handler inside thread that has not called Looper.prepare()&quot;);}
-    mQueue = mLooper.mQueue;
-    mCallback = callback;
-    mAsynchronous = async;
-}
-
-public Handler(Looper looper, Callback callback, boolean async) {
-    mLooper = looper;
-    mQueue = looper.mQueue;
-    mCallback = callback;
-    mAsynchronous = async;
-}
-</code></pre>
-<p>Handler有很多个构造函数，最终都会调用到这个构造函数。你可以看到Handler中的的Looper成员，就是通过Looper的静态方法<code>myLooper</code>得到的，<code>myLooper</code>是干啥的？你可以看Looper的内容，在上面代码中得到了一个和这个线程关联的Looper。如果 <code>mLooper</code>成员是<code>null</code>，那么就抛出异常。你可能会问，我在activity中随便创建handler啊，没有调用<code>Looper.myLooper()</code>方法。那是因为当你的应用运行的时候，Android已经通过<code>Looper</code>的静态方法<code>prepareMainLooper</code>创建了，这个方法只能执行一次，否则就会抛出异常了。这个<code>Looper</code>适合线程绑定的，你再看看<code>mQueue</code>，是从<code>mLooper</code>中拿到的。</p>
-<p>调用的顺序如下：</p>
-<ul>
-<li>Message的callback是否是null？不是调用callback的run方法（其实这里Message的callback是一个Runnable对象，通过Handler的post方法传递）</li>
-<li>Handler的callback是否是null？不是调用callback。这里的callback的类型是<code>Handler.Callback()</code></li>
-<li>最终调用Handler的handleMessage的方法。</li>
-</ul>
-<pre><code>    /**
-     * Handle system messages here.
-     */
-    public void dispatchMessage(Message msg) {
-        if (msg.callback != null) {
-            handleCallback(msg);
-        } else {
-            if (mCallback != null) {
-                if (mCallback.handleMessage(msg)) {
-                    return;
-                }
-            }
-            handleMessage(msg);
-        }
-    }
-</code></pre>
-<h2 id="5-messagequeueidlehandler">5. MessageQueue.IdleHandler</h2>
-<ul>
-<li><a href="https://zhuanlan.zhihu.com/p/30601168">《你知道android的MessageQueue.IdleHandler吗？》</a></li>
-</ul>
-<blockquote>
-<p>简而言之，就是在looper里面的message暂时处理完了，这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完了的时候继续回调</p>
-</blockquote>
-<hr>
-<h1 id="handlerthread">HandlerThread</h1>
-<blockquote>
-<p>继承自Thread，run的时候会调用Looper.prepare();有两个比较重要的方法</p>
-<p>public Looper getLooper()</p>
-<p>public Handler getThreadHandler()</p>
-<p>使用完成后需要调用quit()</p>
-</blockquote>
-<hr>
-<h1 id="intentservice">IntentService</h1>
-<blockquote>
-<p>onCreate()会创建HandlerThread并start，创建刚才的HandlerThread的Looper的ServiceHandler<br>
-Overide的onHandleIntent方法是在异步线程中执行</p>
-</blockquote>
-<pre><code>    private final class ServiceHandler extends Handler {
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            onHandleIntent((Intent)msg.obj);
-            stopSelf(msg.arg1);
-        }
-    }
-</code></pre>
-<hr>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[About]]></title>
-        <id>https://sparkfengbo.github.io/post/about/</id>
-        <link href="https://sparkfengbo.github.io/post/about/">
-        </link>
-        <updated>2020-10-12T12:10:28.000Z</updated>
-        <content type="html"><![CDATA[<blockquote>
-<p>欢迎来到我的小站呀，很高兴遇见你！🤝</p>
-</blockquote>
-<h2 id="关于本站">🏠 关于本站</h2>
-<blockquote>
-<p>平日学习记录，希望能够帮到你</p>
-</blockquote>
-<h2 id="博主是谁">👨‍💻 博主是谁</h2>
-<blockquote>
-<p>普通程序员，先后就职于百度、字节跳动</p>
-</blockquote>
-<h2 id="联系我呀">📬 联系我呀</h2>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Linux IO模型简介和IO多路复用]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-linux-io-mo-xing-jian-jie-he-io-duo-lu-fu-yong/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-linux-io-mo-xing-jian-jie-he-io-duo-lu-fu-yong/">
-        </link>
-        <updated>2020-10-12T10:33:34.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li>
-<p><a href="https://www.jianshu.com/p/f8bc7199bb8e">Linux IO模型：阻塞/非阻塞/IO复用 同步/异步 Select/Epoll/AIO</a></p>
-</li>
-<li>
-<p><a href="https://mp.weixin.qq.com/s?__biz=Mzg3MjA4MTExMw==&amp;mid=2247484746&amp;idx=1&amp;sn=c0a7f9129d780786cabfcac0a8aa6bb7&amp;source=41#wechat_redirect">漫话：如何给女朋友解释什么是Linux的五种IO模型？</a></p>
-</li>
-<li>
-<p><a href="https://www.jianshu.com/p/dfd940e7fca2">聊聊IO多路复用之select、poll、epoll详解</a></p>
-</li>
-<li>
-<p><a href="https://ring0.me/2014/11/sync-async-blocked/">大话同步/异步、阻塞/非阻塞</a></p>
-</li>
-<li>
-<p><a href="https://blog.csdn.net/historyasamirror/article/details/5778378">IO - 同步，异步，阻塞，非阻塞 （亡羊补牢篇）</a></p>
-</li>
-<li>
-<p>这篇文章图是中文的  <a href="https://www.jianshu.com/p/02f76566fd90">怎样理解阻塞非阻塞与同步异步的区别？</a></p>
-</li>
-</ul>
-<h1 id="linux-io模型">Linux IO模型</h1>
-<ul>
-<li>1.阻塞IO</li>
-</ul>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498833576.jpg" alt="" loading="lazy"></figure>
-<p>标红的这部分过程就是阻塞，直到阻塞结束recvfrom才能返回。</p>
-<ul>
-<li>2.非阻塞IO</li>
-</ul>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498843741.jpg" alt="" loading="lazy"></figure>
-<p>可以看出recvfrom总是立即返回。</p>
-<ul>
-<li>3.IO多路复用</li>
-</ul>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498851907.jpg" alt="" loading="lazy"></figure>
-<ul>
-<li>4.信号驱动异步I/O模型</li>
-</ul>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498859440.jpg" alt="" loading="lazy"></figure>
-<ul>
-<li>5.异步IO</li>
-</ul>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498867473.jpg" alt="" loading="lazy"></figure>
-<ul>
-<li>五种模型对比</li>
-</ul>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498874255.jpeg" alt="" loading="lazy"></figure>
-<blockquote>
-<p>同步非阻塞方式相比同步阻塞方式：<br>
-优点是能够在等待任务完成的时间里干其他活了（包括提交其他任务，也就是 “后台” 可以有多个任务在同时执行）。<br>
-缺点是任务完成的响应延迟增大了，因为每过一段时间才去轮询一次，而任务可能在两次轮询之间的任意时间完成。<br>
-由于同步非阻塞方式需要不断轮询，而 “后台” 可能有多个任务在同时进行，人们就想到了循环查询多个任务的完成状态，只要有任何一个任务完成，就去处理它。这就是所谓的 “I/O 多路复用”。UNIX/Linux 下的 select、poll、epoll 就是干这个的（epoll 比 poll、select 效率高，做的事情是一样的）。Windows 下则有 WaitForMultipleObjects 和 IO Completion Ports API 与之对应（Windows API 的命名简直甩 POSIX API 几条街有木有！）</p>
-</blockquote>
-<h1 id="io多路复用">IO多路复用</h1>
-<blockquote>
-<p>目前支持I/O复用的系统调用有<strong>select、pselect、poll、epoll</strong>，下面几小结分别来学习一下select和epoll的使用。<br>
-Linux 2.6之前是select、poll，2.6之后是epoll，Windows是IOCP。</p>
-</blockquote>
-<p>其实，epoll与select原理类似，只不过，epoll作出了一些重大改进，即：</p>
-<ul>
-<li>1.支持一个进程打开大数目的socket描述符(FD)</li>
-</ul>
-<blockquote>
-<p>select 最不能忍受的是一个进程所打开的FD是有一定限制的，由FD_SETSIZE设置，默认值是2048。对于那些需要支持的上万连接数目的IM服务器来说显然太少了。这时候你一是可以选择修改这个宏然后重新编译内核，不过资料也同时指出这样会带来网络效率的下降，二是可以选择多进程的解决方案(传统的 Apache方案)，不过虽然linux上面创建进程的代价比较小，但仍旧是不可忽视的，加上进程间数据同步远比不上线程间同步的高效，所以也不是一种完美的方案。不过 epoll则没有这个限制，它所支持的FD上限是最大可以打开文件的数目，这个数字一般远大于2048,举个例子,在1GB内存的机器上大约是10万左右，具体数目可以cat /proc/sys/fs/file-max察看,一般来说这个数目和系统内存关系很大。</p>
-</blockquote>
-<ul>
-<li>2.IO效率不随FD数目增加而线性下降</li>
-</ul>
-<blockquote>
-<p>传统的select/poll另一个致命弱点就是当你拥有一个很大的socket集合，不过由于网络延时，任一时间只有部分的socket是&quot;活跃&quot;的，但是select/poll每次调用都会线性扫描全部的集合，导致效率呈现线性下降。但是epoll不存在这个问题，它只会对&quot;活跃&quot;的socket进行操作---这是因为在内核实现中epoll是根据每个fd上面的callback函数实现的。那么，只有&quot;活跃&quot;的socket才会主动的去调用 callback函数，其他idle状态socket则不会，在这点上，epoll实现了一个&quot;伪&quot;AIO，因为这时候推动力在os内核。在一些 benchmark中，如果所有的socket基本上都是活跃的---比如一个高速LAN环境，epoll并不比select/poll有什么效率，相反，如果过多使用epoll_ctl,效率相比还有稍微的下降。但是一旦使用idle connections模拟WAN环境,epoll的效率就远在select/poll之上了。</p>
-</blockquote>
-<ul>
-<li>3.使用mmap加速内核与用户空间的消息传递。</li>
-</ul>
-<blockquote>
-<p>这点实际上涉及到epoll的具体实现了。无论是select,poll还是epoll都需要内核把FD消息通知给用户空间，如何避免不必要的内存拷贝就很重要，在这点上，epoll是通过内核于用户空间mmap同一块内存实现的。</p>
-</blockquote>
-<ul>
-<li>4.内核微调</li>
-</ul>
-<blockquote>
-<p>这一点其实不算epoll的优点了，而是整个linux平台的优点。也许你可以怀疑linux平台，但是你无法回避linux平台赋予你微调内核的能力。比如，内核TCP/IP协议栈使用内存池管理sk_buff结构，那么可以在运行时期动态调整这个内存pool(skb_head_pool)的大小 --- 通过echo XXXX&gt;/proc/sys/net/core/hot_list_length完成。再比如listen函数的第2个参数(TCP完成3次握手的数据包队列长度)，也可以根据你平台内存大小动态调整。更甚至在一个数据包面数目巨大但同时每个数据包本身大小却很小的特殊系统上尝试最新的NAPI网卡驱动架构。</p>
-</blockquote>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Linux 硬链接软链接]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-linux-ying-lian-jie-ruan-lian-jie/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-linux-ying-lian-jie-ruan-lian-jie/">
-        </link>
-        <updated>2020-10-12T10:32:12.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li><a href="https://www.toutiao.com/i6753065098199171587/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584238470&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=2020031510142901001404707528B359F1&amp;group_id=6753065098199171587">面试 | Linux 下软链接和硬链接的区别</a></li>
-</ul>
-<h1 id="硬链接">硬链接</h1>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498757010.png" alt="" loading="lazy"></figure>
-<p>硬链接，inode节点指向的是同一个文件块<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498766032.jpeg" alt="" loading="lazy"></p>
-<p>硬链接的作用是允许一个文件拥有多个有效路径名，这样用户就可以建立硬链接到重要文件,以防止“误删”的功能，由于对应该目录的索引节点有一个以上的连接，假设我们删除了原始的 foo.txt 文件：<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498773307.jpeg" alt="" loading="lazy"></p>
-<p>此时文件的内容依然存在，所以只删除一个连接并不影响索引节点本身和其它的连接，只有当最后一个链接被删除后，文件的数据块及目录的连接才会被释放，也就是说，文件才会被真正删除。</p>
-<h1 id="软链接">软链接</h1>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498779655.jpeg" alt="" loading="lazy"></figure>
-<p>软链接又叫符号链接，这个文件包含了另一个文件的路径名，例如在上图中，foo.txt 就是 bar.txt 的软连接，bar.txt 是实际的文件，foo.txt 包含的是对于 bar.txt 的 inode 的记录。</p>
-<p>软连接可以是任意文件或目录，可以链接不同文件系统的文件，在对符号文件进行读或写操作的时候，系统会自动把该操作转换为对源文件的操作，但删除链接文件时，系统仅仅删除链接文件，而不删除源文件本身，这一点类似于 Windows 操作系统下的快捷方式。<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498790074.jpeg" alt="" loading="lazy"></p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Linux 信号]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-linux-xin-hao/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-linux-xin-hao/">
-        </link>
-        <updated>2020-10-12T10:31:50.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li><a href="https://blog.csdn.net/colzer/article/details/8135542">linux基础编程：进程通信之信号</a></li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Linux 静态链接和动态链接]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-linux-jing-tai-lian-jie-he-dong-tai-lian-jie/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-linux-jing-tai-lian-jie-he-dong-tai-lian-jie/">
-        </link>
-        <updated>2020-10-12T10:30:43.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li><a href="https://www.toutiao.com/i6792927363316318723/?group_id=6792927363316318723">C程序的编译过程</a></li>
-<li><a href="https://www.toutiao.com/i6793307776551485959/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1584501857&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=2020031811241601001404707704B74596&amp;group_id=6793307776551485959">静态链接与动态链接</a></li>
-</ul>
-<h1 id="c程序编译过程">C程序编译过程</h1>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498662494.jpeg" alt="" loading="lazy"></figure>
-<h2 id="1预处理preprpcessing">1.预处理（Preprpcessing）</h2>
-<p><strong>使用预处理器把源文件test.c经过预处理生成test.i文件，预处理用于将所有的#include头文件以及宏定义替换成其真正的内容。</strong></p>
-<pre><code>gcc -E test.c -o test.i
-</code></pre>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498670125.png" alt="" loading="lazy"></figure>
-<h2 id="2编译compilation">2.编译（Compilation）</h2>
-<p><strong>使用编译器将预处理文件test.i编译成汇编文件test.s。</strong></p>
-<pre><code>gcc -S test.i -o test.s
-</code></pre>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498677324.png" alt="" loading="lazy"></figure>
-<h2 id="3汇编assemble">3.汇编（Assemble）</h2>
-<p><strong>使用汇编器将汇编文件test.s转换成目标文件test.o。</strong></p>
-<pre><code>gcc -c test.s -o test.o
-</code></pre>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498684007.png" alt="" loading="lazy"></figure>
-<h2 id="4链接linking">4.链接（Linking）</h2>
-<p><strong>链接过程使用链接器将该目标文件与其他目标文件、库文件、启动文件等链接起来生成可执行文件。</strong></p>
-<pre><code>gcc test.o -o test.exe
-</code></pre>
-<hr>
-<h1 id="静态-动态链接">静态、动态链接？</h1>
-<ul>
-<li>1、什么是静态链接？</li>
-</ul>
-<p>静态链接是由链接器在链接时将库的内容加入到可执行程序中的做法。链接器是一个独立程序，将一个或多个库或目标文件（先前由编译器或汇编器生成）链接到一块生成可执行程序。这里的库指的是静态链接库，Windows下以.lib为后缀，Linux下以.a为后缀。</p>
-<ul>
-<li>2、什么是动态链接？</li>
-</ul>
-<p>动态链接（Dynamic Linking），把链接这个过程推迟到了运行时再进行，在可执行文件装载时或运行时，由操作系统的装载程序加载库。这里的库指的是动态链接库，Windows下以.dll为后缀，Linux下以.so为后缀。值得一提的是，在Windows下的动态链接也可以用到.lib为后缀的文件，但这里的.lib文件叫做导入库，是由.dll文件生成的。</p>
-<h2 id="实验">实验</h2>
-<p>文件1（main.c）：</p>
-<pre><code>#include &quot;test.h&quot;
-
-int main(void)
-{
-    print_hello();
-    system(&quot;pause&quot;);
-    return 0;
-}
-</code></pre>
-<p>文件2（test.c）：</p>
-<pre><code>#include &quot;test.h&quot;
-
-void print_hello(void)
-{
-    printf(&quot;hello world\n&quot;);
-}
-</code></pre>
-<p>文件3（test.h）：</p>
-<pre><code>#ifndef __TEST_H
-#define __TEST_H
-
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-
-void print_hello(void);
-
-#endif
-</code></pre>
-<h3 id="静态链接实验">静态链接实验</h3>
-<ul>
-<li>
-<p>编译</p>
-<pre><code>gcc -c test.c main.c
-</code></pre>
-<p>多出了test.o和main.o文件</p>
-</li>
-<li>
-<p>静态链接库<br>
-接下来使用ar工具把test.o和main.o打包成一个静态库文件lib_test.lib</p>
-<pre><code>ar rv lib_test.lib test.o main.o
-</code></pre>
-</li>
-<li>
-<p>链接<br>
-把这个静态库链接成可执行文件lib_test.exe</p>
-<pre><code>gcc lib_test.lib -o lib_test.exe
-</code></pre>
-</li>
-</ul>
-<p>可以直接执行lib_test.exe</p>
-<h3 id="动态链接实验">动态链接实验</h3>
-<ul>
-<li>
-<p>动态链接库</p>
-<pre><code>gcc test.c -shared -o dll_test.dll 
-</code></pre>
-<pre><code>  多出了动态库文件dll_test.dll
-</code></pre>
-</li>
-<li>
-<p>生成可执行文件<br>
-用该动态库文件dll_test.dll与main.c一起编译生成可执行文件dll_test.exe</p>
-<pre><code>gcc dll_test.dll main.c -o dll_test.exe
-</code></pre>
-</li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[Linux 管道]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-linux-guan-dao/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-linux-guan-dao/">
-        </link>
-        <updated>2020-10-12T10:30:17.000Z</updated>
-        <content type="html"><![CDATA[<ul>
-<li><a href="https://oilbeater.com/linux/2012/05/29/linux_pipe.html">linux管道机制简介</a></li>
-</ul>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[6.安全]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-6an-quan/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-6an-quan/">
-        </link>
-        <updated>2020-10-12T10:29:46.000Z</updated>
-        <content type="html"><![CDATA[<p>这一部分的内容和HTTPS重合</p>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[5.1.mmap内存映射]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-51mmap-nei-cun-ying-she/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-51mmap-nei-cun-ying-she/">
-        </link>
-        <updated>2020-10-12T10:28:54.000Z</updated>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[5.0输入输出和IO(包含零拷贝)]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-50-shu-ru-shu-chu-he-iobao-han-ling-kao-bei/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-50-shu-ru-shu-chu-he-iobao-han-ling-kao-bei/">
-        </link>
-        <updated>2020-10-12T10:26:00.000Z</updated>
+        <updated>2020-10-13T11:44:55.000Z</updated>
         <content type="html"><![CDATA[<p>[TOC]</p>
-<h1 id="1io硬件">1.IO硬件</h1>
-<h2 id="分类">分类</h2>
+<h1 id="使用方法">使用方法</h1>
 <ul>
-<li>块设备 block device
-<ul>
-<li>块设备把信息存储在固定大小的块中，每个块有自己的地址</li>
-<li>CR-ROM、USB</li>
+<li><a href="https://developer.android.com/reference/android/graphics/Matrix">Android官方文档</a></li>
 </ul>
-</li>
-<li>字符设备 character device
-<ul>
-<li>字符设备以字符为单位发送或接收一个字符流，而不考虑任何块结构。字符设备是不可寻址的，也没有任何寻道操作。</li>
-<li>打印机</li>
-<li>网络接口</li>
-<li>鼠标（用作指点设备）</li>
-<li>以及大多数与磁盘不同的设备都可看作是字符设备。</li>
-</ul>
-</li>
-</ul>
-<h2 id="设备控制器">设备控制器</h2>
-<h2 id="内存映射io">内存映射IO</h2>
-<p>优点：</p>
-<ul>
-<li>对于内存映射I/O，I/O设备驱动程序可以完全用C语言编写。如果不使用内存映射I/O，就要用到某些汇编代码。</li>
-<li>不需要特殊的保护机制来阻止用户进程执行I/O操作</li>
-<li>可以引用内存的每一条指令也可以引用控制寄存器。</li>
-</ul>
-<hr>
-<h1 id="2io软件">2.IO软件</h1>
-<h2 id="程序控制io">程序控制IO</h2>
-<p>CPU要不断地查询设备以了解它是否就绪准备接收另一个字符。这一行为经常称为轮询（polling）或忙等待（busy waiting）。</p>
-<p>十分简单但是有缺点，即直到全部I/O完成之前要占用CPU的全部时间。</p>
-<h2 id="中断驱动io">中断驱动IO</h2>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498378648.png" alt="" loading="lazy"></figure>
-<p>中断驱动I/O的一个明显缺点是中断发生在每个字符上。中断要花费时间，所以这一方法将浪费一定数量的CPU时间。</p>
-<h2 id="中断io">中断IO</h2>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498388360.png" alt="" loading="lazy"></figure>
-<ul>
-<li>用户进程向 CPU 发起 read 系统调用读取数据，由用户态切换为内核态，然后一直阻塞等待数据的返回。</li>
-<li>CPU 在接收到指令以后对磁盘发起 I/O 请求，将磁盘数据先放入磁盘控制器缓冲区。<br>
-数据准备完成以后，磁盘向 CPU 发起 I/O 中断。</li>
-<li>CPU 收到 I/O 中断以后将磁盘缓冲区中的数据拷贝到内核缓冲区，然后再从内核缓冲区拷贝到用户缓冲区。</li>
-<li>用户进程由内核态切换回用户态，解除阻塞状态，然后等待 CPU 的下一个执行时间钟。</li>
-</ul>
-<p><strong>2次上下文切换、2次拷贝</strong></p>
-<h2 id="使用dma的io">使用DMA的IO</h2>
-<p>DMA重大的成功是将中断的次数从打印每个字符一次减少到打印每个缓冲区一次。如果有许多字符并且中断十分缓慢，那么采用DMA可能是重要的改进。另一方面，DMA控制器通常比主CPU要慢很多。如果DMA控制器不能以全速驱动设备，或者CPU在等待DMA中断的同时没有其他事情要做，那么采用中断驱动I/O甚至采用程序控制I/O也许更好。</p>
-<h2 id="直接存储器存取-dma">直接存储器存取 DMA</h2>
-<p>Direct Memory Access，直接内存存取</p>
-<p>无论DMA控制器在物理上处于什么地方，它都能够独立于CPU而访问系统总线</p>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498401543.png" alt="" loading="lazy"></figure>
-<p>工作原理：</p>
-<ul>
-<li>没有DMA</li>
-</ul>
-<blockquote>
-<p>“我们首先看一下没有使用DMA时磁盘如何读。首先，控制器从磁盘驱动器串行地、一位一位地读一个块（一个或多个扇区），直到将整块信息放入控制器的内部缓冲区中。接着，它计算校验和，以保证没有读错误发生。然后控制器产生一个中断。当操作系统开始运行时，它重复地从控制器的缓冲区中一次一个字节或一个字地读取该块的信息，并将其存入内存中。”</p>
-</blockquote>
-<ul>
-<li>有DMA</li>
-</ul>
-<blockquote>
-<p>首先，CPU通过设置DMA控制器的寄存器对它进行编程，所以DMA控制器知道将什么数据传送到什么地方（图5-4中的第1步）。DMA控制器还要向磁盘控制器发出一个命令，通知它从磁盘读数据到其内部的缓冲区中，并且对校验和进行检验。如果磁盘控制器的缓冲区中的数据是有效的，那么DMA就可以开始了。</p>
-<p>DMA控制器通过在总线上发出一个读请求到磁盘控制器而发起DMA传送（第2步）。这一读请求看起来与任何其他读请求是一样的，并且磁盘控制器并不知道或者并不关心它是来自CPU还是来自DMA控制器。一般情况下，要写的内存地址在总线的地址线上，所以当磁盘控制器从其内部缓冲区中读取下一个字的时候，它知道将该字写到什么地方。写到内存是另一个标准总线周期（第3步）。当写操作完成时，磁盘控制器在总线上发出一个应答信号到DMA控制器（第4步）。于是，DMA控制器步增要使用的内存地址，并且步减字节计数。如果字节计数仍然大于0，则重复第2步到第4步，直到字节计数到达0。此时，DMA控制器将中断CPU以便让CPU知道传送现在已经完成了。当操作系统开始工作时，用不着将磁盘块复制到内存中，因为它已经在内存中了。</p>
-</blockquote>
-<blockquote>
-<p>普通中断方式是在数据缓冲寄存器满后，发中断请求，CPU进行中断处理<br>
-DMA方式则是以数据块为单位传输的,在所要求传送的数据块全部传送结束时要求CPU进行中断处理,大大减少了CPU进行中断处理的次数<br>
-总结:DMA方式不需CPU干预传送操作,仅仅是开始和结尾借用CPU一点时间,其余不占用CPU任何资源，中断方式是程序切换,每次操作需要保护和恢复现场</p>
-<p>中断控制方式虽然在某种程度上解决了上述问题，但由于中断次数多，因而CPU仍需要花较多的时间处理中断，而且能够并行操作的设备台数也受到中断处理时间的限制，中断次数增多导致数据丢失。</p>
-<p>DMA方式和通道方式较好地解决了上述问题。这两种方式采用了外设和内存直接交换数据的方式。只有在一段数据传送结束时，这两种方式才发出中断信号要求CPU做善后处理，从而大大减少了CPU的工作负担。中断控制方式虽然在某种程度上解决了上述问题，但由于中断次数多，因而CPU仍需要花较多的时间处理中断，而且能够并行操作的设备台数也受到中断处理时间的限制，中断次数增多导致数据丢失。DMA方式和通道方式较好地解决了上述问题。这两种方式采用了外设和内存直接交换数据的方式。只有在一段数据传送结束时，这两种方式才发出中断信号要求CPU做善后处理，从而大大减少了CPU的工作负担。</p>
-</blockquote>
-<p>参考文章</p>
-<ul>
-<li><a href="https://byte.baike.com/cwiki/DMA&amp;fr=toutiao?isPreloadWebView=1">DMA-字节百科</a></li>
-</ul>
-<blockquote>
-<p>DMA 传输将数据从一个地址空间复制到另外一个地址空间。当CPU 初始化这个传输动作，传输动作本身是由 DMA 控制器来实行和完成。典型的例子就是移动一个外部内存的区块到芯片内部更快的内存区。像是这样的操作并没有让处理器工作拖延，反而可以被重新排程去处理其他的工作。DMA 传输对于高效能 嵌入式系统算法和网络是很重要的。</p>
-<p>在实现DMA传输时，是由DMA控制器直接掌管总线，因此，存在着一个总线控制权转移问题。即DMA传输前，CPU要把总线控制权交给DMA控制器，而在结束DMA传输后，DMA控制器应立即把总线控制权再交回给CPU。一个完整的DMA传输过程必须经过DMA请求、DMA响应、DMA传输、DMA结束4个步骤。</p>
-<ul>
-<li>请求
-<ul>
-<li>CPU对DMA控制器初始化，并向I/O接口发出操作命令，I/O接口提出DMA请求。</li>
-</ul>
-</li>
-<li>响应
-<ul>
-<li>DMA控制器对DMA请求判别优先级及屏蔽，向总线裁决逻辑提出总线请求。当CPU执行完当前总线周期即可释放总线控制权。此时，总线裁决逻辑输出总线应答，表示DMA已经响应，通过DMA控制器通知I/O接口开始DMA传输。</li>
-</ul>
-</li>
-<li>传输
-<ul>
-<li>DMA控制器获得总线控制权后，CPU即刻挂起或只执行内部操作，由DMA控制器输出读写命令，直接控制RAM与I/O接口进行DMA传输。</li>
-<li>在DMA控制器的控制下，在存储器和外部设备之间直接进行数据传送，在传送过程中不需要中央处理器的参与。开始时需提供要传送的数据的起始位置和数据长度。</li>
-</ul>
-</li>
-<li>结束
-<ul>
-<li>当完成规定的成批数据传送后，DMA控制器即释放总线控制权，并向I/O接口发出结束信号。当I/O接口收到结束信号后，一方面停 止I/O设备的工作，另一方面向CPU提出中断请求，使CPU从不介入的状态解脱，并执行一段检查本次DMA传输操作正确性的代码。最后，带着本次操作结果及状态继续执行原来的程序。</li>
-</ul>
-</li>
-</ul>
-<p>由此可见，DMA传输方式无需CPU直接控制传输，也没有中断处理方式那样保留现场和恢复现场的过程，通过硬件为RAM与I/O设备开辟一条直接传送数据的通路，使CPU的效率大为提高。</p>
-<p>DMA控制器与CPU怎样分时使用内存呢?通常采用以下三种方法：(1)停止CPU访内存；(2)周期挪用；(3)DMA与CPU交替访问内存。</p>
-</blockquote>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498415009.png" alt="" loading="lazy"></figure>
-<ul>
-<li>用户进程向 CPU 发起 read 系统调用读取数据，由用户态切换为内核态，然后一直阻塞等待数据的返回。</li>
-<li>CPU 在接收到指令以后对 DMA 磁盘控制器发起调度指令。</li>
-<li>DMA 磁盘控制器对磁盘发起 I/O 请求，将磁盘数据先放入磁盘控制器缓冲区，CPU 全程不参与此过程。</li>
-<li>数据读取完成后，DMA 磁盘控制器会接受到磁盘的通知，将数据从磁盘控制器缓冲区拷贝到内核缓冲区。</li>
-<li>DMA 磁盘控制器向 CPU 发出数据读完的信号，由 CPU 负责将数据从内核缓冲区拷贝到用户缓冲区。</li>
-<li>用户进程由内核态切换回用户态，解除阻塞状态，然后等待 CPU 的下一个执行时间钟。</li>
-</ul>
-<p><strong>2次上下文切换，2次拷贝</strong></p>
-<h2 id="零拷贝">零拷贝</h2>
-<ul>
-<li><a href="https://www.toutiao.com/i6802161744752935436/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1583802979&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_android&amp;req_id=202003100916180100260771961F64434A&amp;group_id=6802161744752935436">深入剖析神秘的“零拷贝”「转」</a></li>
-<li>强烈推荐这篇文章 <a href="https://juejin.im/post/5d84bd1f6fb9a06b2d780df7">深入剖析Linux IO原理和几种零拷贝机制的实现</a></li>
-</ul>
-<h3 id="传统io">传统IO</h3>
-<h4 id="1传统读写">1.传统读写</h4>
-<pre><code>read(file_fd, tmp_buf, len);
-write(socket_fd, tmp_buf, len);
+<h2 id="构造">构造</h2>
+<p>单位矩阵</p>
+<pre><code>Matrix{[1.0, 0.0, 0.0][0.0, 1.0, 0.0][0.0, 0.0, 1.0]}
 </code></pre>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498425858.png" alt="" loading="lazy"></figure>
-<p><strong>整个过程涉及 2 次 CPU 拷贝、2 次 DMA 拷贝总共 4 次拷贝，以及 4 次上下文切换</strong></p>
-<ul>
-<li>上下文切换：当用户程序向内核发起系统调用时，CPU 将用户进程从用户态切换到内核态；当系统调用返回时，CPU 将用户进程从内核态切换回用户态。</li>
-<li>CPU拷贝：由 CPU 直接处理数据的传送，数据拷贝时会一直占用 CPU 的资源。</li>
-<li>DMA拷贝：由 CPU 向DMA磁盘控制器下达指令，让 DMA 控制器来处理数据的传送，数据传送完毕再把信息反馈给 CPU，从而减轻了 CPU 资源的占有率。</li>
-</ul>
-<h4 id="2传统读">2.传统读</h4>
-<pre><code>read(file_fd, tmp_buf, len);
+<h2 id="voidsetrotatefloat-degrees">void	setRotate(float degrees)</h2>
+<p>Set the matrix to rotate about (0,0) by the specified number of degrees.</p>
+<p>旋转矩阵</p>
+<pre><code>matrix.setRotate(30);
 </code></pre>
-<p><strong>2 次上下文切换，1 次 DMA 拷贝和 1 次 CPU 拷贝</strong></p>
-<ul>
-<li>用户进程通过 read() 函数向内核（kernel）发起系统调用，上下文从用户态（user space）切换为内核态（kernel space）。</li>
-<li>CPU利用DMA控制器将数据从主存或硬盘拷贝到内核空间（kernel space）的读缓冲区（read buffer）。</li>
-<li>CPU将读缓冲区（read buffer）中的数据拷贝到用户空间（user space）的用户缓冲区（user buffer）。</li>
-<li>上下文从内核态（kernel space）切换回用户态（user space），read 调用执行返回。</li>
-</ul>
-<h4 id="3传统写">3.传统写</h4>
-<pre><code>write(socket_fd, tmp_buf, len);
+<pre><code>Matrix{[0.8660254, -0.5, 0.0][0.5, 0.8660254, 0.0][0.0, 0.0, 1.0]}
+
+Math.cos(Math.toRadians(30)) = 0.8660254037844387
+Math.sin(Math.toRadians(30))  = 0.49999999999999994
+
+
+旋转矩阵
+
+cosθ    −sinθ   0
+​sinθ    cosθ    0
+​0       0       1
 </code></pre>
-<p><strong>2 次上下文切换，1 次 CPU 拷贝和 1 次 DMA 拷贝</strong></p>
+<p>符合预期</p>
+<h2 id="setrotatefloat-degrees-float-px-float-py">setRotate(float degrees, float px, float py)</h2>
+<p>Set the matrix to rotate by the specified number of degrees, with a pivot point at (px, py).</p>
+<p>围绕px,py旋转</p>
+<pre><code>//179, 192.5 为图片宽高一半，相当于中心
+matrix.setRotate(30, 179, 192.5);
+
+</code></pre>
+<pre><code>Matrix{[0.8660254, -0.5, 120.23145][0.5, 0.8660254, -63.709885][0.0, 0.0, 1.0]}
+</code></pre>
+<p>相当于旋转后做了平移操作</p>
+<h3 id="推导过程">推导过程</h3>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602589540610.png" alt="" loading="lazy"></figure>
+<h3 id="验证">验证</h3>
+<pre><code>Math.cos(Math.toRadians(30)) = 0.8660254037844387
+Math.sin(Math.toRadians(30))  = 0.49999999999999994
+−cosθ.tx +sinθ.t​y +tx =  -0.8660254037844387 * 179 + 0.5 * 192.5 + 179 = 120.231452722
+
+</code></pre>
+<h2 id="setsincosfloat-sinvalue-float-cosvalue">setSinCos(float sinValue, float cosValue)</h2>
+<p>Set the matrix to rotate by the specified sine and cosine values.</p>
+<pre><code>matrix.setSinCos((float) Math.sin(Math.toRadians(30)),(float) Math.cos(Math.toRadians(30)));
+</code></pre>
+<pre><code>Matrix{[0.8660254, -0.5, 0.0][0.5, 0.8660254, 0.0][0.0, 0.0, 1.0]}
+
+和setRotate(float degrees, float px, float py)等价
+</code></pre>
+<h2 id="setsincosfloat-sinvalue-float-cosvalue-float-px-float-py">setSinCos(float sinValue, float cosValue, float px, float py)</h2>
+<p>Set the matrix to rotate by the specified sine and cosine values, with a pivot point at (px, py).</p>
+<p>和setRotate(float degrees, float px, float py)等价</p>
+<pre><code>matrix.setSinCos((float) Math.sin(Math.toRadians(30)),(float) Math.cos(Math.toRadians(30)), mBitmapMan.getWidth() / 2.0f, mBitmapMan.getHeight() / 2.0f);
+
+</code></pre>
+<h2 id="setscalefloat-sx-float-sy">setScale(float sx, float sy)</h2>
+<p>Set the matrix to scale by sx and sy.</p>
+<p>缩放变换矩阵</p>
+<pre><code>matrix.setScale(0.8f, 0.8f);
+</code></pre>
+<pre><code>Matrix{[0.8, 0.0, 0.0][0.0, 0.8, 0.0][0.0, 0.0, 1.0]}
+</code></pre>
+<h2 id="setscalefloat-sx-float-sy-float-px-float-py">setScale(float sx, float sy, float px, float py)</h2>
+<p>Set the matrix to scale by sx and sy, with a pivot point at (px, py).</p>
+<pre><code>matrix.setScale(0.8f, 0.8f, 179, 192.5);
+
+
+//Matrix{[0.8, 0.0, 35.800003][0.0, 0.8, 38.5][0.0, 0.0, 1.0]}
+</code></pre>
+<pre><code>matrix.setScale(0.8f, 0.8f, 10, 10);
+
+//Matrix{[0.8, 0.0, 2.0][0.0, 0.8, 2.0][0.0, 0.0, 1.0]}
+</code></pre>
+<pre><code>matrix.setScale(1.2f, 1.2f, 179, 192.5);
+
+Matrix{[1.2, 0.0, -35.800003][0.0, 1.2, -38.500015][0.0, 0.0, 1.0]}
+</code></pre>
+<p>相当于缩放后进行平移操作，默认图片左上角，如果指定了中心，相当于 平移  px * （1-sx）</p>
+<p>上面相当于</p>
+<pre><code>matrix.setScale(0.8f, 0.8f);
+matrix.postTranslate(0.2f * 179, 0.2f * 192.5);
+
+//Matrix{[0.8, 0.0, 35.8][0.0, 0.8, 38.5][0.0, 0.0, 1.0]}
+</code></pre>
+<h3 id="推导过程-2">推导过程</h3>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602589558071.png" alt="" loading="lazy"></figure>
+<h2 id="voidsettranslatefloat-dx-float-dy">void	setTranslate(float dx, float dy)</h2>
+<p>Set the matrix to translate by (dx, dy).</p>
+<pre><code>matrix.setTranslate(50, 100);
+
+//Matrix{[1.0, 0.0, 50.0][0.0, 1.0, 100.0][0.0, 0.0, 1.0]}
+</code></pre>
+<h2 id="setskewfloat-kx-float-ky">setSkew(float kx, float ky)</h2>
+<p>Set the matrix to skew by sx and sy.</p>
+<p>错切，可以参考</p>
 <ul>
-<li>户进程通过 write() 函数向内核（kernel）发起系统调用，上下文从用户态（user space）切换为内核态（kernel space）。</li>
-<li>CPU 将用户缓冲区（user buffer）中的数据拷贝到内核空间（kernel space）的网络缓冲区（socket buffer）。</li>
-<li>CPU 利用 DMA 控制器将数据从网络缓冲区（socket buffer）拷贝到网卡进行数据传输。</li>
-<li>上下文从内核态（kernel space）切换回用户态（user space），write 系统调用执行返回。</li>
+<li><a href="https://mathworld.wolfram.com/Shear.html">wolfram mathworld</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%94%99%E5%88%87">错切-维基百科</a></li>
 </ul>
-<h3 id="零拷贝-2">零拷贝</h3>
-<p>在 Linux 中零拷贝技术主要有 3 个实现思路：用户态直接 I/O、减少数据拷贝次数以及写时复制技术。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602589568408.png" alt="" loading="lazy"></figure>
+<p>k就是斜率</p>
+<h2 id="setskewfloat-kx-float-ky-float-px-float-py">setSkew(float kx, float ky, float px, float py)</h2>
+<p>Set the matrix to skew by sx and sy, with a pivot point at (px, py).</p>
+<p>设置中心点的错切</p>
+<h2 id="voidsetvaluesfloat-values">void	setValues(float[] values)</h2>
+<p>Copy 9 values from the array into the matrix.</p>
+<pre><code>float[] copy = new float[9];
+matrix.setValues(copy);
+
+Matrix{[0.0, 0.0, 0.0][0.0, 0.0, 0.0][0.0, 0.0, 0.0]}
+</code></pre>
+<h2 id="booleanpostconcatmatrix-other">boolean	postConcat(Matrix other)</h2>
+<p>Postconcats the matrix with the specified matrix.</p>
+<p>后乘一个矩阵</p>
+<h2 id="postxx系列">postXX系列</h2>
 <ul>
-<li>用户态直接 I/O：应用程序可以直接访问硬件存储，操作系统内核只是辅助数据传输。这种方式依旧存在用户空间和内核空间的上下文切换，硬件上的数据直接拷贝至了用户空间，不经过内核空间。因此，直接 I/O 不存在内核空间缓冲区和用户空间缓冲区之间的数据拷贝。</li>
-<li>减少数据拷贝次数：在数据传输过程中，避免数据在用户空间缓冲区和系统内核空间缓冲区之间的CPU拷贝，以及数据在系统内核空间内的CPU拷贝，这也是当前主流零拷贝技术的实现思路。</li>
-<li>写时复制技术：写时复制指的是当多个进程共享同一块数据时，如果其中一个进程需要对这份数据进行修改，那么将其拷贝到自己的进程地址空间中，如果只是数据读取操作则不需要进行拷贝操作。</li>
+<li>boolean	postRotate(float degrees, float px, float py)
+<ul>
+<li>Postconcats the matrix with the specified rotation.</li>
 </ul>
-<h4 id="用户态直接-io">用户态直接 I/O</h4>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498439992.png" alt="" loading="lazy"></figure>
+</li>
+<li>boolean	postRotate(float degrees)
+<ul>
+<li>Postconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	postScale(float sx, float sy, float px, float py)
+<ul>
+<li>Postconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	postScale(float sx, float sy)
+<ul>
+<li>Postconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	postSkew(float kx, float ky)
+<ul>
+<li>Postconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	postSkew(float kx, float ky, float px, float py)
+<ul>
+<li>Postconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	postTranslate(float dx, float dy)
+<ul>
+<li>Postconcats the matrix with the specified translation.</li>
+</ul>
+</li>
+</ul>
+<h2 id="booleanpreconcatmatrix-other">boolean	preConcat(Matrix other)</h2>
+<p>Preconcats the matrix with the specified matrix.<br>
+前乘一个矩阵</p>
+<h2 id="prexx系列">preXX系列</h2>
+<ul>
+<li>boolean	preRotate(float degrees)
+<ul>
+<li>Preconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	preRotate(float degrees, float px, float py)
+<ul>
+<li>Preconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	preScale(float sx, float sy)
+<ul>
+<li>Preconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	preScale(float sx, float sy, float px, float py)
+<ul>
+<li>Preconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	preSkew(float kx, float ky)
+<ul>
+<li>Preconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	preSkew(float kx, float ky, float px, float py)
+<ul>
+<li>Preconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	preTranslate(float dx, float dy)
+<ul>
+<li>Preconcats the matrix with the specified translation.</li>
+</ul>
+</li>
+</ul>
+<h2 id="pre-post-set的执行顺序问题">pre post set的执行顺序问题</h2>
+<p>set会清除前面pre和post的操作，pre前乘法、post后乘</p>
+<pre><code>//179, 192.5 为图片宽高一半，相当于中心
+matrix.setRotate(30, 179, 192.5);
+
+
+
+和下面等效
+matrix.setRotate(30);
+matrix.preTranslate(-179, - 192.5);
+matrix.postTranslate(179, 192.5);
+
+相当于左移上移 然后 旋转  再 右移下移
+
+</code></pre>
+<h2 id="booleansetconcatmatrix-a-matrix-b">boolean	setConcat(Matrix a, Matrix b)</h2>
+<p>Set the matrix to the concatenation of the two specified matrices and return true.</p>
+<p>两个矩阵相乘</p>
+<pre><code>//179, 192.5 为图片宽高一半，相当于中心
+Matrix preTransMatrix = new Matrix();
+preTransMatrix.setTranslate(179,  192.5);
+Matrix rotateMatrix = new Matrix();
+rotateMatrix.setRotate(30);
+Matrix tmpR1 = new Matrix();
+tmpR1.setConcat(preTransMatrix,rotateMatrix);
+Matrix postTransMatrix = new Matrix();
+postTransMatrix.setTranslate(-179, - 192.5);
+Matrix tmp5 = new Matrix();
+tmp5.setConcat(tmpR1,postTransMatrix);
+
+
+和下面等效
+matrix.setRotate(30, 179, 192.5);
+
+
+和下面等效
+matrix.setRotate(30);
+matrix.preTranslate(-179, - 192.5);
+matrix.postTranslate(179, 192.5);
+</code></pre>
+<h2 id="booleanisaffine">boolean	isAffine()</h2>
+<p>Gets whether this matrix is affine.</p>
+<p>是否是仿射变换矩阵</p>
+<pre><code>matrix.reset();
+Log.d(TAG, &quot;isAffine = &quot; +matrix.isAffine() ); //true
+float[] simple = new float[]{0,1,2,3,4,5,6,7,8};
+matrix.setValues(simple);
+Log.d(TAG, &quot;isAffine = &quot; +matrix.isAffine() );//false
+</code></pre>
+<h2 id="booleanisidentity">boolean	isIdentity()</h2>
+<p>Returns true if the matrix is identity.</p>
+<h2 id="booleaninvertmatrix-inverse">boolean	invert(Matrix inverse)</h2>
+<p>If this matrix can be inverted, return true and if inverse is not null, set inverse to be the inverse of this matrix.</p>
+<p>求逆矩阵</p>
+<pre><code>matrix.setRotate(30);
+Matrix invertTmp = new Matrix();
+matrix.invert(invertTmp);
+Matrix invertConcat = new Matrix();
+invertConcat.setConcat(matrix, invertTmp);
+
+最后invertConcat是单位矩阵，相当于顺时针转了30度又逆时针转了回来
+</code></pre>
+<h2 id="floatmapradiusfloat-radius">float	mapRadius(float radius)</h2>
+<p>Return the mean radius of a circle after it has been mapped by this matrix.</p>
+<p>计算矩阵映射后的圆半径</p>
+<pre><code>float radius = 100.0f;
+float radiusAfterMatrix;
+Matrix matrixRadius = new Matrix();
+matrixRadius.setScale(2,2, 1, 1);
+radiusAfterMatrix = matrixRadius.mapRadius(radius);
+
+结果200
+和中心点无关
+</code></pre>
+<p>参考了 -<a href="https://www.jianshu.com/p/6cd77d511510">Android Matrix 方法详解（另类）</a></p>
+<h2 id="mappoints">mapPoints</h2>
+<p>二维点的变化</p>
+<ul>
+<li>
+<p>void	mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount)</p>
+<ul>
+<li>Apply this matrix to the array of 2D points specified by src, and write the transformed points into the array of points specified by dst.</li>
+</ul>
+</li>
+<li>
+<p>void	mapPoints(float[] dst, float[] src)</p>
+<ul>
+<li>Apply this matrix to the array of 2D points specified by src, and write the transformed points into the array of points specified by dst.</li>
+</ul>
+</li>
+<li>
+<p>void	mapPoints(float[] pts)</p>
+<ul>
+<li>Apply this matrix to the array of 2D points, and write the transformed points back into the array</li>
+</ul>
+</li>
+</ul>
+<pre><code>float[] ptsTrans = {6,2};
+matrix.setTranslate(-2,2);
+matrix.mapPoints(ptsTrans);
+//结果 4， 4
+
+float[] resultTmp = new float[2];
+matrix.setTranslate(-2,2);
+matrix.mapPoints(resultTmp, ptsTrans);
+// resultTmp  2, 6 因为上次结果是4， 4
+
+
+</code></pre>
+<h2 id="maprect">mapRect</h2>
+<p>映射到矩形上</p>
+<ul>
+<li>
+<p>boolean	mapRect(RectF rect)</p>
+<ul>
+<li>Apply this matrix to the rectangle, and write the transformed rectangle back into it.</li>
+</ul>
+</li>
+<li>
+<p>boolean	mapRect(RectF dst, RectF src)</p>
+<ul>
+<li>Apply this matrix to the src rectangle, and write the transformed rectangle into dst.</li>
+</ul>
+</li>
+</ul>
+<pre><code>RectF rectF = new RectF(100,100,200,200);
+matrix.reset();
+matrix.setScale(2,2);
+matrix.mapRect(rectF);
+//[200.0,200.0][400.0,400.0]
+
+</code></pre>
+<h2 id="mapvectors">mapVectors</h2>
+<p>矩阵变换作用于向量，和mapPoints比较类似，但是例如tranlate这种对vector没有变化</p>
+<ul>
+<li>
+<p>void	mapVectors(float[] vecs)</p>
+<ul>
+<li>Apply this matrix to the array of 2D vectors, and write the transformed vectors back into the array.</li>
+</ul>
+</li>
+<li>
+<p>void	mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount)</p>
+<ul>
+<li>Apply this matrix to the array of 2D vectors specified by src, and write the transformed vectors into the array of vectors specified by dst.</li>
+</ul>
+</li>
+<li>
+<p>void	mapVectors(float[] dst, float[] src)</p>
+<ul>
+<li>Apply this matrix to the array of 2D vectors specified by src, and write the transformed vectors into the array of vectors specified by dst.</li>
+</ul>
+</li>
+</ul>
+<pre><code>float[] vector = {2,3};
+float[] point = {2,3};
+Matrix matrixTranslate = new Matrix();
+matrixTranslate.setTranslate(2,3);
+matrixTranslate.mapVectors(vector);
+matrixTranslate.mapPoints(point);
+
+// 输出：vector = [2.0,3.0]
+System.out.println(&quot;vector = &quot; + Arrays.toString(vector));
+// 输出：point = [4.0,6.0]
+System.out.println(&quot;point = &quot; + Arrays.toString(point));
+</code></pre>
+<h2 id="booleanrectstaysrect">boolean	rectStaysRect()</h2>
+<p>Returns true if will map a rectangle to another rectangle.</p>
+<h2 id="booleansetpolytopolyfloat-src-int-srcindex-float-dst-int-dstindex-int-pointcount">boolean	setPolyToPoly(float[] src, int srcIndex, float[] dst, int dstIndex, int pointCount)</h2>
+<p>Set the matrix such that the specified src points would map to the specified dst points.</p>
+<p>根据SRC的点到DST的点，求的Matrix的变换矩阵</p>
+<pre><code>float[] src = {1,2};
+float[] dst = {2,4};
+
+Matrix matrix = new Matrix();
+matrix.setPolyToPoly(src,0,dst,0,1);
+
+//          [1.0, 0.0, 1.0]
+// matrix = [0.0, 1.0, 2.0]
+//          [0.0, 0.0, 1.0]
+
+相当于平移 1，2
+</code></pre>
+<h2 id="booleansetrecttorectrectf-src-rectf-dst-matrixscaletofit-stf">boolean	setRectToRect(RectF src, RectF dst, Matrix.ScaleToFit stf)</h2>
+<p>Set the matrix to the scale and translate values that map the source rectangle to the destination rectangle, returning true if the the result can be represented.</p>
+<p>将矩形填充到矩形中。其中在填充时可以指定4种填充模式.<br>
+<img src="https://sparkfengbo.github.io/post-images/1602589593941.webp" alt="" loading="lazy"></p>
+<h2 id="voidreset">void	reset()</h2>
+<p>Set the matrix to identity</p>
+<h2 id="voidsetmatrix-src">void	set(Matrix src)</h2>
+<p>(deep) copy the src matrix into this matrix.</p>
+<h2 id="voidgetvaluesfloat-values">void	getValues(float[] values)</h2>
+<p>Copy 9 values from the matrix into the array.</p>
+<pre><code>matrix.reset();
+float[] copy = new float[9];
+matrix.getValues(copy);
+
+</code></pre>
+<pre><code>0 = 1.0
+1 = 0.0
+2 = 0.0
+3 = 0.0
+4 = 1.0
+5 = 0.0
+6 = 0.0
+7 = 0.0
+8 = 1.0
+</code></pre>
+<h2 id="常量">常量</h2>
+<ul>
+<li>int MSCALE_X = 0;</li>
+<li>int MSKEW_X  = 1;</li>
+<li>int MTRANS_X = 2;</li>
+<li>int MSKEW_Y  = 3;</li>
+<li>int MSCALE_Y = 4;</li>
+<li>int MTRANS_Y = 5;</li>
+<li>int MPERSP_0 = 6;</li>
+<li>int MPERSP_1 = 7;</li>
+<li>int MPERSP_2 = 8;   //!&lt; use with getValues/setValues</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602589609050.webp" alt="" loading="lazy"></figure>
+<h1 id="数学原理">数学原理</h1>
+<ul>
+<li><a href="https://i-rant.arnaudbos.com/matrices-for-developers/#what-is-a-matrix">Matrices for developers</a>
+<ul>
+<li>这里面有一些公式的推导，可以参考</li>
+</ul>
+</li>
+<li>之前OpenGL做的一些笔记</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8F%98%E6%8D%A2%E7%9F%A9%E9%98%B5">变换矩阵-维基百科</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%94%99%E5%88%87">错切-维基百科</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Affine_transformation">仿射变换-维基百科</a></li>
+<li><a href="https://www.matongxue.com/madocs/244.html">如何通俗的解释仿射变换？</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[z-fighting]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-z-fighting/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-z-fighting/">
+        </link>
+        <updated>2020-10-13T10:50:01.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="参考资料">参考资料</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Z-fighting">维基百科-Z-fighting</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B7%B1%E5%BA%A6%E7%BC%93%E5%86%B2">维基百科-深度缓冲</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/78769570">3D渲染中的Z-fighting现象</a></li>
+</ul>
+<h1 id="现象">现象</h1>
+<p>距离相近的物体会发生闪烁，无法判断二者深度。</p>
+<h1 id="产生原因">产生原因</h1>
+<p>透视投影矩阵最后推导可得到下列公式</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602586215054.jpg" alt="" loading="lazy"></figure>
+<p>其中Zn是ndc下的深度值，Ze是相机坐标系下的坐标值。<br>
+可见Zn和Ze不是线性关系，是成反比的关系。距离视点越远的物体，其深度值越不精确，而越近的则越精确了。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602586221237.png" alt="" loading="lazy"></p>
+<h1 id="解决方法">解决方法</h1>
+<p>增加深度值的精度</p>
+<p>OpenGL可以设置glPolygonOffset</p>
+<h2 id="深度值的非线性与线性的转化">深度值的非线性与线性的转化</h2>
+<pre><code>gl_FragCoord.z * 2 -1 = (-(f +n)/(f - n) *Ze - (2 * f * n)/(f - n))/-Ze;
+</code></pre>
+<p>求得Ze，在相机空间下的深度值。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Gamma校正]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-gamma-xiao-zheng/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-gamma-xiao-zheng/">
+        </link>
+        <updated>2020-10-13T10:49:18.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="比较好的资料">比较好的资料</h1>
+<ul>
+<li><a href="https://www.zhihu.com/question/27467127/answer/37555901">知乎-色彩校正中的 gamma 值是什么？ - 韩世麟的回答</a></li>
+<li><a href="https://www.zhihu.com/question/27467127/answer/37602200">知乎-色彩校正中的 gamma 值是什么？ - Avatar Ye的回答</a></li>
+<li><a href="https://blog.csdn.net/candycat1992/article/details/46228771">【图形学】我理解的伽马校正（Gamma Correction）</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Gamma_correction">维基百科-伽马校正</a></li>
+<li><a href="https://learnopengl-cn.github.io/05%20Advanced%20Lighting/02%20Gamma%20Correction/">LearnOpenGL-伽马校正</a></li>
+</ul>
+<h1 id="总结">总结</h1>
+<p>出现gamma校正的原因是<strong>人眼对自然亮度感知是非线性的</strong>。我们的人眼对暗处的变化更为敏感。例如，从白到全黑，人眼当做中灰的位置大概在20%。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602586176389.jpg" alt="" loading="lazy"></figure>
+<p>第二个原因和我们存储颜色的方式有关，为了将存储空间更加平均，将更多的空间分配给较暗的颜色，所以做了幂函数的映射。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602586182544.jpg" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586187121.jpg" alt="" loading="lazy"></p>
+<p>在图像采集并存储的时候，实际上是将亮度乘以了0.45次幂，所以显示器将存储的图像还原颜色的时候需要将乘以2.2次幂。2.2是微软和惠普通过大量实验得到的结论。</p>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[BSDF]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-bsdf/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-bsdf/">
+        </link>
+        <updated>2020-10-13T10:49:02.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="资料">资料</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Bidirectional_scattering_distribution_function">维基百科 - Bidirectional scattering distribution function</a></li>
+<li><a href="https://baike.baidu.com/item/%E5%8F%8C%E5%90%91%E6%95%A3%E5%B0%84%E5%88%86%E5%B8%83%E5%87%BD%E6%95%B0/9790722?fr=aladdin">百度百科 - 双向散射分布函数</a></li>
+<li><a href="https://blog.csdn.net/qq305042523/article/details/77449271">BSDF</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/47869364">浅谈PBR：从光学原理到基于物理的渲染</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[欧拉角、万向锁、四元数]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-ou-la-jiao-wan-xiang-suo-si-yuan-shu/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-ou-la-jiao-wan-xiang-suo-si-yuan-shu/">
+        </link>
+        <updated>2020-10-13T10:46:55.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="比较好的资料">比较好的资料</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%AC%A7%E6%8B%89%E8%A7%92">维基百科-欧拉角</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Gimbal_lock">维基百科-Gimbal lock</a></li>
+<li><a href="https://krasjet.github.io/quaternion/bonus_gimbal_lock.pdf">Bonus: Gimbal Lock</a><br>
+--</li>
+<li><a href="https://www.zhihu.com/question/47736315">知乎-如何通俗地解释欧拉角？之后为何要引入四元数？</a><br>
+--</li>
+<li><a href="https://zhuanlan.zhihu.com/p/27471300">知乎-四元数——基本概念</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27541307">知乎-四元数——旋转</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/85321120">知乎-旋转之一复数与2D旋转</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%9B%9B%E5%85%83%E6%95%B0%E4%B8%8E%E7%A9%BA%E9%97%B4%E6%97%8B%E8%BD%AC">维基百科-四元数与空间旋转</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%9B%9B%E5%85%83%E6%95%B8">维基百科-四元数</a></li>
+</ul>
+<h1 id="欧拉角">欧拉角</h1>
 <blockquote>
-<p>用户态直接 I/O 只能适用于不需要内核缓冲区处理的应用程序，这些应用程序通常在进程地址空间有自己的数据缓存机制，称为自缓存应用程序，如数据库管理系统就是一个代表。其次，这种零拷贝机制会直接操作磁盘 I/O，由于 CPU 和磁盘 I/O 之间的执行时间差距，会造成大量资源的浪费，解决方案是配合异步 I/O 使用。</p>
+<p>莱昂哈德·欧拉用欧拉角来描述刚体在三维欧几里得空间的取向。换句话说，任何关于刚体旋转的旋转矩阵是由三个基本旋转矩阵复合而成的。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602586028845.gif" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586032857.jpg" alt="" loading="lazy"></p>
 </blockquote>
-<h4 id="mmap-write">mmap + write</h4>
-<p><strong>减少了 1 次 CPU 拷贝操作</strong></p>
-<p><img src="https://sparkfengbo.github.io/post-images/1602498449207.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602498455475.png" alt="" loading="lazy"></p>
-<h4 id="sendfile">sendfile</h4>
-<p><strong>sendfile 系统调用在 Linux 内核版本 2.1 中被引入，目的是简化通过网络在两个通道之间进行的数据传输过程。sendfile 系统调用的引入，不仅减少了 CPU 拷贝的次数，还减少了上下文切换的次数</strong></p>
-<p><img src="https://sparkfengbo.github.io/post-images/1602498461791.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602498466238.png" alt="" loading="lazy"></p>
-<h4 id="sendfile-dma-gather-copy">sendfile + DMA gather copy</h4>
-<p><strong>Linux 2.4 版本的内核对 sendfile 系统调用进行修改，为  DMA 拷贝引入了 gather 操作。它将内核空间（kernel space）的读缓冲区（read buffer）中对应的数据描述信息（内存地址、地址偏移量）记录到相应的网络缓冲区（ socket  buffer）中，由 DMA 根据内存地址、地址偏移量将数据批量地从读缓冲区（read buffer）拷贝到网卡设备中，这样就省去了内核空间中仅剩的 1 次 CPU 拷贝操作s</strong></p>
-<p><img src="https://sparkfengbo.github.io/post-images/1602498477091.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602498482857.png" alt="" loading="lazy"></p>
-<h4 id="splice">splice</h4>
-<p><strong>sendfile 只适用于将数据从文件拷贝到 socket 套接字上，同时需要硬件的支持，这也限定了它的使用范围。Linux 在 2.6.17 版本引入 splice 系统调用，不仅不需要硬件支持，还实现了两个文件描述符之间的数据零拷贝。</strong></p>
-<pre><code>splice(fd_in, off_in, fd_out, off_out, len, flags);
+<p>参阅上图。设定xyz-轴为参考系的参考轴。称xy-平面与XY-平面的相交为交点线，用英文字母（N）代表。zxz顺规的欧拉角可以静态地这样定义：</p>
+<ul>
+<li>alpha 是x-轴与交点线的夹角，</li>
+<li>beta 是z-轴与Z-轴的夹角，</li>
+<li>gamma 是交点线与X-轴的夹角。</li>
+</ul>
+<p>很可惜地，对于夹角的顺序和标记，夹角的两个轴的指定，并没有任何常规。科学家对此从未达成共识。每当用到欧拉角时，我们必须明确的表示出夹角的顺序，指定其参考轴。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602586039872.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>pitch 俯仰角<br>
+<img src="https://sparkfengbo.github.io/post-images/1602586046940.gif" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>yaw 偏航角</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602586056505.gif" alt="" loading="lazy"></figure>
+<ul>
+<li>roll 翻滚角</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602586063406.gif" alt="" loading="lazy"></figure>
+<h1 id="万向锁-gimbal_lock">万向锁 gimbal_lock</h1>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602586070437.gif" alt="" loading="lazy"></figure>
+<p>我的理解，欧拉角之所以自由灵活的转动是因为三个轴不在一个平面上，而像下图，上下翻转90度使得两个轴在一个平面时会发生死锁。</p>
+<h1 id="四元数">四元数</h1>
+<h2 id="复数和旋转">复数和旋转</h2>
+<h3 id="复数的矩阵表示">复数的矩阵表示</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602586078138.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586081988.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586085705.png" alt="" loading="lazy"></p>
+<h3 id="模与共轭">模与共轭</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602586091587.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586095270.png" alt="" loading="lazy"></p>
+<h3 id="复数的表示方法">复数的表示方法</h3>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602586100788.png" alt="" loading="lazy"></figure>
+<h3 id="复数和旋转-2">复数和旋转</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602586105554.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586109304.png" alt="" loading="lazy"></p>
+<h2 id="四元数旋转">四元数旋转</h2>
+<pre><code>glm::mat4 model = glm::mat4(1.0f); //创建一个单位矩阵
+glm::qua&lt;float&gt; q = glm::qua&lt;float&gt;(glm::radians(glm::vec3(0.0f, 0.0f, 90.0f))); //创建一个绕z轴旋转90度的四元数
+model = glm::mat4_cast(q) * model;	//得到一个旋转的模型矩阵
 </code></pre>
-<p><img src="https://sparkfengbo.github.io/post-images/1602498489058.png" alt="" loading="lazy"><br>
-<img src="https://sparkfengbo.github.io/post-images/1602498497440.png" alt="" loading="lazy"></p>
-<h4 id="写时复制">写时复制</h4>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602586119088.png" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[菲涅耳方程和Schlick近似]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-fei-nie-er-fang-cheng-he-schlick-jin-si/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-fei-nie-er-fang-cheng-he-schlick-jin-si/">
+        </link>
+        <updated>2020-10-13T10:45:24.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="参考资料">参考资料</h1>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/31534769">知乎：用 C 语言画光（六）：菲涅耳方程</a></li>
+<li><a href="https://www.zhihu.com/question/53022233">知乎：菲涅尔反射是什么？</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Schlick's_approximation">维基百科-Schlick's approximation</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E8%8F%B2%E6%B6%85%E8%80%B3%E6%96%B9%E7%A8%8B">维基百科-菲涅耳方程</a></li>
+<li><a href="https://learnopengl-cn.github.io/07%20PBR/01%20Theory/#_4">LearnOpenGL-CN - 菲涅尔方程</a></li>
+</ul>
+<h1 id="菲涅尔反射">菲涅尔反射</h1>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585958459.jpg" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585966973.jpg" alt="" loading="lazy"></p>
+<p>简单理解，<strong>夹角越小，反射越明显，所以远处倒影明显</strong>。</p>
+<h1 id="菲涅尔方程">菲涅尔方程</h1>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585974956.png" alt="" loading="lazy"></figure>
+<h1 id="schlick-approximation">Schlick Approximation</h1>
+<p>菲涅尔方程计算非常复杂，所以有近似的计算方式。</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585993623.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585999856.jpg" alt="" loading="lazy"></p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602585982055.png" alt="" loading="lazy"></figure>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[4.2Android Matrix的使用]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-42android-matrix-de-shi-yong/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-42android-matrix-de-shi-yong/">
+        </link>
+        <updated>2020-10-13T10:44:53.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="matrix">Matrix</h1>
+<h2 id="特点实际变换和执行顺序相反">特点：实际变换和执行顺序相反</h2>
+<p><strong>Android实际执行的变换和调用Matrix相反</strong></p>
+<pre><code>Matrix.setIdentityM(modelMatrix2, 0);
+Matrix.translateM(modelMatrix2, 0, 0.5f, 1.0f, -1.5f);
+Matrix.rotateM(modelMatrix2, 0, angle, 0.0f, 1.0f, 0.0f);
+Matrix.scaleM(modelMatrix2, 0, 1.5f, 1.5f, 1.5f);
+</code></pre>
+<p><strong>在顶点坐标上先左乘缩放矩阵，再左乘旋转矩阵，然后再左乘平移矩阵，跟代码调用的顺序正好相反。</strong></p>
+<h2 id="以scalem和translatem进行推导">以scaleM和translateM进行推导</h2>
+<pre><code>    float[] matrix = new float[]{
+            1f, 5f, 9f, 13f,
+            2f, 6f, 10f, 14f,
+            3f, 7f, 11f, 15f,
+            4f, 8f, 12f, 16f,
+    };
+
+    float[] result = new float[16];
+
+</code></pre>
+<h3 id="scalem">scaleM</h3>
+<pre><code>        Matrix.scaleM(result,0, matrix, 0,2,1, 1 );
+        Matrix.scaleM(matrix,0,2,1, 1);
+
+
+        结果：
+        2f, 10f, 18f, 26f,
+        2f, 6f, 10f, 14f,
+        3f, 7f, 11f, 15f,
+        4f, 8f, 12f, 16f,
+</code></pre>
+<p>为什么第一行都乘以2了？？？</p>
+<p>记住！OpenGL的Matrix都是<strong>列主序列</strong></p>
+<p>我们之前推导的缩放矩阵</p>
+<figure data-type="image" tabindex="1"><img src="./pic/scalematrix.png" alt="" loading="lazy"></figure>
+<p>假设原矩阵</p>
+<figure data-type="image" tabindex="2"><img src="./pic/simplematrix.png" alt="" loading="lazy"></figure>
+<p>和scale矩阵相乘，</p>
+<figure data-type="image" tabindex="3"><img src="./pic/simplematrixmul.png" alt="" loading="lazy"></figure>
+<p>可以看到列向量分别乘以了scale的factor，但是别忘了是列主顺序，所以对应的结果是第一行乘以了2.</p>
+<p><strong>为什么不能右乘？因为矩阵乘法不满足交换律。</strong></p>
+<p>假设之前有变换矩阵M0，那么直接作用在原顶点坐标P(x,y,z,w)，则有M0*P</p>
+<p>此时我们调用scaleM方法，</p>
+<pre><code>Matrix.scaleM(M0,0,sx,sy,sz);
+</code></pre>
+<p>得到的M1矩阵，那么M1 = M0*S</p>
+<p>作用于顶点向量 M1 * P = M0 * S * P = M0 * (S * P)</p>
+<p>此时相当于先执行 scale再执行之前的变换。</p>
+<h3 id="translatem">translateM</h3>
+<p>平移</p>
+<pre><code>public static void translateM (float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)
+
+public static void translateM (float[] tm, 
+                int tmOffset, 
+                float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)
+</code></pre>
+<pre><code>
+    //等价
+    Matrix.translateM(result,0, matrix, 0,1,1, 1 );
+    Matrix.translateM(matrix,0,1,1, 1 );
+
+
+    /**结果是
+     1f, 5f, 9f, 13f,
+     2f, 6f, 10f, 14f,
+     3f, 7f, 11f, 15f,
+     10f, 26f, 42f, 58f,
+    */
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="./pic/translate.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="./pic/translamul.png" alt="" loading="lazy"></figure>
+<p>可以看到作用在最后列向量上，对应于列主序列的最后一行。</p>
+<h2 id="android-matrix的操作">Android Matrix的操作</h2>
+<ul>
+<li><a href="https://developer.android.com/reference/android/opengl/Matrix#public-constructors">Android developer Matrix</a></li>
+</ul>
+<p>https://www.learnopengles.com/understanding-opengls-matrices/</p>
+<p>类似于glm，Android在Java层提供了对矩阵的操作。Matrix是一个工具类，操作OpenGL ES的float类型的矩阵、向量。</p>
+<p>矩阵和向量是column-major的格式。</p>
+<pre><code>  m[offset +  0] m[offset +  4] m[offset +  8] m[offset + 12]
+  m[offset +  1] m[offset +  5] m[offset +  9] m[offset + 13]
+  m[offset +  2] m[offset +  6] m[offset + 10] m[offset + 14]
+  m[offset +  3] m[offset +  7] m[offset + 11] m[offset + 15]
+
+  v[offset + 0]
+  v[offset + 1]
+  v[offset + 2]
+  v[offset + 3]
+</code></pre>
+<h3 id="模型矩阵">模型矩阵</h3>
+<h4 id="rotatem">rotateM</h4>
+<pre><code>public static void rotateM (float[] m, 
+                int mOffset, 
+                float a, 
+                float x, 
+                float y, 
+                float z)
+
+public static void rotateM (float[] rm, 
+                int rmOffset, 
+                float[] m, 
+                int mOffset, 
+                float a, 
+                float x, 
+                float y, 
+                float z)                
+</code></pre>
+<p>和 setRotateM区别是作用于之前的上一个矩阵。</p>
+<pre><code>public static void rotateM(float[] rm, int rmOffset,
+            float[] m, int mOffset,
+            float a, float x, float y, float z) {
+    synchronized(sTemp) {
+        setRotateM(sTemp, 0, a, x, y, z);
+        multiplyMM(rm, rmOffset, m, mOffset, sTemp, 0);
+    }
+}
+</code></pre>
+<h4 id="scalem-2">scaleM</h4>
+<pre><code>public static void scaleM (float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)
+
+
+public static void scaleM (float[] sm, 
+                int smOffset, 
+                float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)                
+</code></pre>
+<h4 id="setrotateeulerm">setRotateEulerM</h4>
+<pre><code>public static void setRotateEulerM (float[] rm, 
+                int rmOffset, 
+                float x, 
+                float y, 
+                float z)
+</code></pre>
+<p>欧拉角转成旋转矩阵。</p>
+<h4 id="setrotatem">setRotateM</h4>
+<pre><code>public static void setRotateM (float[] rm, 
+                int rmOffset, 
+                float a, 
+                float x, 
+                float y, 
+                float z)
+</code></pre>
+<p><strong>创建一个矩阵</strong>，围绕锚点 x,y,z 旋转 a 角度</p>
+<h4 id="translatem-2">translateM</h4>
+<p>平移</p>
+<h3 id="观察矩阵">观察矩阵</h3>
+<h4 id="setlookatm">setLookAtM</h4>
+<pre><code>public static void setLookAtM (float[] rm, 
+                int rmOffset, 
+                float eyeX, 
+                float eyeY, 
+                float eyeZ, 
+                float centerX, 
+                float centerY, 
+                float centerZ, 
+                float upX, 
+                float upY, 
+                float upZ)
+</code></pre>
+<p>//TODO<br>
+创建一个viewing transformation</p>
+<p>an eye point, a center of view, and an up vector.</p>
+<h3 id="投影矩阵">投影矩阵</h3>
+<h4 id="frustumm">frustumM</h4>
+<pre><code>public static void frustumM (float[] m, 
+                int offset, 
+                float left, 
+                float right, 
+                float bottom, 
+                float top, 
+                float near, 
+                float far)
+</code></pre>
+<p>Defines a projection matrix in terms of six clip planes.</p>
+<p>//TODO</p>
+<h4 id="orthom">orthoM</h4>
+<pre><code>public static void orthoM (float[] m, 
+                int mOffset, 
+                float left, 
+                float right, 
+                float bottom, 
+                float top, 
+                float near, 
+                float far)
+</code></pre>
+<p>//TODO<br>
+Computes an orthographic projection matrix.</p>
+<h4 id="perspectivem">perspectiveM</h4>
+<pre><code>public static void perspectiveM (float[] m, 
+                int offset, 
+                float fovy, 
+                float aspect, 
+                float zNear, 
+                float zFar)
+</code></pre>
+<p>//TODO</p>
+<p>Defines a projection matrix in terms of a field of view angle, an aspect ratio, and z clip planes.</p>
+<h3 id="其他矩阵操作">其他矩阵操作</h3>
+<h4 id="invertm">invertM</h4>
+<pre><code>public static boolean invertM (float[] mInv, 
+                int mInvOffset, 
+                float[] m, 
+                int mOffset)
+</code></pre>
+<p>求逆矩阵</p>
+<h4 id="length">length</h4>
+<pre><code>public static float length (float x, 
+                float y, 
+                float z)
+</code></pre>
+<p>求向量长度，针对(0,0,0)为原点</p>
+<h4 id="multiplymm">multiplyMM</h4>
+<pre><code>public static void multiplyMM (float[] result, 
+                int resultOffset, 
+                float[] lhs, 
+                int lhsOffset, 
+                float[] rhs, 
+                int rhsOffset)
+</code></pre>
+<p>4*4矩阵相乘</p>
+<p>//TODO</p>
+<h4 id="multiplymv">multiplyMV</h4>
+<p>4 * 4矩阵和4 * 1向量相乘</p>
+<h4 id="setidentitym">setIdentityM</h4>
+<pre><code>public static void setIdentityM (float[] sm, 
+                int smOffset)
+</code></pre>
+<p>将sm变为单位矩阵，注意数组越界</p>
+<pre><code>    public static void setIdentityM(float[] sm, int smOffset) {
+        for (int i=0 ; i&lt;16 ; i++) {
+            sm[smOffset + i] = 0;
+        }
+        for(int i = 0; i &lt; 16; i += 5) {
+            sm[smOffset + i] = 1.0f;
+        }
+    }
+</code></pre>
+<h4 id="transposem">transposeM</h4>
+<p>转置矩阵</p>
+<pre><code>public static void transposeM (float[] mTrans, 
+                int mTransOffset, 
+                float[] m, 
+                int mOffset)
+
+</code></pre>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[4.1 坐标空间和转换]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-41-zuo-biao-kong-jian-he-zhuan-huan/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-41-zuo-biao-kong-jian-he-zhuan-huan/">
+        </link>
+        <updated>2020-10-13T10:43:13.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="五种坐标空间">五种坐标空间</h1>
+<ul>
+<li>局部空间（Local Space）</li>
+<li>世界空间（World Space）</li>
+<li>观察空间（View Space）</li>
+<li>裁剪空间（Clip Space）</li>
+<li>屏幕空间（Screen Space）</li>
+</ul>
+<h2 id="一种通俗的解释">一种通俗的解释</h2>
 <blockquote>
-<p>在某些情况下，内核缓冲区可能被多个进程所共享，如果某个进程想要这个共享区进行 write 操作，由于 write 不提供任何的锁操作，那么就会对共享区中的数据造成破坏，写时复制的引入就是 Linux 用来保护数据的。<br>
-写时复制指的是当多个进程共享同一块数据时，如果其中一个进程需要对这份数据进行修改，那么就需要将其拷贝到自己的进程地址空间中。这样做并不影响其他进程对这块数据的操作，每个进程要修改的时候才会进行拷贝，所以叫写时拷贝。这种方法在某种程度上能够降低系统开销，如果某个进程永远不会对所访问的数据进行更改，那么也就永远不需要拷贝。</p>
+<p>我们先来简略地了解一下图中各个过程：</p>
+<ul>
+<li>首先，一个3D对象的模型被创建（使用某种建模软件）出来之后，是以本地坐标(local coordinates)来表达的，坐标原点(0, 0, 0)一般位于3D对象的中心。不同的3D对象对应各自不同的本地坐标系(local space)。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585811728.png" alt="" loading="lazy"></li>
+</ul>
 </blockquote>
-<h4 id="linux零拷贝对比">Linux零拷贝对比</h4>
-<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602498504843.png" alt="" loading="lazy"></figure>
-<hr>
-<h1 id="3io软件层级">3.IO软件层级</h1>
-<h1 id="4盘">4.盘</h1>
+<blockquote>
+<ul>
+<li>3D对象的本地坐标经过一个model变换，就变换到成了世界坐标(world coordinates)。不同的对象经过各自的model变换之后，就都位于同一个世界坐标系(world space)中了，它们的世界坐标就能表达各自的相对位置。一般来说，model变换又包含三种可能的变换：缩放(scaling)、旋转(rotation)、平移(translation)。在计算机图形学中，一个变换通常使用矩阵乘法来计算完成，因此这里的model变换相当于给本地坐标左乘一个model矩阵，就得到了世界坐标。后边将要介绍的view变换和投影变换，也都对应着一个矩阵乘法。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585821742.png" alt="" loading="lazy"></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>在同一个世界坐标系内的各个3D对象共同组成了一个场景(scene)，对于这个场景，我们可以从不同的角度去观察。当观察角度不同的时候，我们眼中看到的也不同。为了表达这个观察视角，我们会再建立一个相机坐标系，英文可以称为camera space, 或eye space, 或view space。从世界坐标系到相机坐标系的转换，我们称之为view变换。当我们用相机这个词的时候，相机相当于眼睛，执行一个view变换，就相当于我们把眼睛调整到了我们想要的一个观察视角上。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585829358.png" alt="" loading="lazy"></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>
+<p>对相机坐标执行一个投影变换(projection)，就变换成了裁剪坐标(clip coordinates)。在裁剪坐标系(clip space)下，x、y、z各个坐标轴上会指定一个可见范围，坐标超过可见范围的顶点(vertex)就会被裁剪掉，这样，3D场景中超出指定范围的部分最终就不会被绘制，我们也就看不到这些部分了。这个投影变换，是从3D变换到2D的关键步骤。之所以会有这么一步，是因为我们总是通过一个屏幕来观察3D场景（类似于透过一扇窗户观察窗外的景色），屏幕（窗户）不是无限大的，因此一定存在某些观察视角，我们看不到场景的全部。看不到的场景部分，就是通过这一步被裁剪掉的，这也是「裁剪」这一词的来历；另一方面，把3D场景投射到2D屏幕上，也主要是由这一步起的作用。另外值得注意的是，经过裁剪变换，3D对象的顶点个数不一定总是减少，还有可能被裁剪后反而增多了。这个细节我们留在后面再讨论。</p>
+</li>
+<li>
+<p>裁剪坐标(clip coordinates)经过一个特殊的perspective division的过程，就变换成了NDC坐标(Normalized Device Coordinates)。这个perspective division的过程，跟齐次坐标有关，我们留在后面再讨论它的细节。由于这个过程在OpenGL ES中是自动进行的，我们不需要针对它来编程，因此我们经常把它和投影变换放在一起来理解。我们可以不太严谨地暂且认为，相机坐标经过了一个投影变换，就直接得到NDC了。NDC是什么呢？它才是真正的由OpenGL ES来定义的坐标。在NDC的定义中，x、y、z各个坐标都在[-1,1]之间。因此，NDC定义了一个边长为2的立方体，每个边从-1到1，NDC中的每个坐标都位于这个立方体内（落在立方体外的顶点在前一步已经被裁剪掉了）。值得注意的是，虽然NDC包含x、y、z三个坐标轴，但它主要表达了顶点在xOy平面内的位置，x和y坐标它们最终会对应到屏幕的像素位置上去。而z坐标只是为了表明深度关系，谁在前谁在后（前面的挡住后面的），因此z坐标只是相对大小有意义，z的绝对数值是多大并不具有现实的意义。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585837026.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>NDC坐标每个维度的取值范围都是[-1,1]，但屏幕坐标并不是这样，而是大小不一。以分辨率720x1280的屏幕为例，它的x取值范围是[0, 720]，y的取值范围是[0,1280]。这样NDC坐标就需要一个变换，才能变换到屏幕坐标(screen coordinates)，这个变换被称为视口变换(viewport transform)。在OpenGL ES中，这个变换也是自动完成的，但需要我们通过glViewport接口来指定绘制视口（屏幕）的大小。这里还需要注意的一点是，屏幕坐标(screen coordinates)与屏幕的像素(pixel)还不一样。屏幕坐标(screen coordinates)是屏幕上任意一个点的精确位置，简单来说就是可以是任意小数，但像素的位置只能是整数了。这里的视口变换是从NDC坐标变换到屏幕坐标，还没有到最终的像素位置。再从屏幕坐标对应到像素位置，是后面的光栅化完成的（光栅化的细节不在本文的讨论范围）。</li>
+</ul>
+</blockquote>
+<h2 id="局部空间local-space">局部空间（Local Space）</h2>
+<p>模型的坐标参考点都是自己，这些坐标所在的坐标空间就是局部空间。</p>
+<h2 id="世界空间world-space">世界空间（World Space）</h2>
+<p>多个模型绘制在更大的一个空间，通过<strong>模型矩阵</strong>，将不同模型进行缩放、位移、旋转，这样，不用考虑局部空间，而多个模型组成一个世界空间。</p>
+<h2 id="观察空间view-space">观察空间（View Space）</h2>
+<p>当物体在世界空间中就位了，接下来就是要考虑从哪个方向和角度来观察物体了。</p>
+<p>在观察空间里，坐标原点不再是世界空间的坐标原点了，而是以摄像机的视角作为场景原点，最终建立了一个以摄像机位置为原点的坐标系。</p>
+<p><strong>视图矩阵（View Matrix）</strong></p>
+<h2 id="裁剪空间clip-space">裁剪空间（Clip Space）</h2>
+<p>当物体坐标都位于观察空间后，接下来要做的就是裁剪。根据我们的需要来裁剪一定范围内的物体，而在这个范围之外的坐标就会被忽略掉。</p>
+<p>从观察空间到裁剪空间，需要用到：<strong>投影矩阵（Projection Matrix）</strong>。</p>
+<p>投影矩阵会指定一个坐标范围，这个范围内的坐标将变换为<strong>归一化设备坐标（NDC)</strong> ，不在这个范围内的坐标就会被裁剪掉。</p>
+<p>观察空间中的坐标经过投影矩阵的变换之后称为投影坐标，又叫做裁剪坐标。</p>
+<ul>
+<li>正交投影</li>
+<li>透视投影</li>
+</ul>
+<h3 id="normalized-device-coordinates归一化设备坐标系">Normalized device coordinates（归一化设备坐标系）</h3>
+<p>当坐标经过投影矩阵的变换到裁剪空间之后，紧接着就会进行透视除法的操作。</p>
+<p>经过裁剪之后，再进行透视除法。就是将 x、y、z 坐标分别除以 w 分量，得到新的 x、y、z 坐标。由于 x、y、z 坐标的绝对值都小于 w 的绝对值，所以得到新的坐标值都是位于 [−1,1] 的区间内的。此时得到的坐标，也就是归一化设备坐标。</p>
+<p>归一化设备坐标是独立于屏幕的，而且它的坐标系用的是左手坐标系。</p>
+<h2 id="屏幕空间screen-space">屏幕空间（Screen Space）</h2>
+<p>OpenGL 会使用 glViewPort 函数来将归一化设备坐标映射到屏幕坐标，每个坐标都关联了屏幕上的一个点，这个过程称为视口变换。这一步操作不再需要变换矩阵了。</p>
+<h1 id="坐标空间转换">坐标空间转换</h1>
+<ul>
+<li>模型矩阵（Model Matrix）
+<ul>
+<li>发生在世界空间</li>
+</ul>
+</li>
+<li>视图矩阵（View Matrix）
+<ul>
+<li>发生在观察空间</li>
+</ul>
+</li>
+<li>投影矩阵（Projection Matrix）
+<ul>
+<li>发生在裁剪空间</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585849058.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585855558.png" alt="" loading="lazy"></p>
+<h2 id="模型矩阵model-matrix">模型矩阵（Model Matrix）</h2>
+<h2 id="视图矩阵view-matrix">视图矩阵（View Matrix）</h2>
+<h2 id="投影矩阵projection-matrix">投影矩阵（Projection Matrix）</h2>
+<h3 id="平截头体frustum">平截头体(Frustum)</h3>
+<p>由投影矩阵创建的观察区域(Viewing Box)被称为平截头体(Frustum),也可以叫做视景体，且每个出现在平截头体范围内的坐标都会最终出现在用户的屏幕上。将一定范围内的坐标转化到标准化设备坐标系的过程(而且它很容易被映射到2D观察空间坐标)被称之为投影(Projection)，因为使用投影矩阵能将3维坐标投影(Project)到很容易映射的2D标准化设备坐标系中。</p>
+<h3 id="正交投影">正交投影</h3>
+<p>正射投影(Orthographic Projection)矩阵定义了一个类似立方体的平截头体，指定了一个裁剪空间，每一个在这空间外面的顶点都会被裁剪。创建一个正射投影矩阵需要指定可见平截头体的宽、高和长度。所有在使用正射投影矩阵转换到裁剪空间后如果还处于这个平截头体里面的坐标就不会被裁剪。它的平截头体看起来像一个容器：</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585864491.png" alt="" loading="lazy"></figure>
+<p>上面的平截头体定义了由宽、高、近平面和远平面决定的可视的坐标系。任何出现在近平面前面或远平面后面的坐标都会被裁剪掉。正视平截头体直接将平截头体内部的顶点映射到标准化设备坐标系中，因为每个向量的w分量都是不变的；如果w分量等于1.0，则透视划分不会改变坐标的值。</p>
+<p>正射投影矩阵直接将坐标映射到屏幕的二维平面内，但实际上一个直接的投影矩阵将会产生不真实的结果，</p>
+<h3 id="透视投影">透视投影</h3>
+<p>由于透视的原因，平行线似乎在很远的地方看起来会相交。这正是透视投影(Perspective Projection)想要模仿的效果，这个投影矩阵不仅将给定的平截头体范围映射到裁剪空间，同样还修改了每个顶点坐标的w值，从而使得离观察者越远的顶点坐标w分量越大。被转换到裁剪空间的坐标都会在-w到w的范围之间(任何大于这个范围的对象都会被裁剪掉)。</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585872107.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585878458.png" alt="" loading="lazy"></p>
+<p>左侧fov是90度，右侧是45度，可见fov越大，可见的范围越广。</p>
+<h2 id="透视划分perspective-division">透视划分(Perspective Division)</h2>
+<p>一旦所有顶点被转换到裁剪空间，最终的操作——透视划分(Perspective Division)将会执行，在这个过程中我们将位置向量的x，y，z分量分别除以向量的齐次w分量；透视划分是将4维裁剪空间坐标转换为3维标准化设备坐标。这一步会在每一个顶点着色器运行的最后被自动执行。</p>
+<h1 id="可参考">可参考</h1>
+<ul>
+<li><a href="http://zhangtielei.com/posts/blog-opengl-transformations-1.html">OpenGL ES和坐标变换（一）</a></li>
+<li><a href="http://zhangtielei.com/posts/blog-opengl-transformations-2.html">OpenGL ES和坐标变换（二）</a></li>
+<li><a href="https://learnopengl-cn.readthedocs.io/zh/latest/01%20Getting%20started/08%20Coordinate%20Systems/">learnopengl-cn 坐标系统</a></li>
+<li><a href="https://glumes.com/post/opengl/opengl-tutorial-coordinate/">OpenGL 学习系列---坐标系统</a></li>
+<li><a href="http://www.opengl-tutorial.org/cn/beginners-tutorials/tutorial-3-matrices/">opengl-tutorial 第三课：矩阵</a></li>
+<li><a href="https://glumes.com/post/opengl/opengl-tutorial-projection-matrix/">OpenGL 学习系列---投影矩阵</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[4.0 坐标系、几何变换]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-40-zuo-biao-xi-ji-he-bian-huan/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-40-zuo-biao-xi-ji-he-bian-huan/">
+        </link>
+        <updated>2020-10-13T10:41:33.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="坐标系">坐标系</h1>
+<p>参考 <a href="https://zh.wikipedia.org/wiki/%E5%9D%90%E6%A8%99%E7%B3%BB">维基百科-坐标系</a></p>
+<h2 id="笛卡尔坐标系">笛卡尔坐标系</h2>
+<p>二维、三维</p>
+<p>x,y,z</p>
+<h2 id="齐次坐标">齐次坐标</h2>
+<p>参考<a href="https://m.baike.com/wiki/%E9%BD%90%E6%AC%A1%E5%9D%90%E6%A0%87?fr=toutiao&amp;redirect=1&amp;tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">字节百科</a></p>
+<p>指的是将一个原本是n维的向量用一个n+1维向量来表示。在几何意义上，相当于把发生在三维空间的变换限制在H=1的平面内。</p>
+<p>在齐次坐标表示时，会增加一个额外的坐标，例如平面上的一点可以表示为（x, y, z），其中x/z及y/z为其原来在平面上的笛卡尔坐标。其优点是可以在不使用无限大的情形下表示射影平面上的任意点。一般齐次坐标会用在坐标之间的比例比实际的数值来的重要的情形下。</p>
+<p>引入齐次坐标的目的主要是合并矩阵运算中的乘法和加法，改为矩阵乘法。</p>
+<h2 id="极坐标系">极坐标系</h2>
+<p>参考<a href="https://zh.wikipedia.org/wiki/%E6%9E%81%E5%9D%90%E6%A0%87%E7%B3%BB">维基百科-极坐标系</a></p>
+<p>在极坐标系中，一坐标（r, θ）只会其对应唯一的一点，但每一点均可对应许多个坐标。例如坐标（r, θ）、（r, θ+2π）及（−r, θ+π）都是对应同一点的不同坐标。而极点的坐标为（0, θ），θ可为任意值。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585724581.png" alt="" loading="lazy"></figure>
+<h2 id="球坐标系">球坐标系</h2>
+<p>参考<a href="https://zh.wikipedia.org/wiki/%E7%90%83%E5%BA%A7%E6%A8%99%E7%B3%BB">维基百科-球坐标系</a></p>
+<p>利用球坐标(r, θ, φ)表示一个点P在三维空间的位置的三维正交坐标系</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602585732080.png" alt="" loading="lazy"></figure>
+<p>物理学中通常使用的球坐标(r, θ, φ) (ISO 约定)：径向距离r，极角θ（theta）与方位角φ（phi）。</p>
+<h2 id="其他坐标系">其他坐标系</h2>
+<ul>
+<li>曲线坐标系</li>
+<li>广义坐标</li>
+<li>正则坐标</li>
+<li>普吕克坐标</li>
+<li>重心坐标</li>
+<li>平行坐标</li>
+</ul>
+<h1 id="笛卡尔坐标系下的变换">笛卡尔坐标系下的变换</h1>
+<p>参考</p>
+<ul>
+<li>
+<p><a href="https://zh.wikipedia.org/wiki/%E7%AC%9B%E5%8D%A1%E5%B0%94%E5%9D%90%E6%A0%87%E7%B3%BB#%E6%97%8B%E8%BD%AC">维基百科-笛卡尔坐标系</a></p>
+</li>
+<li>
+<p><a href="https://learnopengl-cn.readthedocs.io/zh/latest/01%20Getting%20started/07%20Transformations/#_18">learnopengl-cn 变换</a></p>
+</li>
+</ul>
+<h2 id="欧几里得变换">欧几里得变换</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%AC%9B%E5%8D%A1%E5%B0%94%E5%9D%90%E6%A0%87%E7%B3%BB#%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E5%8F%98%E6%8D%A2">维基百科-笛卡尔坐标系#欧几里得变换</a></li>
+</ul>
+<blockquote>
+<p>欧几里得变换或欧几里得移动是欧几里得平面的点集到同一平面上点集的（双射）映射，它保持诸点之间的距离。这种映射（也叫等距映射）有四种类型：平移、旋转、反射和滑移反射。</p>
+</blockquote>
+<h2 id="仿射变换">仿射变换</h2>
+<p>参考<a href="https://www.toutiao.com/i6792403616599638531/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1587470082&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202004211954420100150411361D0F92AA&amp;group_id=6792403616599638531">一文搞懂仿射变换的原理和应用</a></p>
+<blockquote>
+<p>仿射变换，又称仿射映射，是指在几何中，对一个向量空间进行一次线性变换并接上一个平移，变换为另一个向量空间。</p>
+</blockquote>
+<blockquote>
+<p>在仿射变换中，增加了一个额外维度而所有点对这个额外维度给出数值1。这么做的好处是点平移可以在矩阵A的最后列中指定。在这种方式下，所有欧几里得变换都可处理成矩阵点乘法。</p>
+</blockquote>
+<h3 id="平移">平移</h3>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602585741860.jpeg" alt="" loading="lazy"></figure>
+<h3 id="翻转">翻转</h3>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602585747658.png" alt="" loading="lazy"></figure>
+<h3 id="缩放">缩放</h3>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602585755475.jpeg" alt="" loading="lazy"></figure>
+<h3 id="旋转">旋转</h3>
+<p>原点旋转<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585761692.jpeg" alt="" loading="lazy"></p>
+<p>推导<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585768909.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585774675.png" alt="" loading="lazy"></p>
+<p>点c（a，b）旋转<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585779710.png" alt="" loading="lazy"></p>
+<h1 id="额外欧拉角">额外：欧拉角</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%AC%A7%E6%8B%89%E8%A7%92">维基百科-欧拉角</a></li>
+</ul>
+]]></content>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[3.绘制]]></title>
+        <id>https://sparkfengbo.github.io/post/gl-3hui-zhi/</id>
+        <link href="https://sparkfengbo.github.io/post/gl-3hui-zhi/">
+        </link>
+        <updated>2020-10-13T10:40:55.000Z</updated>
+        <content type="html"><![CDATA[<p>[TOC]</p>
+<h1 id="图元">图元</h1>
+<p>OpenGL支持多种图元，但都可归结为点、线、三角形中的一种。</p>
+<h2 id="点">点</h2>
+<pre><code>glPointSize
+</code></pre>
+<h3 id="点精灵">点精灵</h3>
+<h2 id="线-条带-循环线">线、条带、循环线</h2>
+<ul>
+<li>循环线（line loop）首尾相接</li>
+<li>条带线 line strip 没有首位闭合</li>
+</ul>
+<p>diamond exit</p>
+<h2 id="三角形-条带-扇面">三角形、条带、扇面</h2>
+<p>TODO 光照对三角形的影响</p>
+<h2 id="opengl图元模式标识">OpenGL图元模式标识</h2>
+<ul>
+<li>
+<p>GL_POINTS</p>
+<ul>
+<li>点</li>
+</ul>
+</li>
+<li>
+<p>GL_LINES</p>
+<ul>
+<li>将传入的坐标作为单独线条绘制，ABCDEFG六个顶点，绘制AB、CD、EF三条线</li>
+</ul>
+</li>
+<li>
+<p>GL_LINE_LOOP</p>
+<ul>
+<li>循环线</li>
+<li>将传入的顶点作为闭合折线绘制，ABCD四个顶点，绘制AB、BC、CD、DA四条线。</li>
+</ul>
+</li>
+<li>
+<p>GL_LINE_STRIP</p>
+<ul>
+<li>条带线</li>
+<li>将传入的顶点作为折线绘制，ABCD四个顶点，绘制AB、BC、CD三条线</li>
+</ul>
+</li>
+<li>
+<p>GL_TRIANGLES</p>
+<ul>
+<li>将传入的顶点作为单独的三角形绘制，ABCDEF绘制ABC,DEF两个三角形</li>
+</ul>
+</li>
+<li>
+<p>GL_TRIANGLE_STRIP</p>
+<ul>
+<li>三角形条带</li>
+<li>将传入的顶点作为三角条带绘制，ABCDEF绘制ABC,BCD,CDE,DEF四个三角形</li>
+</ul>
+</li>
+<li>
+<p>GL_TRIANGLE_FAN</p>
+<ul>
+<li>三角形扇面</li>
+<li>将传入的顶点作为扇面绘制，ABCDEF绘制ABC、ACD、ADE、AEF四个三角形</li>
+</ul>
+</li>
+</ul>
+<h2 id="多边形正反面">多边形正反面</h2>
+<p>TODO</p>
+<p>glPolygonMode</p>
+<p>glFrontFace</p>
+<h1 id="opengl缓存数据">OpenGL缓存数据</h1>
+<h2 id="创建分配缓存">创建分配缓存</h2>
+<pre><code>glCreateBuffers(GLsizei n, GLuinit* buffers)
+
+
+
+
+glBindBuffer(GLenum target, GLuint buffer)
+
+</code></pre>
+<h2 id="向缓存输入和输出数据">向缓存输入和输出数据</h2>
+<pre><code>void glNamedBufferStorage(GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags);
+
+glNamedBufferSubData
+
+glClearNamedBufferData
+
+glCopyNamedBufferSubData
+
+glGetNamedBufferSubData
+
+</code></pre>
+<ul>
+<li>GL_BYNAMIC_STORAGE_BIT</li>
+<li>GL_MAP_READ_BIT</li>
+<li>GL_MAP_WRITE_BIT</li>
+<li>GL_MAP_PERSIISTENT_BIT</li>
+<li>GL_MAP_COHERENT_BIT</li>
+</ul>
+<h2 id="读取-访问-丢弃缓存数据">读取、访问、丢弃缓存数据</h2>
+<p>TODO</p>
+<h1 id="顶点规范">顶点规范</h1>
+<h2 id="glvertexattribpointer">glVertexAttribPointer</h2>
+<p>glVertexAttribPointer数据类型标识符</p>
+<ul>
+<li>GL_BYTE</li>
+<li>GL_UNSIGNED_BYTE</li>
+<li>GL_SHORT</li>
+<li>GL_UNSIGNED_SHORT</li>
+<li>GL_INT</li>
+<li>GL_UNSIGNED_INT</li>
+<li>GL_FIXED</li>
+<li>GL_FLOAT</li>
+<li>GL_HALF_FLOAT</li>
+<li>GL_DOUBLE</li>
+<li>GL_INT_2_10_10_10_REV</li>
+<li>GL_UNSIGNED_INT_2_10_10_10_REV</li>
+</ul>
+<p>如果type传入了GL_SHORT等整数类型，OpenGL将这这些数据类型存储到缓存对象中，OpenGL必须将这些数据转换换为浮点数才能将它们读取到浮点数的顶点属性中。</p>
+<p>如果normalize为GL_FALSE，整数直接被强制转换为浮点数，然后再传入到顶点着色器中，如果是GL_TURE将进行归一化</p>
+<ul>
+<li>normalize为GL_FALSE
+<ul>
+<li>着色器传入的是4.0</li>
+</ul>
+</li>
+<li>normalize为GL_TURE
+<ul>
+<li>数据类型是有符号的
+<ul>
+<li>f = c / (2<sup>b</sup> - 1)</li>
+</ul>
+</li>
+<li>数据类型是无符号的
+<ul>
+<li>f = （2c + 1 ）/ （2b + 1 ）</li>
+</ul>
+</li>
+<li>f 浮点数值， c 整数分量 b 数据类型 位数 GL_UNSIGNED_BYTE就是8</li>
+</ul>
+</li>
+</ul>
+<p>整数4置入缓存，type为GL_INT</p>
+<p>f = 4 / (2<sup>32</sup> - 1) = 0.000000009313</p>
+<h2 id="整型顶点属性">整型顶点属性</h2>
+<p>glVertexAttribIPointer</p>
+<h2 id="双精度顶点属性">双精度顶点属性</h2>
+<p>glVertexAttribLPointer</p>
+<h2 id="顶点属性的压缩数据格式">顶点属性的压缩数据格式</h2>
+<p>size GL_BGRA</p>
+<p>GL_INT_2_10_10_10_REV</p>
+<p>2  10  10 10<br>
+w  x   y  z</p>
+<h2 id="静态顶点属性">静态顶点属性</h2>
+<p>TODO</p>
+<h1 id="绘制命令">绘制命令</h1>
+<ul>
+<li>索引模式</li>
+<li>非索引模式</li>
+</ul>
+<h2 id="图元重启动">图元重启动</h2>
+<p>TODO</p>
+<h1 id="多实例渲染">多实例渲染</h1>
+<p>TODO</p>
 ]]></content>
     </entry>
 </feed>

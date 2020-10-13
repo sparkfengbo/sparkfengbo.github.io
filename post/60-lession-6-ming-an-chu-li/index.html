@@ -1,0 +1,366 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>6.0 Lession 6 明暗处理 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="6.0 Lession 6 明暗处理 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+明暗处理
+
+Shading - 维基百科
+
+浓淡处理（英语：Shading，也称明暗处理、着色法）是在三维模型或插画中通过不同的亮度表现深度的方法。
+渲染过程中需要计算表面的亮度，上述光照模型要求我们提前知道表面上任意点的法线。..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              6.0 Lession 6 明暗处理
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="明暗处理">明暗处理</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Shading">Shading - 维基百科</a></li>
+</ul>
+<p>浓淡处理（英语：Shading，也称明暗处理、着色法）是在三维模型或插画中通过不同的亮度表现深度的方法。</p>
+<p>渲染过程中需要计算表面的亮度，上述光照模型要求我们提前知道表面上任意点的法线。然而，三维模型一般都是通过多边形网格描述的，只能在有限的点存储法线，这些点通常是多边形的顶点。为了解决这一问题，可以使用不同的插值技术。</p>
+<h2 id="平直着色法-flat-shading">平直着色法 Flat shading</h2>
+<p>只计算一个顶点的法线，然后通过法线和光照向量的数量积得到系数，一个三角形都使用这个明暗系数，可以看到格子很明显</p>
+<p>计算很简单，但是效果比较差</p>
+<p>平直着色法（英语：flat shading）基于“组成模型的多边形都是平的”的假设，认为在同一多边形上任意点的法线都相同。</p>
+<p>使用这种着色法时，先在每个多边形上挑选一个点计算颜色（通常是多边形的第一个顶点，如果是三角形网格则也可以选择几何中心），则该多边形上其余点都直接使用该点的颜色。所以，使用平直着色法的每个多边形上都是统一的颜色，和最近邻插值的效果类似。</p>
+<p>其它更加高级的着色技术由于计算量太大不便于使用时，这种方法经常用于高速渲染。由于每个多边形都是统一的颜色，所以使用这种着色法也更易于区分相邻的多边形。但这种着色法很难做出高光效果：一个表面要不全高光，要不全没有，因此高光模型很少使用在这个着色方法中。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584609076.png" alt="" loading="lazy"></figure>
+<pre><code>for (int i=0; i&lt;model-&gt;nfaces(); i++) {
+    std::vector&lt;int&gt; face = model-&gt;face(i);
+    Vec3i screen_coords[3];
+    Vec3f world_coords[3];
+    for (int j=0; j&lt;3; j++) {
+        Vec3f v = model-&gt;vert(face[j]);
+        screen_coords[j] = Vec3i((v.x+1.)*width/2., (v.y+1.)*height/2., (v.z+1.)*depth/2.);
+        world_coords[j]  = v;
+    }
+    Vec3f n = (world_coords[2]-world_coords[0])^(world_coords[1]-world_coords[0]);
+    n.normalize();
+    float intensity = n*light_dir;
+    if (intensity&gt;0) {
+        Vec2i uv[3];
+        for (int k=0; k&lt;3; k++) {
+            uv[k] = model-&gt;uv(i, k);
+        }
+        std::cout&lt;&lt;&quot;instensity = &quot; &lt;&lt; intensity &lt;&lt; &quot;\n&quot;;
+        triangle_texture(screen_coords[0], screen_coords[1], screen_coords[2], uv[0], uv[1], uv[2], image, intensity, zbuffer);
+
+    }
+}
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602584618840.png" alt="" loading="lazy"></figure>
+<h2 id="平滑着色法">平滑着色法</h2>
+<p>使用平直着色法时，颜色在多边形的边缘跳变。而使用平滑着色法（英语：smooth shading）时，每个像素的颜色都可以不同，相邻多边形之间的颜色转变看上去就比较平滑。通常先计算多边形顶点的颜色，再通过双线性插值来确定多边形上其它点的像素值。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602584627022.png" alt="" loading="lazy"></figure>
+<h3 id="gouraud-shading">Gouraud shading</h3>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Gouraud_shading">Gouraud shading - 维基百科</a></li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602584634140.png" alt="" loading="lazy"></figure>
+<h4 id="工作原理">工作原理</h4>
+<ul>
+<li>计算多边形的顶点法向量
+<ul>
+<li>顶点法向量能被直接计算(如均一网格上的高度图)</li>
+<li>可能相邻面的法向量的加权平均<br>
+<img src="./pic/jsuanfaxian.jpg" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>用光照模型去计算每个顶点的光强，例如<a href="https://en.wikipedia.org/wiki/Phong_reflection_model">Phong reflection model</a></li>
+<li>用双线性插值计算多边形表面上每个像素的明暗</li>
+</ul>
+<blockquote>
+<p>Gouraud shading is really simple. Our kind 3d artists gave us normal vectors to each vertex of the model, they can be found in &quot;vn x y z&quot; lines of the .obj file. We compute the intensity per vertex (and not per triangle as before for the flat shading) and then simply interpolate the intensity inside each triangle as we already did for z or uv coordinates.</p>
+</blockquote>
+<pre><code>struct GouraudShader : public IShader {
+    Vec2i varying_uv[3];
+    Vec3f varying_inty;
+    virtual Vec3i vertex(int iface, int nthvert) {
+        varying_inty[nthvert] = std::max(0.f, model-&gt;norm(iface, nthvert) * light_dir);
+        varying_uv[nthvert] = model-&gt;uv(iface, nthvert);
+        Vec3f gl_Vertex = model-&gt;vert(iface, nthvert);
+        Vec3i gl_Position = vf2i(m2v(Viewport * Projection * ModelView * Matrix(gl_Vertex)));
+        return gl_Position;
+    }
+
+    virtual bool fragment(Vec3f bar, TGAColor &amp;color) {
+        Vec2i uv = varying_uv[0] * bar.x + varying_uv[1] * bar.y + varying_uv[2] * bar.z;
+        /**
+         * 实际上是利用顶点法线计算光强度，然后插值，乘以纹理计算后的颜色
+         */
+        float inty = varying_inty[0] * bar.x + varying_inty[1] * bar.y + varying_inty[2] * bar.z;
+        inty = std::max(0.f, std::min(1.f, inty));
+        color = model-&gt;diffuse(uv) * inty;
+        return false;
+    }
+}
+</code></pre>
+<h4 id="优缺点">优缺点</h4>
+<p>Gouraud着色法的优势在于，即便是比三角形复杂的多边形，每个顶点也可以有不一样的颜色，内部插值算法可以更多变。</p>
+<p>而Gouraud着色法也有一些问题：</p>
+<ul>
+<li>邻接多边形可能有不一样的颜色。
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Mach_bands">马赫效应(Mach bands/Mach Effect)</a></li>
+</ul>
+</li>
+<li>Gouraud着色 需要比较大的CPU计算量，在实时处理大量多边形时可能会成为问题。<br>
+3个多边形边的T型连接可能会被错误的绘制，一般来说应该避免存在T型连接</li>
+</ul>
+<h3 id="phong-shading">Phong shading</h3>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Phong_shading">Phong shading - 维基百科</a></li>
+</ul>
+<p>Phong着色法与Gouraud着色法类似，区别在于进行双线性插值的不是光照强度本身，而是顶点的法线。因此使用这种着色法计算出的高光比Gouraud着色更精确。</p>
+<ul>
+<li>计算多边形顶点的法向量</li>
+<li>双线性插值计算每个像素点的法向量</li>
+<li>通过每个像素的法向量计算光强</li>
+<li>根据光强绘制像素</li>
+</ul>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602584646890.png" alt="" loading="lazy"></figure>
+<pre><code>
+struct PhongShader : public IShader {
+    Vec2i varying_uv[3];
+    Vec3f varying_norm[3];
+    virtual Vec3i vertex(int iface, int nthvert) {
+        varying_norm[nthvert] = model-&gt;norm(iface, nthvert);
+        varying_uv[nthvert] = model-&gt;uv(iface, nthvert);
+        Vec3f gl_Vertex = model-&gt;vert(iface, nthvert);
+        Vec3i gl_Position = vf2i(m2v(Viewport * Projection * ModelView * Matrix(gl_Vertex)));
+        return gl_Position;
+    }
+
+    virtual bool fragment(Vec3f bar, TGAColor &amp;color) {
+        Vec2i uv = varying_uv[0] * bar.x + varying_uv[1] * bar.y + varying_uv[2] * bar.z;
+        Vec3f bn = Vec3f(
+                varying_norm[0].x * bar.x + varying_norm[1].x * bar.y +varying_norm[2].x * bar.z,
+                varying_norm[0].y * bar.x + varying_norm[1].y * bar.y +varying_norm[2].y * bar.z,
+                varying_norm[0].z * bar.x + varying_norm[1].z * bar.y +varying_norm[2].z * bar.z
+                );
+        bn.normalize();
+        float inty =std::max(0.f, bn * light_dir);
+        color = model-&gt;diffuse(uv) * inty;
+        return false;
+    }
+};
+</code></pre>
+<h3 id="gouraud-shading和phong-shading的不同">Gouraud shading和Phong shading的不同</h3>
+<p><s>- Gouraud对顶点颜色赋值，然后双线性插值计算颜色，Phong都某个点的法向量进行线性插值，从而计算光照强度<br>
+~- Gouraud更快，计算量更小，但是高光和镜面效果不好</s></p>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602584656890.jpg" alt="" loading="lazy"></figure>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Shading">Shading - 维基百科</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Lambert%27s_cosine_law">Lambert's cosine law-维基百科</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Gouraud_shading">Gouraud shading - 维基百科</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Phong_shading">Phong shading - 维基百科</a></li>
+<li><a href="https://dawnarc.com/2018/06/shadingflatgouraudphong-shading%E7%9A%84%E5%B7%AE%E5%88%A5/">[Shading]Flat、Gouraud、Phong Shading的差別</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%98%8E%E6%9A%97%E5%A4%84%E7%90%86">明暗处理</a>
+<ul>
+<li><a href="#%E5%B9%B3%E7%9B%B4%E7%9D%80%E8%89%B2%E6%B3%95-flat-shading">平直着色法 Flat shading</a></li>
+<li><a href="#%E5%B9%B3%E6%BB%91%E7%9D%80%E8%89%B2%E6%B3%95">平滑着色法</a>
+<ul>
+<li><a href="#gouraud-shading">Gouraud shading</a>
+<ul>
+<li><a href="#%E5%B7%A5%E4%BD%9C%E5%8E%9F%E7%90%86">工作原理</a></li>
+<li><a href="#%E4%BC%98%E7%BC%BA%E7%82%B9">优缺点</a></li>
+</ul>
+</li>
+<li><a href="#phong-shading">Phong shading</a></li>
+<li><a href="#gouraud-shading%E5%92%8Cphong-shading%E7%9A%84%E4%B8%8D%E5%90%8C">Gouraud shading和Phong shading的不同</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E8%80%83">参考</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/50-lession-5-xiang-ji-shi-jiao/">
+              <h3 class="post-title">
+                5.0 Lession 5 相机视角
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

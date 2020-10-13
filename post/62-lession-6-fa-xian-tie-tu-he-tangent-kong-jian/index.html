@@ -1,0 +1,345 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>6.2 Lession 6 法线贴图和Tangent空间 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="6.2 Lession 6 法线贴图和Tangent空间 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+bump mapping  凹凸贴图
+
+凹凸贴图 - 维基百科
+
+
+凹凸贴图（bump mapping），又称为凸凹纹理映射、皱面贴图，是一项计算机图形学技术，在这项技术中每个待渲染的像素在计算照明之前都要加上一个从高度图中找到..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              6.2 Lession 6 法线贴图和Tangent空间
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="bump-mapping-凹凸贴图">bump mapping  凹凸贴图</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%87%B9%E5%87%B8%E8%B4%B4%E5%9B%BE">凹凸贴图 - 维基百科</a></li>
+</ul>
+<blockquote>
+<p>凹凸贴图（bump mapping），又称为凸凹纹理映射、皱面贴图，是一项计算机图形学技术，在这项技术中每个待渲染的像素在计算照明之前都要加上一个从高度图中找到的扰动。这样得到的结果表面表现更加丰富、细致，更加接近物体在自然界本身的模样。法线贴图是一项常用的凹凸贴图技术，另外还有许多其它的实现技术，如视差映射等等。</p>
+</blockquote>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584793340.png" alt="不带凹凸贴图的球体;下图所用的凸凹纹理;这个使用凹凸贴图的球体几何上与上面的球体一模一样，这改变了球体的浓淡效果，使它看起来像一个橙。" loading="lazy"></figure>
+<h1 id="normal-mapping-法线贴图">Normal mapping 法线贴图</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE">法线贴图 - 维基百科</a></li>
+</ul>
+<blockquote>
+<p>法线贴图通常以普通RGB图像的形式存储，其中的R、G、B分量分别对应法线的X、Y、Z坐标。</p>
+</blockquote>
+<ul>
+<li>
+<p>X: -1 ~ +1 :  红:   0 ~ 255</p>
+</li>
+<li>
+<p>Y: -1 ~ +1 :  绿:   0 ~ 255</p>
+</li>
+<li>
+<p>Z:  0 ~ -1 :  蓝: 128 ~ 255(假设z范围是[0,1])</p>
+</li>
+<li>
+<p>直接指向观察者的法线 (0,0,-1) 映射为 (128,128,255)。所以（法线所创造的凹凸）物体上直接面朝观察者的部分为浅蓝色，也是法线贴图上最常见的颜色。</p>
+</li>
+<li>
+<p>指向纹理右上角的法线 (1,1, 0) 映射为 (255,255,128)。所以物体的右上角一般是浅黄色，也是颜色贴图上最亮的部分。</p>
+</li>
+<li>
+<p>指向纹理右侧的法线 (1,0,0) 映射为 (255,128,128)。所以物体的右边一般是浅红色。</p>
+</li>
+<li>
+<p>指向纹理顶部的法线 (0,1,0) 映射为 (128,255,128)。所以物体的顶边一般是浅绿色。</p>
+</li>
+<li>
+<p>指向纹理左侧的法线 (-1,0,0) 映射为 (0,128,128)。所以物体的左边一般是深蓝绿色。</p>
+</li>
+<li>
+<p>指向纹理底部的法线 (0,-1,0) 映射为 (128,0,128)。所以物体的底边一般是深杨红色。</p>
+</li>
+<li>
+<p>指向纹理左下角的法线 (-1,-1,0) 映射为 (0,0,128)。所以物体的左下角一般是深蓝色，也是颜色贴图上最暗的部分。</p>
+</li>
+</ul>
+<p><img src="https://sparkfengbo.github.io/post-images/1602584808255.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584812804.png" alt="" loading="lazy"></p>
+<h1 id="tangent-space-切空间">Tangent Space 切空间</h1>
+<p><a href="https://learnopengl-cn.github.io/05%20Advanced%20Lighting/04%20Normal%20Mapping/#_3">learnopengl-法线贴图-切线空间</a></p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602584818788.png" alt="" loading="lazy"></figure>
+<p>基于RGB颜色的法线贴图无法适用于物体发生旋转等变换，因为得到的法线值是固定方向的，所以需要引入切空间</p>
+<p>法线贴图中的法线向量定义在切线空间中，法线永远指着正z方向。切线空间是位于三角形表面之上的空间：法线相对于单个三角形的本地参考框架。它就像法线贴图向量的本地空间；它们都被定义为指向正z方向，</p>
+<h2 id="切线空间的计算">切线空间的计算</h2>
+<p><img src="https://sparkfengbo.github.io/post-images/1602584830021.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584838790.png" alt="" loading="lazy"></p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602584843922.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584850171.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584859238.png" alt="" loading="lazy"></p>
+<pre><code>// positions
+glm::vec3 pos1(-1.0,  1.0, 0.0);
+glm::vec3 pos2(-1.0, -1.0, 0.0);
+glm::vec3 pos3(1.0, -1.0, 0.0);
+glm::vec3 pos4(1.0, 1.0, 0.0);
+// texture coordinates
+glm::vec2 uv1(0.0, 1.0);
+glm::vec2 uv2(0.0, 0.0);
+glm::vec2 uv3(1.0, 0.0);
+glm::vec2 uv4(1.0, 1.0);
+// normal vector
+glm::vec3 nm(0.0, 0.0, 1.0);
+
+</code></pre>
+<pre><code>glm::vec3 edge1 = pos2 - pos1;
+glm::vec3 edge2 = pos3 - pos1;
+glm::vec2 deltaUV1 = uv2 - uv1;
+glm::vec2 deltaUV2 = uv3 - uv1;
+</code></pre>
+<pre><code>GLfloat f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+tangent1.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+tangent1.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+tangent1.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+tangent1 = glm::normalize(tangent1);
+
+bitangent1.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+bitangent1.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+bitangent1.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+bitangent1 = glm::normalize(bitangent1);  
+
+[...] // 对平面的第二个三角形采用类似步骤计算切线和副切线
+</code></pre>
+<h2 id="切线空间法线贴图">切线空间法线贴图</h2>
+<pre><code>#version 330 core
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 texCoords;
+layout (location = 3) in vec3 tangent;
+layout (location = 4) in vec3 bitangent;
+</code></pre>
+<pre><code>void main()
+{
+   [...]
+   vec3 T = normalize(vec3(model * vec4(tangent,   0.0)));
+   vec3 B = normalize(vec3(model * vec4(bitangent, 0.0)));
+   vec3 N = normalize(vec3(model * vec4(normal,    0.0)));
+   mat3 TBN = mat3(T, B, N)
+}
+</code></pre>
+<ul>
+<li>
+<p>1.我们直接使用TBN矩阵，这个矩阵可以把切线坐标空间的向量转换到世界坐标空间。因此我们把它传给片段着色器中，把通过采样得到的法线坐标左乘上TBN矩阵，转换到世界坐标空间中，这样所有法线和其他光照变量就在同一个坐标系中了。</p>
+<pre><code>normal = texture(normalMap, fs_in.TexCoords).rgb;
+normal = normalize(normal * 2.0 - 1.0);   
+normal = normalize(fs_in.TBN * normal);
+</code></pre>
+</li>
+</ul>
+<p>有了TBN矩阵我们现在就可以更新法线贴图代码，引入切线到世界空间变换：</p>
+<ul>
+<li>2.我们也可以使用TBN矩阵的逆矩阵，这个矩阵可以把世界坐标空间的向量转换到切线坐标空间。因此我们使用这个矩阵左乘其他光照变量，把他们转换到切线空间，这样法线和其他光照变量再一次在一个坐标系中了。</li>
+</ul>
+<h1 id="法线坐标转换">法线坐标转换</h1>
+<ul>
+<li><a href="https://blog.csdn.net/ZCMUCZX/article/details/79671984">OpenGL中法线坐标的转换</a></li>
+</ul>
+<p>(Projection*ModelView).inverse().transpose()</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://www.zhihu.com/question/23706933/answer/958094336">为什么要有切线空间（Tangent Space），它的作用是什么？ - 飞飞的回答 - 知乎</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#bump-mapping-%E5%87%B9%E5%87%B8%E8%B4%B4%E5%9B%BE">bump mapping  凹凸贴图</a></li>
+<li><a href="#normal-mapping-%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE">Normal mapping 法线贴图</a></li>
+<li><a href="#tangent-space-%E5%88%87%E7%A9%BA%E9%97%B4">Tangent Space 切空间</a>
+<ul>
+<li><a href="#%E5%88%87%E7%BA%BF%E7%A9%BA%E9%97%B4%E7%9A%84%E8%AE%A1%E7%AE%97">切线空间的计算</a></li>
+<li><a href="#%E5%88%87%E7%BA%BF%E7%A9%BA%E9%97%B4%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE">切线空间法线贴图</a></li>
+</ul>
+</li>
+<li><a href="#%E6%B3%95%E7%BA%BF%E5%9D%90%E6%A0%87%E8%BD%AC%E6%8D%A2">法线坐标转换</a></li>
+<li><a href="#%E5%8F%82%E8%80%83">参考</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/61-lession-6-guang-zhao/">
+              <h3 class="post-title">
+                6.1 Lession 6 光照
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

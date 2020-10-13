@@ -1,0 +1,289 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>欧拉角、万向锁、四元数 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="欧拉角、万向锁、四元数 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+比较好的资料
+
+维基百科-欧拉角
+维基百科-Gimbal lock
+Bonus: Gimbal Lock
+--
+知乎-如何通俗地解释欧拉角？之后为何要引入四元数？
+--
+知乎-四元数——基本概念
+知乎-四元数——旋转
+知乎-旋转..." />
+    <meta name="keywords" content="OpenGL" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              欧拉角、万向锁、四元数
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                2 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/BopasCkmM/" class="post-tag">
+                  # OpenGL
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="比较好的资料">比较好的资料</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%AC%A7%E6%8B%89%E8%A7%92">维基百科-欧拉角</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Gimbal_lock">维基百科-Gimbal lock</a></li>
+<li><a href="https://krasjet.github.io/quaternion/bonus_gimbal_lock.pdf">Bonus: Gimbal Lock</a><br>
+--</li>
+<li><a href="https://www.zhihu.com/question/47736315">知乎-如何通俗地解释欧拉角？之后为何要引入四元数？</a><br>
+--</li>
+<li><a href="https://zhuanlan.zhihu.com/p/27471300">知乎-四元数——基本概念</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/27541307">知乎-四元数——旋转</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/85321120">知乎-旋转之一复数与2D旋转</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%9B%9B%E5%85%83%E6%95%B0%E4%B8%8E%E7%A9%BA%E9%97%B4%E6%97%8B%E8%BD%AC">维基百科-四元数与空间旋转</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%9B%9B%E5%85%83%E6%95%B8">维基百科-四元数</a></li>
+</ul>
+<h1 id="欧拉角">欧拉角</h1>
+<blockquote>
+<p>莱昂哈德·欧拉用欧拉角来描述刚体在三维欧几里得空间的取向。换句话说，任何关于刚体旋转的旋转矩阵是由三个基本旋转矩阵复合而成的。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602586028845.gif" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586032857.jpg" alt="" loading="lazy"></p>
+</blockquote>
+<p>参阅上图。设定xyz-轴为参考系的参考轴。称xy-平面与XY-平面的相交为交点线，用英文字母（N）代表。zxz顺规的欧拉角可以静态地这样定义：</p>
+<ul>
+<li>alpha 是x-轴与交点线的夹角，</li>
+<li>beta 是z-轴与Z-轴的夹角，</li>
+<li>gamma 是交点线与X-轴的夹角。</li>
+</ul>
+<p>很可惜地，对于夹角的顺序和标记，夹角的两个轴的指定，并没有任何常规。科学家对此从未达成共识。每当用到欧拉角时，我们必须明确的表示出夹角的顺序，指定其参考轴。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602586039872.png" alt="" loading="lazy"></figure>
+<ul>
+<li>
+<p>pitch 俯仰角<br>
+<img src="https://sparkfengbo.github.io/post-images/1602586046940.gif" alt="" loading="lazy"></p>
+</li>
+<li>
+<p>yaw 偏航角</p>
+</li>
+</ul>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602586056505.gif" alt="" loading="lazy"></figure>
+<ul>
+<li>roll 翻滚角</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602586063406.gif" alt="" loading="lazy"></figure>
+<h1 id="万向锁-gimbal_lock">万向锁 gimbal_lock</h1>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602586070437.gif" alt="" loading="lazy"></figure>
+<p>我的理解，欧拉角之所以自由灵活的转动是因为三个轴不在一个平面上，而像下图，上下翻转90度使得两个轴在一个平面时会发生死锁。</p>
+<h1 id="四元数">四元数</h1>
+<h2 id="复数和旋转">复数和旋转</h2>
+<h3 id="复数的矩阵表示">复数的矩阵表示</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602586078138.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586081988.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586085705.png" alt="" loading="lazy"></p>
+<h3 id="模与共轭">模与共轭</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602586091587.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586095270.png" alt="" loading="lazy"></p>
+<h3 id="复数的表示方法">复数的表示方法</h3>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602586100788.png" alt="" loading="lazy"></figure>
+<h3 id="复数和旋转-2">复数和旋转</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602586105554.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602586109304.png" alt="" loading="lazy"></p>
+<h2 id="四元数旋转">四元数旋转</h2>
+<pre><code>glm::mat4 model = glm::mat4(1.0f); //创建一个单位矩阵
+glm::qua&lt;float&gt; q = glm::qua&lt;float&gt;(glm::radians(glm::vec3(0.0f, 0.0f, 90.0f))); //创建一个绕z轴旋转90度的四元数
+model = glm::mat4_cast(q) * model;	//得到一个旋转的模型矩阵
+</code></pre>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602586119088.png" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E6%AF%94%E8%BE%83%E5%A5%BD%E7%9A%84%E8%B5%84%E6%96%99">比较好的资料</a></li>
+<li><a href="#%E6%AC%A7%E6%8B%89%E8%A7%92">欧拉角</a></li>
+<li><a href="#%E4%B8%87%E5%90%91%E9%94%81-gimbal_lock">万向锁 gimbal_lock</a></li>
+<li><a href="#%E5%9B%9B%E5%85%83%E6%95%B0">四元数</a>
+<ul>
+<li><a href="#%E5%A4%8D%E6%95%B0%E5%92%8C%E6%97%8B%E8%BD%AC">复数和旋转</a>
+<ul>
+<li><a href="#%E5%A4%8D%E6%95%B0%E7%9A%84%E7%9F%A9%E9%98%B5%E8%A1%A8%E7%A4%BA">复数的矩阵表示</a></li>
+<li><a href="#%E6%A8%A1%E4%B8%8E%E5%85%B1%E8%BD%AD">模与共轭</a></li>
+<li><a href="#%E5%A4%8D%E6%95%B0%E7%9A%84%E8%A1%A8%E7%A4%BA%E6%96%B9%E6%B3%95">复数的表示方法</a></li>
+<li><a href="#%E5%A4%8D%E6%95%B0%E5%92%8C%E6%97%8B%E8%BD%AC-2">复数和旋转</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B%E5%85%83%E6%95%B0%E6%97%8B%E8%BD%AC">四元数旋转</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-fei-nie-er-fang-cheng-he-schlick-jin-si/">
+              <h3 class="post-title">
+                菲涅耳方程和Schlick近似
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

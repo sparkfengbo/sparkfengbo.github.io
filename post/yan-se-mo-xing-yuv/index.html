@@ -1,0 +1,399 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>颜色模型-YUV | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="颜色模型-YUV | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+简介
+YUV是一种颜色编码方法。Y'UV, YUV, YCbCr，YPbPr等专有名词都可以称为YUV，彼此有重叠。
+Y表示明亮度(Luminance、Luma)。U和V则是色度、浓度(Chrominance、Chroma)，
+..." />
+    <meta name="keywords" content="图形学" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              颜色模型-YUV
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/z-_-12-Tf/" class="post-tag">
+                  # 图形学
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="简介">简介</h1>
+<p>YUV是一种颜色编码方法。Y'UV, YUV, YCbCr，YPbPr等专有名词都可以称为YUV，彼此有重叠。</p>
+<p>Y表示明亮度(Luminance、Luma)。U和V则是色度、浓度(Chrominance、Chroma)，</p>
+<p>可以理解为</p>
+<ul>
+<li>U(Cb)代表蓝色色度分量</li>
+<li>V(Cr)代表红色色度分量</li>
+</ul>
+<p>组合在一起表示色彩。</p>
+<p>U-V color plane示例，Y value = 0.5，代表RGB色域（color gamut）<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585425583.png" alt="" loading="lazy"></p>
+<p>将Y、U、V分量拆解，可得下图，自上而下为原图、Y、U、V分量<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585431331.png" alt="" loading="lazy"></p>
+<p>参考</p>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/YUV">维基百科 YUV</a></li>
+<li><a href="https://en.wikipedia.org/wiki/YCbCr">维基百科 YCbCr</a></li>
+</ul>
+<h1 id="格式">格式</h1>
+<h2 id="packed-formats-紧缩格式">Packed formats 紧缩格式</h2>
+<p>将Y、U、V值存储成Macro Pixels数组，每个像素点的 Y,U,V 是连续交替存储的，类似RGB的存储方式</p>
+<p>紧缩格式（packed format）中的YUV是混合在一起的，对于YUV4:4:4格式而言，用紧缩格式很合适的，因此就有了UYVY、YUYV等。</p>
+<p><strong>举例</strong></p>
+<ul>
+<li>UYVY</li>
+<li>YUYV</li>
+</ul>
+<h2 id="planar-formats-平面格式">Planar formats 平面格式</h2>
+<p>将Y、U、V的三个分量分别存放在不同的矩阵中。</p>
+<p>平面格式（planar formats）是指每Y分量，U分量和V分量都是以独立的平面组织的，也就是说所有的U分量必须在Y分量后面，而V分量在所有的U分量后面，此一格式适用于采样（subsample）。平面格式（planar format）有I420（4:2:0）、YV12、IYUV等。</p>
+<p><strong>举例</strong></p>
+<ul>
+<li>I420（4:2:0）</li>
+<li>YV12</li>
+<li>IYUV</li>
+</ul>
+<h1 id="抽样方式">抽样方式</h1>
+<h2 id="分类">分类</h2>
+<ul>
+<li>4:4:4表示完全取样。
+<ul>
+<li>每一个Y对应一组UV分量。</li>
+</ul>
+</li>
+<li>4:2:2表示2:1的水平取样，垂直完全采样。
+<ul>
+<li>每两个Y共用一组UV分量。</li>
+<li>YV16、NV16</li>
+</ul>
+</li>
+<li>4:2:0表示2:1的水平取样，垂直2：1采样。
+<ul>
+<li>每四个Y共用一组UV分量。</li>
+<li>YUV4:2:0并不是说只有U（即Cb）, V（即Cr）一定为0，而是指U：V互相援引，时见时隐，也就是说对于每一个行，只有一个U或者V分量，如果一行是4:2:0的话，下一行就是4:0:2，再下一行是4:2:0...以此类推</li>
+<li>YV12，YU12、NV12、NV21、YUV420SP、I420</li>
+</ul>
+</li>
+<li>4:1:1表示4:1的水平取样，垂直完全采样。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585441280.png" alt="" loading="lazy"></li>
+</ul>
+<h2 id="采样方式">采样方式</h2>
+<p>色度抽样方式用J:A:B表示<br>
+J:最小水平抽样的的宽度，一般为4<br>
+A:最小水平抽样区域第一行的色度抽样<br>
+B:最小水平抽样区域第二行的色度抽样</p>
+<ul>
+<li>4:4:4表示完全取样。</li>
+<li>4:2:2表示2:1的水平取样，垂直完全采样。</li>
+<li>4:2:0表示2:1的水平取样，垂直2：1采样。</li>
+<li>4:1:1表示4:1的水平取样，垂直完全采样。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585447214.webp" alt="" loading="lazy"></li>
+</ul>
+<h2 id="对比rgb数据量">对比RGB数据量</h2>
+<p>YUV的数据量会比RGB小很多，例如：</p>
+<ul>
+<li>RGB24   每个像素占用3字节</li>
+<li>ARGB32  每个像素占用4字节</li>
+</ul>
+<p>而</p>
+<ul>
+<li>YUV444  每个像素占用3字节</li>
+<li>YUV422  每个像素占用2字节</li>
+<li>YUV420  每个像素占用3字节1.5字节</li>
+</ul>
+<h1 id="常见格式">常见格式</h1>
+<h2 id="nv21-nv12">NV21、NV12</h2>
+<blockquote>
+<p>NV12 is a biplanar format with a full sized Y plane followed by a single chroma plane with weaved U and V values. NV21 is the same but with weaved V and U values.<br>
+<strong>The 12 in NV12 refers to 12 bits per pixel.</strong> NV12 has a half width and half height chroma channel, and therefore is a 420 subsampling. NV16 is 16 bits per pixel, with half width and full height. aka 422. NV24 is 24 bits per pixel with full sized chroma channel. aka 444.<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585454797.png" alt="" loading="lazy"></p>
+</blockquote>
+<p>NV12和NV21属于<strong>YUV420</strong>格式，是一种<strong>two-plane</strong>模式，即Y和UV分为两个Plane，但是UV（CbCr）为交错存储，而不是分为三个plane。</p>
+<p><strong>NV12</strong><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585460480.png" alt="" loading="lazy"></p>
+<p><strong>NV21</strong><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585466347.png" alt="" loading="lazy"></p>
+<h2 id="yv12-yu12">YV12、YU12</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585475429.png" alt="" loading="lazy"></figure>
+<p>YV12，YU12格式（属于<strong>YUV420</strong>）是一种<strong>Plane模式</strong>。</p>
+<p><strong>YV12</strong><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585481179.png" alt="" loading="lazy"></p>
+<p><strong>YU12</strong><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585489879.png" alt="" loading="lazy"></p>
+<h2 id="i420p">I420P</h2>
+<p>和YU12是一样的</p>
+<ul>
+<li><a href="https://www.fourcc.org/pixel-format/yuv-i420/">I420 yuv pixel format</a></li>
+</ul>
+<h2 id="yuv420sp-yuv420p">YUV420SP、YUV420P</h2>
+<p>SP ： Semi-Planar  UV交错存放<br>
+NV12和NV21就是我们常见的YUV420SP、YV12和YU12都属于YUV420p</p>
+<p>可参考<a href="https://stackoverflow.com/questions/22215484/what-is-difference-between-planar-semi-planar-and-interleaved-format">What is difference between planar, semi planar and interleaved format.?</a></p>
+<h2 id="yuyv">YUYV</h2>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602585497812.png" alt="" loading="lazy"></figure>
+<p>YUYV为<strong>YUV422</strong>采样的存储格式中的一种，相邻的两个Y共用其相邻的两个Cb、Cr，分析，对于像素点Y'00、Y'01 而言，其Cb、Cr的值均为 Cb00、Cr00，其他的像素点的YUV取值依次类推。</p>
+<p><strong>YUY2和YUYV类似，UYVY同理</strong></p>
+<h2 id="推荐资料">推荐资料</h2>
+<ul>
+<li>
+<p>强烈推荐雷霄骅的这篇文章<a href="https://blog.csdn.net/leixiaohua1020/article/details/50534150">视音频数据处理入门：RGB、YUV像素数据处理</a>，操作之后会对YUV、RGB的存储格式有更深的理解</p>
+</li>
+<li>
+<p><a href="https://www.itread01.com/content/1542704886.html">圖解YU12、I420、YV12、NV12、NV21、YUV420P、YUV420SP、YUV422P、YUV444P的區別</a></p>
+</li>
+</ul>
+<h1 id="stride-跨距">Stride 跨距</h1>
+<p>我们都知道现在计算机的cpu都是32位或者64位的cpu，他们一次最少读取4、8个字节，如果少于这些，反而要做一些额外的工作，会花更长的时间。所有会有一个概念叫做内存对齐，将结构体的长度设为4、8的倍数。</p>
+<p>跨距也是因为同样的理由出现的。因为图像的操作通常按行操作的，如果图像的所有数据都紧密排列，那么会发生非常多次的读取非对齐内存。会影响效率。而图像的处理本就是一个分秒必争的操作，所以为了性能的提高就引入了跨距这个概念。</p>
+<p>跨距就是指图像中的一行图像数据所占的存储空间的长度，它是一个大于等于图像宽度的内存对齐的长度。这样每次以行为基准读取数据的时候就能内存对齐，虽然可能会有一点内存浪费，但是在内存充裕的今天已经无所谓了。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585504463.gif" alt="" loading="lazy"></p>
+<h2 id="pixel-stride">pixel stride</h2>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602585509412.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>Camera2 ImageReader YUV420_888,PreviewSize设置为1700<em>1080，返回预览流stride为1600，Image的size为1600</em>1200，返回的ysize为1920000，等于1600*1200,如果直接调用下面的代码，</p>
+<pre><code>YuvImage yuv = new YuvImage(bytes, ImageFormat.NV21, 
+       mPreviewSize.getWidth(), mPreviewSize.getHeight(), 
+       new int[y_stride, uv_stride]);
+yuv.compressToJpeg(new Rect(0, 0, 
+   mPreviewSize.getWidth(), mPreviewSize.getHeight()), 90, fos);
+</code></pre>
+<p>保存的图片会大部分灰色，约1/3是绿色，因为实际上从CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP获得的rosolution是不支持1700<em>1080，所以系统自动选择了1600</em>1200，如果将PreviewSize设置为1600*1200，保存图片则能得到正确结果。</p>
+</blockquote>
+<h1 id="分离y-u-v分量">分离Y、U、V分量</h1>
+<p>以Camera2 ImageReader为例</p>
+<pre><code>ByteBuffer yData = image.getPlanes()[0].getBuffer();
+ByteBuffer uData = image.getPlanes()[1].getBuffer();
+ByteBuffer vData = image.getPlanes()[2].getBuffer();
+
+int ySize = yData.remaining();
+int uSize = uData.remaining();
+int vSize = vData.remaining();
+
+mCurrentImageData = new byte[ySize + ySize / 2];
+yData.get(mCurrentImageData, 0, ySize);
+
+for (int i = ySize; i &lt; ySize + ySize / 2; i++) {
+    mCurrentImageData[i] = (byte)128;
+}
+</code></pre>
+<p>也就是除了y分量，uv全部赋值为128（0x80）</p>
+<p>最后使用YUVImage编码成JPEG</p>
+<pre><code>YuvImage yuv = new YuvImage(bytes, ImageFormat.NV21, 
+        mPreviewSize.getWidth(), mPreviewSize.getHeight(), 
+        new int[y_stride, uv_stride]);
+yuv.compressToJpeg(new Rect(0, 0, 
+    mPreviewSize.getWidth(), mPreviewSize.getHeight()), 90, fos);
+</code></pre>
+<p>最终得到灰度图。</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E7%AE%80%E4%BB%8B">简介</a></li>
+<li><a href="#%E6%A0%BC%E5%BC%8F">格式</a>
+<ul>
+<li><a href="#packed-formats-%E7%B4%A7%E7%BC%A9%E6%A0%BC%E5%BC%8F">Packed formats 紧缩格式</a></li>
+<li><a href="#planar-formats-%E5%B9%B3%E9%9D%A2%E6%A0%BC%E5%BC%8F">Planar formats 平面格式</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8A%BD%E6%A0%B7%E6%96%B9%E5%BC%8F">抽样方式</a>
+<ul>
+<li><a href="#%E5%88%86%E7%B1%BB">分类</a></li>
+<li><a href="#%E9%87%87%E6%A0%B7%E6%96%B9%E5%BC%8F">采样方式</a></li>
+<li><a href="#%E5%AF%B9%E6%AF%94rgb%E6%95%B0%E6%8D%AE%E9%87%8F">对比RGB数据量</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B8%B8%E8%A7%81%E6%A0%BC%E5%BC%8F">常见格式</a>
+<ul>
+<li><a href="#nv21-nv12">NV21、NV12</a></li>
+<li><a href="#yv12-yu12">YV12、YU12</a></li>
+<li><a href="#i420p">I420P</a></li>
+<li><a href="#yuv420sp-yuv420p">YUV420SP、YUV420P</a></li>
+<li><a href="#yuyv">YUYV</a></li>
+<li><a href="#%E6%8E%A8%E8%8D%90%E8%B5%84%E6%96%99">推荐资料</a></li>
+</ul>
+</li>
+<li><a href="#stride-%E8%B7%A8%E8%B7%9D">Stride 跨距</a>
+<ul>
+<li><a href="#pixel-stride">pixel stride</a></li>
+</ul>
+</li>
+<li><a href="#%E5%88%86%E7%A6%BBy-u-v%E5%88%86%E9%87%8F">分离Y、U、V分量</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/raytracingnextweek-note/">
+              <h3 class="post-title">
+                RayTracingNextWeek-Note
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

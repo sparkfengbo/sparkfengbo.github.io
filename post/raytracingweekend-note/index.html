@@ -1,0 +1,240 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RayTracingWeekend-Note | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="RayTracingWeekend-Note | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+Github地址
+
+
+我的练手Demo地址  https://github.com/sparkfengbo/RayTracer
+
+
+Ray Tracing in One Weekend
+
+
+RayTracing/raytraci..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              RayTracingWeekend-Note
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="github地址">Github地址</h1>
+<ul>
+<li>
+<p>我的练手Demo地址  https://github.com/sparkfengbo/RayTracer</p>
+</li>
+<li>
+<p><a href="https://raytracing.github.io/books/RayTracingInOneWeekend.html">Ray Tracing in One Weekend</a></p>
+</li>
+<li>
+<p><a href="https://github.com/RayTracing/raytracing.github.io">RayTracing/raytracing.github.io</a></p>
+</li>
+</ul>
+<h1 id="总结">总结</h1>
+<p>写了demo，也有段时间了，需要总结一下知识点，以后再看也能快速想起。</p>
+<p>文章一共分为14章节。</p>
+<p><strong>第2章</strong>介绍了<a href="https://en.wikipedia.org/wiki/Netpbm">PPM文件格式</a>，以及通过cout将数据写到ppm文件里展示成图片，这个就是渲染引擎的展示”窗口“。</p>
+<p><strong>第3章</strong>写了vec3等基础类，包括叉积点积等，同样比较基础。</p>
+<p><strong>第4-5章</strong>主要定义了这个渲染引擎读光线的抽象表示，表示为A+tB，其中A是发光点，B是方向向量，A+tB代表的是光线和物体相交的点，将表达式带入球体坐标公式，是否相交转换成t是否有解，是否有解可以通过一元二次方程的求解b方-4ac获得。这样的话可以将空间的球体和光线转变成到某一个平面的映射，得到图片结果。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585290165.png" alt="" loading="lazy"></p>
+<p><strong>从第6章开始，逐步进入较深入的讲解，这才是光线追踪的”正菜“。</strong></p>
+<p><strong>第6章</strong>首先介绍如何计算法向量，并将法向量的值转成RGB存储到圆中。然后将sphere进行抽象化为hittable和hittable_list。能够绘制多个球型。</p>
+<p><strong>第7章</strong>讲了抗锯齿，原来的方案是如何实现的呢？因为PPM记录的是w*h个像素值，原来计算每个坐标点，坐标是整数，每个坐标点只计算一次颜色，那么现在加了一个random方法，取值范围0-1，也就是当前的像素，会采样很多次，每次都是在这个像素的坐标的整数范围内将精度调整为double多采样几次，这样计算颜色的平均值，能够达到抗锯齿的效果。对比brensenham画线算法，发现都是类似在浮点数的范围内，求整数解导致的不连续的问题。</p>
+<p><strong>第8章</strong>讲述了漫反射的实现。漫反射和材质有关，是不确定方向的，但是不会越过切面进行反射。实际上，原文的实现是在法向量（切面）上找到一个单位的球体，然后随机的找到一个点，当做该次漫反射的方向，该漫反射光线仍旧会再次反射，所以定义max_depth，定义反射最多的次数。</p>
+<p>第8章还讲述了gamma校正，对颜色的值采取计算根号的方式，后面其他的笔记会着重讲gamma校正是什么。除此之外，还简略的说了一下朗伯反射，这里建议详细看其他的笔记资料。</p>
+<p><strong>第9章</strong>介绍了金属材质，也就是镜面反射的实现。第9章先是将光照进行了抽象，material，然后hittable都具备一个material。镜面反射的一个特点就是入射角和反射角相等，通过这个特点，得到反射的方向，再定义反射率，得到反射光线的颜色和方向。</p>
+<p>第9章的最后介绍了模糊反射的实现，也就是反射的最终的方向加上个了随机方向的单位向量的偏移。这里也需要是单位向量，因为最终映射到组中的像素是整型。</p>
+<p><strong>第10章</strong>介绍了玻璃材质，也就是折射的实现。首先介绍了<a href="https://zh.wikipedia.org/wiki/%E6%96%AF%E6%B6%85%E5%B0%94%E5%AE%9A%E5%BE%8B">Snell's Law</a>，即入射角反射角的关系和运算，代码中传入的是入射角和折射角的比值，通过Snell's Law计算折射方向。注意到沿着折射方向的反方向观察，可能不能进行再次折射（介质不一样），代码通过反射进行模拟。文中还介绍了<a href="https://zhuanlan.zhihu.com/p/31534769">Schlick Approximation</a>，此处暂时省略，后面会补上。</p>
+<p><strong>第11章</strong>介绍了Camera方位的实现，比较简单，可以参考TinyRenderer中对ViewMatrix的推导，一样的道理。</p>
+<p><strong>第12章</strong>介绍了失焦（模糊的实现），后面再补充具体原理。代码中定义了光圈的大小，实际上调整了光线origin的位置，在光圈大小范围内随机射出光线。代码还传入了一个焦距（eye-center）的距离，然后计算了投影面的宽高，实际上和lookat的矩阵推导比较相似。</p>
+<p><strong>第13章</strong>给了一个最终的较复杂的实现效果。渲染特别缓慢，没有BVH的计算，关于BVH请看我的其他的笔记。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585275004.jpg" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#github%E5%9C%B0%E5%9D%80">Github地址</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/appendixshu-xue-ji-chu/">
+              <h3 class="post-title">
+                Appendix：数学基础
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

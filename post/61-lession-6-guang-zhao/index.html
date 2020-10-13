@@ -1,0 +1,322 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>6.1 Lession 6 光照 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="6.1 Lession 6 光照 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+光照基础
+
+光照基础-learnopengl-cn
+
+光照模型 （Phong reflection model）
+
+Phong reflection model
+
+
+
+
+环境光照(Ambient Lighting)：即使在黑暗的..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              6.1 Lession 6 光照
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="光照基础">光照基础</h1>
+<ul>
+<li><a href="https://learnopengl-cn.readthedocs.io/zh/latest/02%20Lighting/02%20Basic%20Lighting/">光照基础-learnopengl-cn</a></li>
+</ul>
+<h2 id="光照模型-phong-reflection-model">光照模型 （Phong reflection model）</h2>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Phong_reflection_model">Phong reflection model</a></li>
+</ul>
+<p><img src="https://sparkfengbo.github.io/post-images/1602584691913.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584696806.png" alt="" loading="lazy"></p>
+<ul>
+<li><strong>环境光照(Ambient Lighting)</strong>：即使在黑暗的情况下，世界上也仍然有一些光亮(月亮、一个来自远处的光)，所以物体永远不会是完全黑暗的。我们使用环境光照来模拟这种情况，也就是无论如何永远都给物体一些颜色。所以环境光照一般是个常量。</li>
+<li><strong>漫反射光照(Diffuse Lighting)</strong>：模拟光源对物体的方向性影响,物体的某一部分越是正对着光源，它就会越亮。</li>
+<li><strong>镜面光照(Specular Lighting)</strong>：模拟有光泽物体上面出现的亮点。镜面光照的颜色相比于物体的颜色会更倾向于光的颜色。</li>
+</ul>
+<h3 id="环境光照">环境光照</h3>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584704239.png" alt="" loading="lazy"></figure>
+<pre><code>void main()
+{
+    float ambientStrength = 0.1f;
+    vec3 ambient = ambientStrength * lightColor;
+    vec3 result = ambient * objectColor;
+    color = vec4(result, 1.0f);
+}
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602584711823.png" alt="" loading="lazy"></figure>
+<h3 id="漫反射光照">漫反射光照</h3>
+<p>如果光线垂直于物体表面，这束光对物体的影响会最大化(译注：更亮)。</p>
+<p><strong>郎伯(Lambert)余弦定律</strong></p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Lambert%27s_cosine_law">Lambert's cosine law-维基百科</a></li>
+</ul>
+<p>对于一个漫反射体，表面的反射光亮度和光源入射角（入射光线和表面法向量的夹角）的余弦成正比</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602584720523.png" alt="" loading="lazy"></figure>
+<h3 id="镜面光照">镜面光照</h3>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602584729106.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602584734389.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602584741506.png" alt="" loading="lazy"></figure>
+<blockquote>
+<p>Given vectors n and l, find vector r.</p>
+<p>Answer: If n and l are normalized, then r = 2n&lt;n,l&gt; - l</p>
+</blockquote>
+<h3 id="光源类型">光源类型</h3>
+<ul>
+<li>环境光</li>
+</ul>
+<blockquote>
+<p>环境光光源是一个固定强度，固定颜色的光源，无方向无差别地作用于所有物体。所有物体都会有一样的颜色和亮度。这样的光源主要用于提供一个基本照明。这是最简单的一种照明模型，也能模拟光线被多次反射散射后产生的一个均一的效果。</p>
+</blockquote>
+<ul>
+<li>有向光</li>
+</ul>
+<blockquote>
+<p>有向光从一个方向无差别地照亮所有物体。就像一个无限大和无限远的区域光源。他会在物体表面产生明暗效果， 但不会根据距离衰减。</p>
+</blockquote>
+<ul>
+<li>点光</li>
+</ul>
+<blockquote>
+<p>光从一点出发，向所有方向投射。</p>
+</blockquote>
+<ul>
+<li>聚光灯光</li>
+</ul>
+<blockquote>
+<p>模拟一个聚光灯。 光从锥形顶点向底部投射。</p>
+</blockquote>
+<ul>
+<li>区域光</li>
+</ul>
+<blockquote>
+<p>光从平面上的一小区域发出，是比点光源更准确的模型。</p>
+</blockquote>
+<ul>
+<li>有体积光</li>
+</ul>
+<blockquote>
+<p>光从一个有体积的小物体发出。</p>
+</blockquote>
+<h1 id="blinnphong-reflection-model">Blinn–Phong reflection model</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model">维基百科-Blinn–Phong reflection model</a></li>
+<li><a href="http://www.faculty.jacobs-university.de/llinsen/teaching/320322_Fall2010/lecture12.pdf">大学课件</a></li>
+<li><a href="https://blog.csdn.net/wangdingqiaoit/article/details/52964990">CSDN-OpenGL学习脚印：Blinn-Phong光照模型</a></li>
+</ul>
+<blockquote>
+<p>Phong的计算由反射向量和观察向量决定，当两者的夹角θ超过90时，截断为0.0，则没有了镜面光成分。因此Phong模型能处理的是下面的左图中(θ≤90)的情况，而对于右图中(θ&gt;90)的情况则镜面光成分计算为0,没有很好地体现实际光照情况。s</p>
+</blockquote>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602584752973.png" alt="" loading="lazy"></figure>
+<p><strong>Blinn-Phong模型不再依赖于反射向量</strong>Blinn-Phong模型不再依赖于反射向量，<br>
+而是采用了所谓的 半程向量(Halfway Vector)</p>
+<figure data-type="image" tabindex="8"><img src="https://sparkfengbo.github.io/post-images/1602584758722.png" alt="" loading="lazy"></figure>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://www.cnblogs.com/wkfvawl/p/12109598.html">计算机图形学——颜色和简单的照明模型</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Lambert%27s_cosine_law">Lambert's cosine law-维基百科</a></li>
+<li><a href="https://learnopengl-cn.readthedocs.io/zh/latest/02%20Lighting/02%20Basic%20Lighting/">光照基础-learnopengl-cn</a></li>
+<li><a href="https://www.jianshu.com/p/bc384e81d590">冯氏光照模型</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%85%89%E7%85%A7%E5%9F%BA%E7%A1%80">光照基础</a>
+<ul>
+<li><a href="#%E5%85%89%E7%85%A7%E6%A8%A1%E5%9E%8B-phong-reflection-model">光照模型 （Phong reflection model）</a>
+<ul>
+<li><a href="#%E7%8E%AF%E5%A2%83%E5%85%89%E7%85%A7">环境光照</a></li>
+<li><a href="#%E6%BC%AB%E5%8F%8D%E5%B0%84%E5%85%89%E7%85%A7">漫反射光照</a></li>
+<li><a href="#%E9%95%9C%E9%9D%A2%E5%85%89%E7%85%A7">镜面光照</a></li>
+<li><a href="#%E5%85%89%E6%BA%90%E7%B1%BB%E5%9E%8B">光源类型</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#blinnphong-reflection-model">Blinn–Phong reflection model</a></li>
+<li><a href="#%E5%8F%82%E8%80%83">参考</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/60-lession-6-ming-an-chu-li/">
+              <h3 class="post-title">
+                6.0 Lession 6 明暗处理
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

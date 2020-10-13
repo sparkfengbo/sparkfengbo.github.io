@@ -1,0 +1,405 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3.绘制 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="3.绘制 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+图元
+OpenGL支持多种图元，但都可归结为点、线、三角形中的一种。
+点
+glPointSize
+
+点精灵
+线、条带、循环线
+
+循环线（line loop）首尾相接
+条带线 line strip 没有首位闭合
+
+diamond ..." />
+    <meta name="keywords" content="OpenGL" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              3.绘制
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/BopasCkmM/" class="post-tag">
+                  # OpenGL
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="图元">图元</h1>
+<p>OpenGL支持多种图元，但都可归结为点、线、三角形中的一种。</p>
+<h2 id="点">点</h2>
+<pre><code>glPointSize
+</code></pre>
+<h3 id="点精灵">点精灵</h3>
+<h2 id="线-条带-循环线">线、条带、循环线</h2>
+<ul>
+<li>循环线（line loop）首尾相接</li>
+<li>条带线 line strip 没有首位闭合</li>
+</ul>
+<p>diamond exit</p>
+<h2 id="三角形-条带-扇面">三角形、条带、扇面</h2>
+<p>TODO 光照对三角形的影响</p>
+<h2 id="opengl图元模式标识">OpenGL图元模式标识</h2>
+<ul>
+<li>
+<p>GL_POINTS</p>
+<ul>
+<li>点</li>
+</ul>
+</li>
+<li>
+<p>GL_LINES</p>
+<ul>
+<li>将传入的坐标作为单独线条绘制，ABCDEFG六个顶点，绘制AB、CD、EF三条线</li>
+</ul>
+</li>
+<li>
+<p>GL_LINE_LOOP</p>
+<ul>
+<li>循环线</li>
+<li>将传入的顶点作为闭合折线绘制，ABCD四个顶点，绘制AB、BC、CD、DA四条线。</li>
+</ul>
+</li>
+<li>
+<p>GL_LINE_STRIP</p>
+<ul>
+<li>条带线</li>
+<li>将传入的顶点作为折线绘制，ABCD四个顶点，绘制AB、BC、CD三条线</li>
+</ul>
+</li>
+<li>
+<p>GL_TRIANGLES</p>
+<ul>
+<li>将传入的顶点作为单独的三角形绘制，ABCDEF绘制ABC,DEF两个三角形</li>
+</ul>
+</li>
+<li>
+<p>GL_TRIANGLE_STRIP</p>
+<ul>
+<li>三角形条带</li>
+<li>将传入的顶点作为三角条带绘制，ABCDEF绘制ABC,BCD,CDE,DEF四个三角形</li>
+</ul>
+</li>
+<li>
+<p>GL_TRIANGLE_FAN</p>
+<ul>
+<li>三角形扇面</li>
+<li>将传入的顶点作为扇面绘制，ABCDEF绘制ABC、ACD、ADE、AEF四个三角形</li>
+</ul>
+</li>
+</ul>
+<h2 id="多边形正反面">多边形正反面</h2>
+<p>TODO</p>
+<p>glPolygonMode</p>
+<p>glFrontFace</p>
+<h1 id="opengl缓存数据">OpenGL缓存数据</h1>
+<h2 id="创建分配缓存">创建分配缓存</h2>
+<pre><code>glCreateBuffers(GLsizei n, GLuinit* buffers)
+
+
+
+
+glBindBuffer(GLenum target, GLuint buffer)
+
+</code></pre>
+<h2 id="向缓存输入和输出数据">向缓存输入和输出数据</h2>
+<pre><code>void glNamedBufferStorage(GLuint buffer, GLsizeiptr size, const void *data, GLbitfield flags);
+
+glNamedBufferSubData
+
+glClearNamedBufferData
+
+glCopyNamedBufferSubData
+
+glGetNamedBufferSubData
+
+</code></pre>
+<ul>
+<li>GL_BYNAMIC_STORAGE_BIT</li>
+<li>GL_MAP_READ_BIT</li>
+<li>GL_MAP_WRITE_BIT</li>
+<li>GL_MAP_PERSIISTENT_BIT</li>
+<li>GL_MAP_COHERENT_BIT</li>
+</ul>
+<h2 id="读取-访问-丢弃缓存数据">读取、访问、丢弃缓存数据</h2>
+<p>TODO</p>
+<h1 id="顶点规范">顶点规范</h1>
+<h2 id="glvertexattribpointer">glVertexAttribPointer</h2>
+<p>glVertexAttribPointer数据类型标识符</p>
+<ul>
+<li>GL_BYTE</li>
+<li>GL_UNSIGNED_BYTE</li>
+<li>GL_SHORT</li>
+<li>GL_UNSIGNED_SHORT</li>
+<li>GL_INT</li>
+<li>GL_UNSIGNED_INT</li>
+<li>GL_FIXED</li>
+<li>GL_FLOAT</li>
+<li>GL_HALF_FLOAT</li>
+<li>GL_DOUBLE</li>
+<li>GL_INT_2_10_10_10_REV</li>
+<li>GL_UNSIGNED_INT_2_10_10_10_REV</li>
+</ul>
+<p>如果type传入了GL_SHORT等整数类型，OpenGL将这这些数据类型存储到缓存对象中，OpenGL必须将这些数据转换换为浮点数才能将它们读取到浮点数的顶点属性中。</p>
+<p>如果normalize为GL_FALSE，整数直接被强制转换为浮点数，然后再传入到顶点着色器中，如果是GL_TURE将进行归一化</p>
+<ul>
+<li>normalize为GL_FALSE
+<ul>
+<li>着色器传入的是4.0</li>
+</ul>
+</li>
+<li>normalize为GL_TURE
+<ul>
+<li>数据类型是有符号的
+<ul>
+<li>f = c / (2<sup>b</sup> - 1)</li>
+</ul>
+</li>
+<li>数据类型是无符号的
+<ul>
+<li>f = （2c + 1 ）/ （2b + 1 ）</li>
+</ul>
+</li>
+<li>f 浮点数值， c 整数分量 b 数据类型 位数 GL_UNSIGNED_BYTE就是8</li>
+</ul>
+</li>
+</ul>
+<p>整数4置入缓存，type为GL_INT</p>
+<p>f = 4 / (2<sup>32</sup> - 1) = 0.000000009313</p>
+<h2 id="整型顶点属性">整型顶点属性</h2>
+<p>glVertexAttribIPointer</p>
+<h2 id="双精度顶点属性">双精度顶点属性</h2>
+<p>glVertexAttribLPointer</p>
+<h2 id="顶点属性的压缩数据格式">顶点属性的压缩数据格式</h2>
+<p>size GL_BGRA</p>
+<p>GL_INT_2_10_10_10_REV</p>
+<p>2  10  10 10<br>
+w  x   y  z</p>
+<h2 id="静态顶点属性">静态顶点属性</h2>
+<p>TODO</p>
+<h1 id="绘制命令">绘制命令</h1>
+<ul>
+<li>索引模式</li>
+<li>非索引模式</li>
+</ul>
+<h2 id="图元重启动">图元重启动</h2>
+<p>TODO</p>
+<h1 id="多实例渲染">多实例渲染</h1>
+<p>TODO</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%9B%BE%E5%85%83">图元</a>
+<ul>
+<li><a href="#%E7%82%B9">点</a>
+<ul>
+<li><a href="#%E7%82%B9%E7%B2%BE%E7%81%B5">点精灵</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BA%BF-%E6%9D%A1%E5%B8%A6-%E5%BE%AA%E7%8E%AF%E7%BA%BF">线、条带、循环线</a></li>
+<li><a href="#%E4%B8%89%E8%A7%92%E5%BD%A2-%E6%9D%A1%E5%B8%A6-%E6%89%87%E9%9D%A2">三角形、条带、扇面</a></li>
+<li><a href="#opengl%E5%9B%BE%E5%85%83%E6%A8%A1%E5%BC%8F%E6%A0%87%E8%AF%86">OpenGL图元模式标识</a></li>
+<li><a href="#%E5%A4%9A%E8%BE%B9%E5%BD%A2%E6%AD%A3%E5%8F%8D%E9%9D%A2">多边形正反面</a></li>
+</ul>
+</li>
+<li><a href="#opengl%E7%BC%93%E5%AD%98%E6%95%B0%E6%8D%AE">OpenGL缓存数据</a>
+<ul>
+<li><a href="#%E5%88%9B%E5%BB%BA%E5%88%86%E9%85%8D%E7%BC%93%E5%AD%98">创建分配缓存</a></li>
+<li><a href="#%E5%90%91%E7%BC%93%E5%AD%98%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA%E6%95%B0%E6%8D%AE">向缓存输入和输出数据</a></li>
+<li><a href="#%E8%AF%BB%E5%8F%96-%E8%AE%BF%E9%97%AE-%E4%B8%A2%E5%BC%83%E7%BC%93%E5%AD%98%E6%95%B0%E6%8D%AE">读取、访问、丢弃缓存数据</a></li>
+</ul>
+</li>
+<li><a href="#%E9%A1%B6%E7%82%B9%E8%A7%84%E8%8C%83">顶点规范</a>
+<ul>
+<li><a href="#glvertexattribpointer">glVertexAttribPointer</a></li>
+<li><a href="#%E6%95%B4%E5%9E%8B%E9%A1%B6%E7%82%B9%E5%B1%9E%E6%80%A7">整型顶点属性</a></li>
+<li><a href="#%E5%8F%8C%E7%B2%BE%E5%BA%A6%E9%A1%B6%E7%82%B9%E5%B1%9E%E6%80%A7">双精度顶点属性</a></li>
+<li><a href="#%E9%A1%B6%E7%82%B9%E5%B1%9E%E6%80%A7%E7%9A%84%E5%8E%8B%E7%BC%A9%E6%95%B0%E6%8D%AE%E6%A0%BC%E5%BC%8F">顶点属性的压缩数据格式</a></li>
+<li><a href="#%E9%9D%99%E6%80%81%E9%A1%B6%E7%82%B9%E5%B1%9E%E6%80%A7">静态顶点属性</a></li>
+</ul>
+</li>
+<li><a href="#%E7%BB%98%E5%88%B6%E5%91%BD%E4%BB%A4">绘制命令</a>
+<ul>
+<li><a href="#%E5%9B%BE%E5%85%83%E9%87%8D%E5%90%AF%E5%8A%A8">图元重启动</a></li>
+</ul>
+</li>
+<li><a href="#%E5%A4%9A%E5%AE%9E%E4%BE%8B%E6%B8%B2%E6%9F%93">多实例渲染</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-2zhao-se-qi-yu-glsl/">
+              <h3 class="post-title">
+                2.着色器与GLSL
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

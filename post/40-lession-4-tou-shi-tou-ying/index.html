@@ -1,0 +1,422 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4.0 Lession 4 透视投影 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="4.0 Lession 4 透视投影 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+ViewPort
+我们之前将顶点坐标[-1,1]映射到[0,width][0，height]时使用的是
+Vec3i ((v.x + 1.) /2. * image.get_width(), (v.y + 1.) /2. * im..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              4.0 Lession 4 透视投影
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                7 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="viewport">ViewPort</h1>
+<p>我们之前将顶点坐标[-1,1]映射到[0,width][0，height]时使用的是</p>
+<pre><code>Vec3i ((v.x + 1.) /2. * image.get_width(), (v.y + 1.) /2. * image.get_height(), (v.z+1.)*depth/2.);
+</code></pre>
+<p>这种可以通过Matrix实现</p>
+<pre><code>Vec3f v = model.vert(face, j);
+uv[j] = model.uv(face, j);
+Vec3f tmp = m2v(viewportMatrix * v);
+screenCordinates[j] =  Vec3i (tmp[0], tmp[1], tmp[2]);
+</code></pre>
+<pre><code>Matrix viewportMatrix = viewPort(width / 2, height / 2, width, height, depth);
+
+Matrix viewPort(int startx, int starty, int endx, int endy, int depth){
+    Matrix matrix = Matrix::identity(4);
+
+    int width = endx - startx;
+    int height = endy - starty;
+
+    //-1 ~ 1 映射到 startx,  starty,  endx,  endy，以x为例，相当于 先+1，×width然后除2，再平移startx的距离
+
+    matrix[0][0] = (float)width/2;
+    matrix[0][3] = (float)(width + 2*startx) / 2.f;
+
+    matrix[1][1] = (float)height/2;
+    matrix[1][3] = (float)(height + 2*starty) / 2.f;
+
+    matrix[2][2] = (float)depth/2;
+    matrix[2][3] = (float)depth/2;
+
+    return matrix;
+}
+
+Vec3f m2v(Matrix matrix) {
+    return Vec3f(matrix[0][0]/matrix[3][0], matrix[1][0]/matrix[3][0], matrix[1][0]/matrix[3][0]);
+}
+</code></pre>
+<p>感兴趣可以尝试导一下，一样的道理。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602584348064.png" alt="" loading="lazy"></p>
+<h1 id="投影">投影</h1>
+<ul>
+<li><a href="https://blog.csdn.net/zhanghua1816/article/details/23121735">投影矩阵的推导(Deriving Projection Matrices)</a></li>
+</ul>
+<h2 id="正交投影">正交投影</h2>
+<p>我的理解：其实ViewPort实际上是一个正交投影</p>
+<p>正交投影是一种比较简单的投影，所有的投影线都与最终的绘图表面垂直。直接将坐标映射到屏幕的二维平面内，但实际上一个直接的投影矩阵将会产生不真实的结果。</p>
+<h3 id="正交投影矩阵">正交投影矩阵</h3>
+<ul>
+<li><a href="https://blog.csdn.net/u012633319/article/details/80102074">【OpenGL】正交投影和透视投影矩阵（一）—— openGL投影函数对应矩阵</a></li>
+</ul>
+<p>3d</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584361577.png" alt="" loading="lazy"></figure>
+<p>2d</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602584371899.png" alt="" loading="lazy"></figure>
+<h2 id="透视投影">透视投影</h2>
+<p>正交投影得到的结果是无法区分物体远近的，因为所有的投影线都是垂直的，透视投影带有远近的效果，更真实。</p>
+<p>一个平截头体可以有近平面、远平面、裁剪面的宽高比、fov（纵向视角大小）构成。物体在平截头体内投影到近平面上，看到一篇文章一句话很好</p>
+<blockquote>
+<p>透视投影矩阵的任务就是把位于视锥体内的物体的顶点X,Y,Z坐标映射到[-1,1]范围。这就相当于把这个四棱台扭曲变形成一个立方体。</p>
+</blockquote>
+<p>这就很好理解为什么近平面的物体看起来更大。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602584381975.png" alt="" loading="lazy"></p>
+<h3 id="推导">推导</h3>
+<ul>
+<li><a href="https://www.cnblogs.com/bluebean/p/5276111.html">透视投影矩阵的推导</a></li>
+<li><a href="http://ogldev.atspace.co.uk/www/tutorial12/tutorial12.html">Tutorial 12:Perspective Projection</a></li>
+<li><a href="https://yemi.me/2018/09/09/the-perspective-projection-matrix-derivation/">透视投影矩阵推导The Perspective Projection Matrix Derivation</a></li>
+</ul>
+<p>有一点P，位于视锥体内，设坐标为(x,y,z).分别对x,y坐标和z坐标的变换到[-1,1]：</p>
+<ul>
+<li>设近裁剪面的宽度为W，高度为H，P’点的x坐标范围是[-W/2,W/2],y坐标范围是[-H/2,H/2],然后分别线性映射至[-1,1]内即可。</li>
+<li>z坐标的范围是N至F，需要映射到[-1,1]</li>
+</ul>
+<p>参数：</p>
+<ul>
+<li>Fov:纵向的视角大小</li>
+<li>aspect:裁剪面的宽高比</li>
+<li>zNear:近裁剪面离摄像机的距离，图中的n</li>
+<li>zFar:远裁剪面离摄像机的距离，图中的f</li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602584394242.png" alt="" loading="lazy"></figure>
+<p>求得点P在近裁剪面的投影点P’的坐标<br>
+根据相似三角形对应边长度的比率相同，由图可得</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602584405359.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584411942.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584418275.png" alt="" loading="lazy"></p>
+<p>上图[2,2]的分子写反了。</p>
+<p>假设如果设定近平面的顶边的Y值为t，上述的矩阵可以变化为</p>
+<pre><code>aspect = w/h;
+</code></pre>
+<pre><code>tan(fov/2)=t/n
+</code></pre>
+<p>那么[0][0]变成 <code>h*n /(w*t)</code>, <code>h/t =2</code></p>
+<p>所以</p>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602584429825.png" alt="" loading="lazy"></figure>
+<h3 id="透视投影矩阵">透视投影矩阵</h3>
+<pre><code>Matrix Matrix::initPersProjMatrix(float FOV, const float aspect, float zNear, float zFar) {
+    Matrix matrix(4, 4);
+    const float zRange = zNear - zFar;
+    const float tanHalfFOV = std::tan(toRadian(FOV / 2.0f));
+    matrix[0][0] = 1.0f / (tanHalfFOV * aspect);
+    matrix[1][1] = 1.0f / tanHalfFOV;
+    matrix[2][2] = (-zNear - zFar) / zRange;
+    matrix[2][3] = 2.0f * zFar * zNear / zRange;
+    matrix[3][2] = 1.f;
+    return matrix;
+}
+</code></pre>
+<h3 id="透视除法">透视除法</h3>
+<h3 id="示例">示例</h3>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602584441025.png" alt="" loading="lazy"></figure>
+<p><code>Matrix projectMatrix = Matrix::initPersProjMatrix(30, 1, 3, -3);</code></p>
+<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602584451008.png" alt="" loading="lazy"></figure>
+<pre><code>        int width = 1000;
+        int height = 1000;
+        int depth = 255;
+        TGAImage image(width, height, TGAImage::RGB);
+        Model model(&quot;../obj/african_head.obj&quot;);
+        Vec3f lightDir(0, 0, -1);
+        Matrix viewportMatrix = viewPort(width / 4, height / 4, width * 3.f / 4, height* 3.f / 4, depth);
+        Matrix projectMatrix = Matrix::initPersProjMatrix(30, 1, 3, -3);
+
+        int* zbuffer = new int[width*height];
+        for (int i = 0; i &lt; width * height; i++) {
+            zbuffer[i] = std::numeric_limits&lt;int&gt;::min();
+        }
+        for (int face = 0; face &lt; model.nfaces(); face++) {
+            Vec3i screenCordinates[3];
+            Vec3f worldCordinates[3];
+            Vec2i uv[3];
+            for (int j = 0; j &lt; 3; j++) {
+                Vec3f v = model.vert(face, j);
+                worldCordinates[j] = v;
+            }
+            Vec3f norm = (worldCordinates[2] - worldCordinates[0]) ^(worldCordinates[1] - worldCordinates[0]);
+            norm.normalize();
+            float intensity = norm.dotProduct(lightDir);
+            if (intensity &lt;= 0) {
+                continue;
+            }
+
+            for (int j = 0; j &lt; 3; j++) {
+                Vec3f v = model.vert(face, j);
+                uv[j] = model.uv(face, j);
+                std::cout&lt;&lt;v;
+                Matrix tmp = projectMatrix * v;
+                //透视除法
+                tmp[0][0] /= tmp[3][0];
+                tmp[1][0] /= tmp[3][0];
+                tmp[2][0] /= tmp[3][0];
+                Vec3f tmp2 = m2v(viewportMatrix * tmp);
+                screenCordinates[j] =  Vec3i (tmp2[0], tmp2[1], tmp2[2]);
+            }
+            if (intensity &gt; 0) {
+                triangle_line_sweeping_texture_3d(screenCordinates[0], screenCordinates[1], screenCordinates[2], uv[0],
+                                                  uv[1], uv[2], &amp;model, intensity, image, zbuffer);
+            }
+        }
+        image.flip_vertically();
+        image.write_tga_file(&quot;l4_5_viewport_perspective_project.tga&quot;);
+</code></pre>
+<h2 id="平移">平移</h2>
+<figure data-type="image" tabindex="7"><img src="https://sparkfengbo.github.io/post-images/1602584463458.png" alt="" loading="lazy"></figure>
+<pre><code>        int width = 1000;
+        int height = 1000;
+        int depth = 255;
+        TGAImage image(width, height, TGAImage::RGB);
+        Model model(&quot;../obj/african_head.obj&quot;);
+        Vec3f lightDir(0, 0, -1);
+        Vec3f camera(0, 0, 3);
+        Matrix viewportMatrix = viewPort(width / 2, height / 2, width, height, depth);
+        Matrix projectMatrix = Matrix::initPersProjMatrix(90, 1, 100, 1000);
+
+        //注意这里的平移矩阵
+        Matrix tansMatrix = Matrix::identity(4);
+        tansMatrix[0][3] = - width / 4;
+        tansMatrix[1][3] = - height / 4 ;
+        int* zbuffer = new int[width*height];
+        for (int i = 0; i &lt; width * height; i++) {
+            zbuffer[i] = std::numeric_limits&lt;int&gt;::min();
+        }
+        for (int face = 0; face &lt; model.nfaces(); face++) {
+            Vec3i screenCordinates[3];
+            Vec3f worldCordinates[3];
+            Vec2i uv[3];
+            for (int j = 0; j &lt; 3; j++) {
+                Vec3f v = model.vert(face, j);
+                uv[j] = model.uv(face, j);
+                //注意顺序
+                Vec3f tmp = m2v(tansMatrix * viewportMatrix * v);
+                screenCordinates[j] =  Vec3i (tmp[0], tmp[1], tmp[2]);
+                worldCordinates[j] = v;
+            }
+            Vec3f norm = (worldCordinates[2] - worldCordinates[0]) ^(worldCordinates[1] - worldCordinates[0]);
+            norm.normalize();
+            float intensity = norm.dotProduct(lightDir);
+            if (intensity &gt; 0) {
+                triangle_line_sweeping_texture_3d(screenCordinates[0], screenCordinates[1], screenCordinates[2], uv[0],
+                                                  uv[1], uv[2], &amp;model, intensity, image, zbuffer);
+            }
+        }
+        image.flip_vertically();
+        image.write_tga_file(&quot;l4_5_viewport_translate.tga&quot;);
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#viewport">ViewPort</a></li>
+<li><a href="#%E6%8A%95%E5%BD%B1">投影</a>
+<ul>
+<li><a href="#%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1">正交投影</a>
+<ul>
+<li><a href="#%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5">正交投影矩阵</a></li>
+</ul>
+</li>
+<li><a href="#%E9%80%8F%E8%A7%86%E6%8A%95%E5%BD%B1">透视投影</a>
+<ul>
+<li><a href="#%E6%8E%A8%E5%AF%BC">推导</a></li>
+<li><a href="#%E9%80%8F%E8%A7%86%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5">透视投影矩阵</a></li>
+<li><a href="#%E9%80%8F%E8%A7%86%E9%99%A4%E6%B3%95">透视除法</a></li>
+<li><a href="#%E7%A4%BA%E4%BE%8B">示例</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B9%B3%E7%A7%BB">平移</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/31-lession-3-wen-li/">
+              <h3 class="post-title">
+                3.1 Lession 3 纹理
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

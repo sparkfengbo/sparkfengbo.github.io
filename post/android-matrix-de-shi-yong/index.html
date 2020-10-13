@@ -1,0 +1,682 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Android Matrix的使用 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Android Matrix的使用 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+使用方法
+
+Android官方文档
+
+构造
+单位矩阵
+Matrix{[1.0, 0.0, 0.0][0.0, 1.0, 0.0][0.0, 0.0, 1.0]}
+
+void	setRotate(float degrees)
+Se..." />
+    <meta name="keywords" content="Android" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Android Matrix的使用
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                12 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/KBOXdViFu/" class="post-tag">
+                  # Android
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="使用方法">使用方法</h1>
+<ul>
+<li><a href="https://developer.android.com/reference/android/graphics/Matrix">Android官方文档</a></li>
+</ul>
+<h2 id="构造">构造</h2>
+<p>单位矩阵</p>
+<pre><code>Matrix{[1.0, 0.0, 0.0][0.0, 1.0, 0.0][0.0, 0.0, 1.0]}
+</code></pre>
+<h2 id="voidsetrotatefloat-degrees">void	setRotate(float degrees)</h2>
+<p>Set the matrix to rotate about (0,0) by the specified number of degrees.</p>
+<p>旋转矩阵</p>
+<pre><code>matrix.setRotate(30);
+</code></pre>
+<pre><code>Matrix{[0.8660254, -0.5, 0.0][0.5, 0.8660254, 0.0][0.0, 0.0, 1.0]}
+
+Math.cos(Math.toRadians(30)) = 0.8660254037844387
+Math.sin(Math.toRadians(30))  = 0.49999999999999994
+
+
+旋转矩阵
+
+cosθ    −sinθ   0
+​sinθ    cosθ    0
+​0       0       1
+</code></pre>
+<p>符合预期</p>
+<h2 id="setrotatefloat-degrees-float-px-float-py">setRotate(float degrees, float px, float py)</h2>
+<p>Set the matrix to rotate by the specified number of degrees, with a pivot point at (px, py).</p>
+<p>围绕px,py旋转</p>
+<pre><code>//179, 192.5 为图片宽高一半，相当于中心
+matrix.setRotate(30, 179, 192.5);
+
+</code></pre>
+<pre><code>Matrix{[0.8660254, -0.5, 120.23145][0.5, 0.8660254, -63.709885][0.0, 0.0, 1.0]}
+</code></pre>
+<p>相当于旋转后做了平移操作</p>
+<h3 id="推导过程">推导过程</h3>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602589540610.png" alt="" loading="lazy"></figure>
+<h3 id="验证">验证</h3>
+<pre><code>Math.cos(Math.toRadians(30)) = 0.8660254037844387
+Math.sin(Math.toRadians(30))  = 0.49999999999999994
+−cosθ.tx +sinθ.t​y +tx =  -0.8660254037844387 * 179 + 0.5 * 192.5 + 179 = 120.231452722
+
+</code></pre>
+<h2 id="setsincosfloat-sinvalue-float-cosvalue">setSinCos(float sinValue, float cosValue)</h2>
+<p>Set the matrix to rotate by the specified sine and cosine values.</p>
+<pre><code>matrix.setSinCos((float) Math.sin(Math.toRadians(30)),(float) Math.cos(Math.toRadians(30)));
+</code></pre>
+<pre><code>Matrix{[0.8660254, -0.5, 0.0][0.5, 0.8660254, 0.0][0.0, 0.0, 1.0]}
+
+和setRotate(float degrees, float px, float py)等价
+</code></pre>
+<h2 id="setsincosfloat-sinvalue-float-cosvalue-float-px-float-py">setSinCos(float sinValue, float cosValue, float px, float py)</h2>
+<p>Set the matrix to rotate by the specified sine and cosine values, with a pivot point at (px, py).</p>
+<p>和setRotate(float degrees, float px, float py)等价</p>
+<pre><code>matrix.setSinCos((float) Math.sin(Math.toRadians(30)),(float) Math.cos(Math.toRadians(30)), mBitmapMan.getWidth() / 2.0f, mBitmapMan.getHeight() / 2.0f);
+
+</code></pre>
+<h2 id="setscalefloat-sx-float-sy">setScale(float sx, float sy)</h2>
+<p>Set the matrix to scale by sx and sy.</p>
+<p>缩放变换矩阵</p>
+<pre><code>matrix.setScale(0.8f, 0.8f);
+</code></pre>
+<pre><code>Matrix{[0.8, 0.0, 0.0][0.0, 0.8, 0.0][0.0, 0.0, 1.0]}
+</code></pre>
+<h2 id="setscalefloat-sx-float-sy-float-px-float-py">setScale(float sx, float sy, float px, float py)</h2>
+<p>Set the matrix to scale by sx and sy, with a pivot point at (px, py).</p>
+<pre><code>matrix.setScale(0.8f, 0.8f, 179, 192.5);
+
+
+//Matrix{[0.8, 0.0, 35.800003][0.0, 0.8, 38.5][0.0, 0.0, 1.0]}
+</code></pre>
+<pre><code>matrix.setScale(0.8f, 0.8f, 10, 10);
+
+//Matrix{[0.8, 0.0, 2.0][0.0, 0.8, 2.0][0.0, 0.0, 1.0]}
+</code></pre>
+<pre><code>matrix.setScale(1.2f, 1.2f, 179, 192.5);
+
+Matrix{[1.2, 0.0, -35.800003][0.0, 1.2, -38.500015][0.0, 0.0, 1.0]}
+</code></pre>
+<p>相当于缩放后进行平移操作，默认图片左上角，如果指定了中心，相当于 平移  px * （1-sx）</p>
+<p>上面相当于</p>
+<pre><code>matrix.setScale(0.8f, 0.8f);
+matrix.postTranslate(0.2f * 179, 0.2f * 192.5);
+
+//Matrix{[0.8, 0.0, 35.8][0.0, 0.8, 38.5][0.0, 0.0, 1.0]}
+</code></pre>
+<h3 id="推导过程-2">推导过程</h3>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602589558071.png" alt="" loading="lazy"></figure>
+<h2 id="voidsettranslatefloat-dx-float-dy">void	setTranslate(float dx, float dy)</h2>
+<p>Set the matrix to translate by (dx, dy).</p>
+<pre><code>matrix.setTranslate(50, 100);
+
+//Matrix{[1.0, 0.0, 50.0][0.0, 1.0, 100.0][0.0, 0.0, 1.0]}
+</code></pre>
+<h2 id="setskewfloat-kx-float-ky">setSkew(float kx, float ky)</h2>
+<p>Set the matrix to skew by sx and sy.</p>
+<p>错切，可以参考</p>
+<ul>
+<li><a href="https://mathworld.wolfram.com/Shear.html">wolfram mathworld</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%94%99%E5%88%87">错切-维基百科</a></li>
+</ul>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602589568408.png" alt="" loading="lazy"></figure>
+<p>k就是斜率</p>
+<h2 id="setskewfloat-kx-float-ky-float-px-float-py">setSkew(float kx, float ky, float px, float py)</h2>
+<p>Set the matrix to skew by sx and sy, with a pivot point at (px, py).</p>
+<p>设置中心点的错切</p>
+<h2 id="voidsetvaluesfloat-values">void	setValues(float[] values)</h2>
+<p>Copy 9 values from the array into the matrix.</p>
+<pre><code>float[] copy = new float[9];
+matrix.setValues(copy);
+
+Matrix{[0.0, 0.0, 0.0][0.0, 0.0, 0.0][0.0, 0.0, 0.0]}
+</code></pre>
+<h2 id="booleanpostconcatmatrix-other">boolean	postConcat(Matrix other)</h2>
+<p>Postconcats the matrix with the specified matrix.</p>
+<p>后乘一个矩阵</p>
+<h2 id="postxx系列">postXX系列</h2>
+<ul>
+<li>boolean	postRotate(float degrees, float px, float py)
+<ul>
+<li>Postconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	postRotate(float degrees)
+<ul>
+<li>Postconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	postScale(float sx, float sy, float px, float py)
+<ul>
+<li>Postconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	postScale(float sx, float sy)
+<ul>
+<li>Postconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	postSkew(float kx, float ky)
+<ul>
+<li>Postconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	postSkew(float kx, float ky, float px, float py)
+<ul>
+<li>Postconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	postTranslate(float dx, float dy)
+<ul>
+<li>Postconcats the matrix with the specified translation.</li>
+</ul>
+</li>
+</ul>
+<h2 id="booleanpreconcatmatrix-other">boolean	preConcat(Matrix other)</h2>
+<p>Preconcats the matrix with the specified matrix.<br>
+前乘一个矩阵</p>
+<h2 id="prexx系列">preXX系列</h2>
+<ul>
+<li>boolean	preRotate(float degrees)
+<ul>
+<li>Preconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	preRotate(float degrees, float px, float py)
+<ul>
+<li>Preconcats the matrix with the specified rotation.</li>
+</ul>
+</li>
+<li>boolean	preScale(float sx, float sy)
+<ul>
+<li>Preconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	preScale(float sx, float sy, float px, float py)
+<ul>
+<li>Preconcats the matrix with the specified scale.</li>
+</ul>
+</li>
+<li>boolean	preSkew(float kx, float ky)
+<ul>
+<li>Preconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	preSkew(float kx, float ky, float px, float py)
+<ul>
+<li>Preconcats the matrix with the specified skew.</li>
+</ul>
+</li>
+<li>boolean	preTranslate(float dx, float dy)
+<ul>
+<li>Preconcats the matrix with the specified translation.</li>
+</ul>
+</li>
+</ul>
+<h2 id="pre-post-set的执行顺序问题">pre post set的执行顺序问题</h2>
+<p>set会清除前面pre和post的操作，pre前乘法、post后乘</p>
+<pre><code>//179, 192.5 为图片宽高一半，相当于中心
+matrix.setRotate(30, 179, 192.5);
+
+
+
+和下面等效
+matrix.setRotate(30);
+matrix.preTranslate(-179, - 192.5);
+matrix.postTranslate(179, 192.5);
+
+相当于左移上移 然后 旋转  再 右移下移
+
+</code></pre>
+<h2 id="booleansetconcatmatrix-a-matrix-b">boolean	setConcat(Matrix a, Matrix b)</h2>
+<p>Set the matrix to the concatenation of the two specified matrices and return true.</p>
+<p>两个矩阵相乘</p>
+<pre><code>//179, 192.5 为图片宽高一半，相当于中心
+Matrix preTransMatrix = new Matrix();
+preTransMatrix.setTranslate(179,  192.5);
+Matrix rotateMatrix = new Matrix();
+rotateMatrix.setRotate(30);
+Matrix tmpR1 = new Matrix();
+tmpR1.setConcat(preTransMatrix,rotateMatrix);
+Matrix postTransMatrix = new Matrix();
+postTransMatrix.setTranslate(-179, - 192.5);
+Matrix tmp5 = new Matrix();
+tmp5.setConcat(tmpR1,postTransMatrix);
+
+
+和下面等效
+matrix.setRotate(30, 179, 192.5);
+
+
+和下面等效
+matrix.setRotate(30);
+matrix.preTranslate(-179, - 192.5);
+matrix.postTranslate(179, 192.5);
+</code></pre>
+<h2 id="booleanisaffine">boolean	isAffine()</h2>
+<p>Gets whether this matrix is affine.</p>
+<p>是否是仿射变换矩阵</p>
+<pre><code>matrix.reset();
+Log.d(TAG, &quot;isAffine = &quot; +matrix.isAffine() ); //true
+float[] simple = new float[]{0,1,2,3,4,5,6,7,8};
+matrix.setValues(simple);
+Log.d(TAG, &quot;isAffine = &quot; +matrix.isAffine() );//false
+</code></pre>
+<h2 id="booleanisidentity">boolean	isIdentity()</h2>
+<p>Returns true if the matrix is identity.</p>
+<h2 id="booleaninvertmatrix-inverse">boolean	invert(Matrix inverse)</h2>
+<p>If this matrix can be inverted, return true and if inverse is not null, set inverse to be the inverse of this matrix.</p>
+<p>求逆矩阵</p>
+<pre><code>matrix.setRotate(30);
+Matrix invertTmp = new Matrix();
+matrix.invert(invertTmp);
+Matrix invertConcat = new Matrix();
+invertConcat.setConcat(matrix, invertTmp);
+
+最后invertConcat是单位矩阵，相当于顺时针转了30度又逆时针转了回来
+</code></pre>
+<h2 id="floatmapradiusfloat-radius">float	mapRadius(float radius)</h2>
+<p>Return the mean radius of a circle after it has been mapped by this matrix.</p>
+<p>计算矩阵映射后的圆半径</p>
+<pre><code>float radius = 100.0f;
+float radiusAfterMatrix;
+Matrix matrixRadius = new Matrix();
+matrixRadius.setScale(2,2, 1, 1);
+radiusAfterMatrix = matrixRadius.mapRadius(radius);
+
+结果200
+和中心点无关
+</code></pre>
+<p>参考了 -<a href="https://www.jianshu.com/p/6cd77d511510">Android Matrix 方法详解（另类）</a></p>
+<h2 id="mappoints">mapPoints</h2>
+<p>二维点的变化</p>
+<ul>
+<li>
+<p>void	mapPoints(float[] dst, int dstIndex, float[] src, int srcIndex, int pointCount)</p>
+<ul>
+<li>Apply this matrix to the array of 2D points specified by src, and write the transformed points into the array of points specified by dst.</li>
+</ul>
+</li>
+<li>
+<p>void	mapPoints(float[] dst, float[] src)</p>
+<ul>
+<li>Apply this matrix to the array of 2D points specified by src, and write the transformed points into the array of points specified by dst.</li>
+</ul>
+</li>
+<li>
+<p>void	mapPoints(float[] pts)</p>
+<ul>
+<li>Apply this matrix to the array of 2D points, and write the transformed points back into the array</li>
+</ul>
+</li>
+</ul>
+<pre><code>float[] ptsTrans = {6,2};
+matrix.setTranslate(-2,2);
+matrix.mapPoints(ptsTrans);
+//结果 4， 4
+
+float[] resultTmp = new float[2];
+matrix.setTranslate(-2,2);
+matrix.mapPoints(resultTmp, ptsTrans);
+// resultTmp  2, 6 因为上次结果是4， 4
+
+
+</code></pre>
+<h2 id="maprect">mapRect</h2>
+<p>映射到矩形上</p>
+<ul>
+<li>
+<p>boolean	mapRect(RectF rect)</p>
+<ul>
+<li>Apply this matrix to the rectangle, and write the transformed rectangle back into it.</li>
+</ul>
+</li>
+<li>
+<p>boolean	mapRect(RectF dst, RectF src)</p>
+<ul>
+<li>Apply this matrix to the src rectangle, and write the transformed rectangle into dst.</li>
+</ul>
+</li>
+</ul>
+<pre><code>RectF rectF = new RectF(100,100,200,200);
+matrix.reset();
+matrix.setScale(2,2);
+matrix.mapRect(rectF);
+//[200.0,200.0][400.0,400.0]
+
+</code></pre>
+<h2 id="mapvectors">mapVectors</h2>
+<p>矩阵变换作用于向量，和mapPoints比较类似，但是例如tranlate这种对vector没有变化</p>
+<ul>
+<li>
+<p>void	mapVectors(float[] vecs)</p>
+<ul>
+<li>Apply this matrix to the array of 2D vectors, and write the transformed vectors back into the array.</li>
+</ul>
+</li>
+<li>
+<p>void	mapVectors(float[] dst, int dstIndex, float[] src, int srcIndex, int vectorCount)</p>
+<ul>
+<li>Apply this matrix to the array of 2D vectors specified by src, and write the transformed vectors into the array of vectors specified by dst.</li>
+</ul>
+</li>
+<li>
+<p>void	mapVectors(float[] dst, float[] src)</p>
+<ul>
+<li>Apply this matrix to the array of 2D vectors specified by src, and write the transformed vectors into the array of vectors specified by dst.</li>
+</ul>
+</li>
+</ul>
+<pre><code>float[] vector = {2,3};
+float[] point = {2,3};
+Matrix matrixTranslate = new Matrix();
+matrixTranslate.setTranslate(2,3);
+matrixTranslate.mapVectors(vector);
+matrixTranslate.mapPoints(point);
+
+// 输出：vector = [2.0,3.0]
+System.out.println(&quot;vector = &quot; + Arrays.toString(vector));
+// 输出：point = [4.0,6.0]
+System.out.println(&quot;point = &quot; + Arrays.toString(point));
+</code></pre>
+<h2 id="booleanrectstaysrect">boolean	rectStaysRect()</h2>
+<p>Returns true if will map a rectangle to another rectangle.</p>
+<h2 id="booleansetpolytopolyfloat-src-int-srcindex-float-dst-int-dstindex-int-pointcount">boolean	setPolyToPoly(float[] src, int srcIndex, float[] dst, int dstIndex, int pointCount)</h2>
+<p>Set the matrix such that the specified src points would map to the specified dst points.</p>
+<p>根据SRC的点到DST的点，求的Matrix的变换矩阵</p>
+<pre><code>float[] src = {1,2};
+float[] dst = {2,4};
+
+Matrix matrix = new Matrix();
+matrix.setPolyToPoly(src,0,dst,0,1);
+
+//          [1.0, 0.0, 1.0]
+// matrix = [0.0, 1.0, 2.0]
+//          [0.0, 0.0, 1.0]
+
+相当于平移 1，2
+</code></pre>
+<h2 id="booleansetrecttorectrectf-src-rectf-dst-matrixscaletofit-stf">boolean	setRectToRect(RectF src, RectF dst, Matrix.ScaleToFit stf)</h2>
+<p>Set the matrix to the scale and translate values that map the source rectangle to the destination rectangle, returning true if the the result can be represented.</p>
+<p>将矩形填充到矩形中。其中在填充时可以指定4种填充模式.<br>
+<img src="https://sparkfengbo.github.io/post-images/1602589593941.webp" alt="" loading="lazy"></p>
+<h2 id="voidreset">void	reset()</h2>
+<p>Set the matrix to identity</p>
+<h2 id="voidsetmatrix-src">void	set(Matrix src)</h2>
+<p>(deep) copy the src matrix into this matrix.</p>
+<h2 id="voidgetvaluesfloat-values">void	getValues(float[] values)</h2>
+<p>Copy 9 values from the matrix into the array.</p>
+<pre><code>matrix.reset();
+float[] copy = new float[9];
+matrix.getValues(copy);
+
+</code></pre>
+<pre><code>0 = 1.0
+1 = 0.0
+2 = 0.0
+3 = 0.0
+4 = 1.0
+5 = 0.0
+6 = 0.0
+7 = 0.0
+8 = 1.0
+</code></pre>
+<h2 id="常量">常量</h2>
+<ul>
+<li>int MSCALE_X = 0;</li>
+<li>int MSKEW_X  = 1;</li>
+<li>int MTRANS_X = 2;</li>
+<li>int MSKEW_Y  = 3;</li>
+<li>int MSCALE_Y = 4;</li>
+<li>int MTRANS_Y = 5;</li>
+<li>int MPERSP_0 = 6;</li>
+<li>int MPERSP_1 = 7;</li>
+<li>int MPERSP_2 = 8;   //!&lt; use with getValues/setValues</li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602589609050.webp" alt="" loading="lazy"></figure>
+<h1 id="数学原理">数学原理</h1>
+<ul>
+<li><a href="https://i-rant.arnaudbos.com/matrices-for-developers/#what-is-a-matrix">Matrices for developers</a>
+<ul>
+<li>这里面有一些公式的推导，可以参考</li>
+</ul>
+</li>
+<li>之前OpenGL做的一些笔记</li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8F%98%E6%8D%A2%E7%9F%A9%E9%98%B5">变换矩阵-维基百科</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%94%99%E5%88%87">错切-维基百科</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Affine_transformation">仿射变换-维基百科</a></li>
+<li><a href="https://www.matongxue.com/madocs/244.html">如何通俗的解释仿射变换？</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95">使用方法</a>
+<ul>
+<li><a href="#%E6%9E%84%E9%80%A0">构造</a></li>
+<li><a href="#voidsetrotatefloat-degrees">void	setRotate(float degrees)</a></li>
+<li><a href="#setrotatefloat-degrees-float-px-float-py">setRotate(float degrees, float px, float py)</a>
+<ul>
+<li><a href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B">推导过程</a></li>
+<li><a href="#%E9%AA%8C%E8%AF%81">验证</a></li>
+</ul>
+</li>
+<li><a href="#setsincosfloat-sinvalue-float-cosvalue">setSinCos(float sinValue, float cosValue)</a></li>
+<li><a href="#setsincosfloat-sinvalue-float-cosvalue-float-px-float-py">setSinCos(float sinValue, float cosValue, float px, float py)</a></li>
+<li><a href="#setscalefloat-sx-float-sy">setScale(float sx, float sy)</a></li>
+<li><a href="#setscalefloat-sx-float-sy-float-px-float-py">setScale(float sx, float sy, float px, float py)</a>
+<ul>
+<li><a href="#%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B-2">推导过程</a></li>
+</ul>
+</li>
+<li><a href="#voidsettranslatefloat-dx-float-dy">void	setTranslate(float dx, float dy)</a></li>
+<li><a href="#setskewfloat-kx-float-ky">setSkew(float kx, float ky)</a></li>
+<li><a href="#setskewfloat-kx-float-ky-float-px-float-py">setSkew(float kx, float ky, float px, float py)</a></li>
+<li><a href="#voidsetvaluesfloat-values">void	setValues(float[] values)</a></li>
+<li><a href="#booleanpostconcatmatrix-other">boolean	postConcat(Matrix other)</a></li>
+<li><a href="#postxx%E7%B3%BB%E5%88%97">postXX系列</a></li>
+<li><a href="#booleanpreconcatmatrix-other">boolean	preConcat(Matrix other)</a></li>
+<li><a href="#prexx%E7%B3%BB%E5%88%97">preXX系列</a></li>
+<li><a href="#pre-post-set%E7%9A%84%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%E9%97%AE%E9%A2%98">pre post set的执行顺序问题</a></li>
+<li><a href="#booleansetconcatmatrix-a-matrix-b">boolean	setConcat(Matrix a, Matrix b)</a></li>
+<li><a href="#booleanisaffine">boolean	isAffine()</a></li>
+<li><a href="#booleanisidentity">boolean	isIdentity()</a></li>
+<li><a href="#booleaninvertmatrix-inverse">boolean	invert(Matrix inverse)</a></li>
+<li><a href="#floatmapradiusfloat-radius">float	mapRadius(float radius)</a></li>
+<li><a href="#mappoints">mapPoints</a></li>
+<li><a href="#maprect">mapRect</a></li>
+<li><a href="#mapvectors">mapVectors</a></li>
+<li><a href="#booleanrectstaysrect">boolean	rectStaysRect()</a></li>
+<li><a href="#booleansetpolytopolyfloat-src-int-srcindex-float-dst-int-dstindex-int-pointcount">boolean	setPolyToPoly(float[] src, int srcIndex, float[] dst, int dstIndex, int pointCount)</a></li>
+<li><a href="#booleansetrecttorectrectf-src-rectf-dst-matrixscaletofit-stf">boolean	setRectToRect(RectF src, RectF dst, Matrix.ScaleToFit stf)</a></li>
+<li><a href="#voidreset">void	reset()</a></li>
+<li><a href="#voidsetmatrix-src">void	set(Matrix src)</a></li>
+<li><a href="#voidgetvaluesfloat-values">void	getValues(float[] values)</a></li>
+<li><a href="#%E5%B8%B8%E9%87%8F">常量</a></li>
+</ul>
+</li>
+<li><a href="#%E6%95%B0%E5%AD%A6%E5%8E%9F%E7%90%86">数学原理</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-z-fighting/">
+              <h3 class="post-title">
+                z-fighting
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

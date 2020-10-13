@@ -1,0 +1,292 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3.1 Lession 3 纹理 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="3.1 Lession 3 纹理 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+实际上通过纹理坐标找到纹理上的颜色，
+但是只有顶点有纹理坐标，具体面填充的颜色，需要通过顶点之间的插值进行计算，找到对应的插值后的坐标再找到纹理上的颜色
+{
+    int width = 1000;
+    int heigh..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              3.1 Lession 3 纹理
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                4 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<p>实际上通过纹理坐标找到纹理上的颜色，</p>
+<p>但是只有顶点有纹理坐标，具体面填充的颜色，需要通过顶点之间的插值进行计算，找到对应的插值后的坐标再找到纹理上的颜色</p>
+<pre><code>{
+    int width = 1000;
+    int height = 1000;
+    int depth = 255;
+    TGAImage image(width, height, TGAImage::RGB);
+    Model model(&quot;../obj/african_head.obj&quot;);
+    Vec3f lightDir(0,0,-1);
+    int zbuffer[width * height];
+    for (int i = 0; i &lt; width * height; i++) {
+        zbuffer[i] = std::numeric_limits&lt;int&gt;::min();
+    }
+    for (int face = 0; face &lt; model.nfaces(); face++) {
+        Vec3i screenCordinates[3];
+        Vec3f worldCordinates[3];
+        Vec2i uv[3];
+        for (int j =0; j &lt; 3; j++) {
+            Vec3f v = model.vert(face, j);
+            uv[j] = model.uv(face, j);
+            screenCordinates[j] =  Vec3i ((v.x + 1.) /2. * image.get_width(), (v.y + 1.) /2. * image.get_height(), (v.z+1.)*depth/2.);
+            worldCordinates[j] = v;
+        }
+
+        Vec3f norm = (worldCordinates[2] - worldCordinates[0]) ^ (worldCordinates[1] - worldCordinates[0]);
+        norm.normalize();
+        float intensity = norm.dotProduct(lightDir);
+        if (intensity &gt; 0) {
+            triangle_line_sweeping_texture_3d(screenCordinates[0], screenCordinates[1], screenCordinates[2], uv[0], uv[1],uv[2], &amp;model, intensity, image, zbuffer);
+        }
+    }
+    image.flip_vertically();
+    image.write_tga_file(&quot;l3_zbuffer_texture.tga&quot;);
+}
+
+void triangle_line_sweeping_texture_3d(Vec3i p0, Vec3i p1, Vec3i p2, Vec2i uv0, Vec2i uv1, Vec2i uv2, Model *model, int intensity, TGAImage &amp;image, int* zbuffer) {
+    //冒泡
+    if (p0.y &gt; p1.y) {
+        std::swap(p0, p1);
+        std::swap(uv0, uv1);
+    }
+    if (p0.y &gt; p2.y) {
+        std::swap(p0, p2);
+        std::swap(uv0, uv2);
+    }
+    if (p1.y &gt; p2.y) {
+        std::swap(p1, p2);
+        std::swap(uv1, uv2);
+    }
+
+    std::cout &lt;&lt; &quot;after swap\n&quot; &lt;&lt; p0 &lt;&lt; p1 &lt;&lt; p2;
+
+    //总高度
+    int totalHeight = p2.y - p0.y + 1;
+    //第一段三角形高度
+    int segmentHeight_1 = p1.y - p0.y + 1;
+    //第二段三角形高度
+    int segmentHeight_2 = p2.y - p1.y + 1;
+
+    std::cout &lt;&lt; &quot;totalHeight=&quot; &lt;&lt; totalHeight &lt;&lt; &quot; segmentHeight=&quot; &lt;&lt; segmentHeight_1 &lt;&lt; &quot;\n&quot;;
+    for (int y = p0.y; y &lt;= p2.y; y++) {
+        bool isPart1 = y &gt; p1.y - 1 ? false : true;
+        float alpha = isPart1 ? ((float) (y - p0.y + 1) / segmentHeight_1) : ((float) (y - p1.y + 1) / segmentHeight_2);
+        Vec3i A = isPart1 ? p0 + (p1 - p0) * alpha : p1 + (p2 - p1) * alpha;
+        Vec2i uvA = isPart1 ? uv0 + (uv1 - uv0) * alpha : uv1 + (uv2 - uv1) * alpha;
+        //注意这里beta计算变换高度是 y - p0.y + 1，最后的+1很重要
+        float beta = ((float) (y - p0.y + 1) / totalHeight);
+        Vec3i B = p0 + (p2 - p0) * beta;
+        Vec2i uvB = uv0 + (uv2 - uv0) * beta;
+        std::cout &lt;&lt; &quot;A = &quot; &lt;&lt; A &lt;&lt; &quot;B= &quot; &lt;&lt; B;
+        if (A.x &gt; B.x) {
+            std::swap(A, B);
+            std::swap(uvA, uvB);
+        }
+
+        for (int x = A.x; x &lt;= B.x; x++) {
+            float t = (x - A.x)/(float)(B.x - A.x);
+            int z = A.z * (1-t) + B.z * t + .5f;
+            int bufferIdx = x + image.get_width() * y;
+            if (zbuffer[bufferIdx] &lt; z) {
+                zbuffer[bufferIdx] = z;
+                Vec2i uv = uvA + (uvB - uvA) * t;
+                TGAColor color = model-&gt;diffuse(uv);
+
+                image.set(x, y, color);
+            }
+        }
+    }
+}
+
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584306497.png" alt="" loading="lazy"></figure>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/30-lession-3-z-buffer/">
+              <h3 class="post-title">
+                3.0 Lession 3 z-buffer
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

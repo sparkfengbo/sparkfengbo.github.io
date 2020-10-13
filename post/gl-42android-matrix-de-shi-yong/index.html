@@ -1,0 +1,508 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4.2Android Matrix的使用 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="4.2Android Matrix的使用 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+Matrix
+特点：实际变换和执行顺序相反
+Android实际执行的变换和调用Matrix相反
+Matrix.setIdentityM(modelMatrix2, 0);
+Matrix.translateM(modelMatri..." />
+    <meta name="keywords" content="OpenGL" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              4.2Android Matrix的使用
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                6 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/BopasCkmM/" class="post-tag">
+                  # OpenGL
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="matrix">Matrix</h1>
+<h2 id="特点实际变换和执行顺序相反">特点：实际变换和执行顺序相反</h2>
+<p><strong>Android实际执行的变换和调用Matrix相反</strong></p>
+<pre><code>Matrix.setIdentityM(modelMatrix2, 0);
+Matrix.translateM(modelMatrix2, 0, 0.5f, 1.0f, -1.5f);
+Matrix.rotateM(modelMatrix2, 0, angle, 0.0f, 1.0f, 0.0f);
+Matrix.scaleM(modelMatrix2, 0, 1.5f, 1.5f, 1.5f);
+</code></pre>
+<p><strong>在顶点坐标上先左乘缩放矩阵，再左乘旋转矩阵，然后再左乘平移矩阵，跟代码调用的顺序正好相反。</strong></p>
+<h2 id="以scalem和translatem进行推导">以scaleM和translateM进行推导</h2>
+<pre><code>    float[] matrix = new float[]{
+            1f, 5f, 9f, 13f,
+            2f, 6f, 10f, 14f,
+            3f, 7f, 11f, 15f,
+            4f, 8f, 12f, 16f,
+    };
+
+    float[] result = new float[16];
+
+</code></pre>
+<h3 id="scalem">scaleM</h3>
+<pre><code>        Matrix.scaleM(result,0, matrix, 0,2,1, 1 );
+        Matrix.scaleM(matrix,0,2,1, 1);
+
+
+        结果：
+        2f, 10f, 18f, 26f,
+        2f, 6f, 10f, 14f,
+        3f, 7f, 11f, 15f,
+        4f, 8f, 12f, 16f,
+</code></pre>
+<p>为什么第一行都乘以2了？？？</p>
+<p>记住！OpenGL的Matrix都是<strong>列主序列</strong></p>
+<p>我们之前推导的缩放矩阵</p>
+<figure data-type="image" tabindex="1"><img src="./pic/scalematrix.png" alt="" loading="lazy"></figure>
+<p>假设原矩阵</p>
+<figure data-type="image" tabindex="2"><img src="./pic/simplematrix.png" alt="" loading="lazy"></figure>
+<p>和scale矩阵相乘，</p>
+<figure data-type="image" tabindex="3"><img src="./pic/simplematrixmul.png" alt="" loading="lazy"></figure>
+<p>可以看到列向量分别乘以了scale的factor，但是别忘了是列主顺序，所以对应的结果是第一行乘以了2.</p>
+<p><strong>为什么不能右乘？因为矩阵乘法不满足交换律。</strong></p>
+<p>假设之前有变换矩阵M0，那么直接作用在原顶点坐标P(x,y,z,w)，则有M0*P</p>
+<p>此时我们调用scaleM方法，</p>
+<pre><code>Matrix.scaleM(M0,0,sx,sy,sz);
+</code></pre>
+<p>得到的M1矩阵，那么M1 = M0*S</p>
+<p>作用于顶点向量 M1 * P = M0 * S * P = M0 * (S * P)</p>
+<p>此时相当于先执行 scale再执行之前的变换。</p>
+<h3 id="translatem">translateM</h3>
+<p>平移</p>
+<pre><code>public static void translateM (float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)
+
+public static void translateM (float[] tm, 
+                int tmOffset, 
+                float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)
+</code></pre>
+<pre><code>
+    //等价
+    Matrix.translateM(result,0, matrix, 0,1,1, 1 );
+    Matrix.translateM(matrix,0,1,1, 1 );
+
+
+    /**结果是
+     1f, 5f, 9f, 13f,
+     2f, 6f, 10f, 14f,
+     3f, 7f, 11f, 15f,
+     10f, 26f, 42f, 58f,
+    */
+</code></pre>
+<figure data-type="image" tabindex="4"><img src="./pic/translate.png" alt="" loading="lazy"></figure>
+<figure data-type="image" tabindex="5"><img src="./pic/translamul.png" alt="" loading="lazy"></figure>
+<p>可以看到作用在最后列向量上，对应于列主序列的最后一行。</p>
+<h2 id="android-matrix的操作">Android Matrix的操作</h2>
+<ul>
+<li><a href="https://developer.android.com/reference/android/opengl/Matrix#public-constructors">Android developer Matrix</a></li>
+</ul>
+<p>https://www.learnopengles.com/understanding-opengls-matrices/</p>
+<p>类似于glm，Android在Java层提供了对矩阵的操作。Matrix是一个工具类，操作OpenGL ES的float类型的矩阵、向量。</p>
+<p>矩阵和向量是column-major的格式。</p>
+<pre><code>  m[offset +  0] m[offset +  4] m[offset +  8] m[offset + 12]
+  m[offset +  1] m[offset +  5] m[offset +  9] m[offset + 13]
+  m[offset +  2] m[offset +  6] m[offset + 10] m[offset + 14]
+  m[offset +  3] m[offset +  7] m[offset + 11] m[offset + 15]
+
+  v[offset + 0]
+  v[offset + 1]
+  v[offset + 2]
+  v[offset + 3]
+</code></pre>
+<h3 id="模型矩阵">模型矩阵</h3>
+<h4 id="rotatem">rotateM</h4>
+<pre><code>public static void rotateM (float[] m, 
+                int mOffset, 
+                float a, 
+                float x, 
+                float y, 
+                float z)
+
+public static void rotateM (float[] rm, 
+                int rmOffset, 
+                float[] m, 
+                int mOffset, 
+                float a, 
+                float x, 
+                float y, 
+                float z)                
+</code></pre>
+<p>和 setRotateM区别是作用于之前的上一个矩阵。</p>
+<pre><code>public static void rotateM(float[] rm, int rmOffset,
+            float[] m, int mOffset,
+            float a, float x, float y, float z) {
+    synchronized(sTemp) {
+        setRotateM(sTemp, 0, a, x, y, z);
+        multiplyMM(rm, rmOffset, m, mOffset, sTemp, 0);
+    }
+}
+</code></pre>
+<h4 id="scalem-2">scaleM</h4>
+<pre><code>public static void scaleM (float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)
+
+
+public static void scaleM (float[] sm, 
+                int smOffset, 
+                float[] m, 
+                int mOffset, 
+                float x, 
+                float y, 
+                float z)                
+</code></pre>
+<h4 id="setrotateeulerm">setRotateEulerM</h4>
+<pre><code>public static void setRotateEulerM (float[] rm, 
+                int rmOffset, 
+                float x, 
+                float y, 
+                float z)
+</code></pre>
+<p>欧拉角转成旋转矩阵。</p>
+<h4 id="setrotatem">setRotateM</h4>
+<pre><code>public static void setRotateM (float[] rm, 
+                int rmOffset, 
+                float a, 
+                float x, 
+                float y, 
+                float z)
+</code></pre>
+<p><strong>创建一个矩阵</strong>，围绕锚点 x,y,z 旋转 a 角度</p>
+<h4 id="translatem-2">translateM</h4>
+<p>平移</p>
+<h3 id="观察矩阵">观察矩阵</h3>
+<h4 id="setlookatm">setLookAtM</h4>
+<pre><code>public static void setLookAtM (float[] rm, 
+                int rmOffset, 
+                float eyeX, 
+                float eyeY, 
+                float eyeZ, 
+                float centerX, 
+                float centerY, 
+                float centerZ, 
+                float upX, 
+                float upY, 
+                float upZ)
+</code></pre>
+<p>//TODO<br>
+创建一个viewing transformation</p>
+<p>an eye point, a center of view, and an up vector.</p>
+<h3 id="投影矩阵">投影矩阵</h3>
+<h4 id="frustumm">frustumM</h4>
+<pre><code>public static void frustumM (float[] m, 
+                int offset, 
+                float left, 
+                float right, 
+                float bottom, 
+                float top, 
+                float near, 
+                float far)
+</code></pre>
+<p>Defines a projection matrix in terms of six clip planes.</p>
+<p>//TODO</p>
+<h4 id="orthom">orthoM</h4>
+<pre><code>public static void orthoM (float[] m, 
+                int mOffset, 
+                float left, 
+                float right, 
+                float bottom, 
+                float top, 
+                float near, 
+                float far)
+</code></pre>
+<p>//TODO<br>
+Computes an orthographic projection matrix.</p>
+<h4 id="perspectivem">perspectiveM</h4>
+<pre><code>public static void perspectiveM (float[] m, 
+                int offset, 
+                float fovy, 
+                float aspect, 
+                float zNear, 
+                float zFar)
+</code></pre>
+<p>//TODO</p>
+<p>Defines a projection matrix in terms of a field of view angle, an aspect ratio, and z clip planes.</p>
+<h3 id="其他矩阵操作">其他矩阵操作</h3>
+<h4 id="invertm">invertM</h4>
+<pre><code>public static boolean invertM (float[] mInv, 
+                int mInvOffset, 
+                float[] m, 
+                int mOffset)
+</code></pre>
+<p>求逆矩阵</p>
+<h4 id="length">length</h4>
+<pre><code>public static float length (float x, 
+                float y, 
+                float z)
+</code></pre>
+<p>求向量长度，针对(0,0,0)为原点</p>
+<h4 id="multiplymm">multiplyMM</h4>
+<pre><code>public static void multiplyMM (float[] result, 
+                int resultOffset, 
+                float[] lhs, 
+                int lhsOffset, 
+                float[] rhs, 
+                int rhsOffset)
+</code></pre>
+<p>4*4矩阵相乘</p>
+<p>//TODO</p>
+<h4 id="multiplymv">multiplyMV</h4>
+<p>4 * 4矩阵和4 * 1向量相乘</p>
+<h4 id="setidentitym">setIdentityM</h4>
+<pre><code>public static void setIdentityM (float[] sm, 
+                int smOffset)
+</code></pre>
+<p>将sm变为单位矩阵，注意数组越界</p>
+<pre><code>    public static void setIdentityM(float[] sm, int smOffset) {
+        for (int i=0 ; i&lt;16 ; i++) {
+            sm[smOffset + i] = 0;
+        }
+        for(int i = 0; i &lt; 16; i += 5) {
+            sm[smOffset + i] = 1.0f;
+        }
+    }
+</code></pre>
+<h4 id="transposem">transposeM</h4>
+<p>转置矩阵</p>
+<pre><code>public static void transposeM (float[] mTrans, 
+                int mTransOffset, 
+                float[] m, 
+                int mOffset)
+
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#matrix">Matrix</a>
+<ul>
+<li><a href="#%E7%89%B9%E7%82%B9%E5%AE%9E%E9%99%85%E5%8F%98%E6%8D%A2%E5%92%8C%E6%89%A7%E8%A1%8C%E9%A1%BA%E5%BA%8F%E7%9B%B8%E5%8F%8D">特点：实际变换和执行顺序相反</a></li>
+<li><a href="#%E4%BB%A5scalem%E5%92%8Ctranslatem%E8%BF%9B%E8%A1%8C%E6%8E%A8%E5%AF%BC">以scaleM和translateM进行推导</a>
+<ul>
+<li><a href="#scalem">scaleM</a></li>
+<li><a href="#translatem">translateM</a></li>
+</ul>
+</li>
+<li><a href="#android-matrix%E7%9A%84%E6%93%8D%E4%BD%9C">Android Matrix的操作</a>
+<ul>
+<li><a href="#%E6%A8%A1%E5%9E%8B%E7%9F%A9%E9%98%B5">模型矩阵</a>
+<ul>
+<li><a href="#rotatem">rotateM</a></li>
+<li><a href="#scalem-2">scaleM</a></li>
+<li><a href="#setrotateeulerm">setRotateEulerM</a></li>
+<li><a href="#setrotatem">setRotateM</a></li>
+<li><a href="#translatem-2">translateM</a></li>
+</ul>
+</li>
+<li><a href="#%E8%A7%82%E5%AF%9F%E7%9F%A9%E9%98%B5">观察矩阵</a>
+<ul>
+<li><a href="#setlookatm">setLookAtM</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5">投影矩阵</a>
+<ul>
+<li><a href="#frustumm">frustumM</a></li>
+<li><a href="#orthom">orthoM</a></li>
+<li><a href="#perspectivem">perspectiveM</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%B6%E4%BB%96%E7%9F%A9%E9%98%B5%E6%93%8D%E4%BD%9C">其他矩阵操作</a>
+<ul>
+<li><a href="#invertm">invertM</a></li>
+<li><a href="#length">length</a></li>
+<li><a href="#multiplymm">multiplyMM</a></li>
+<li><a href="#multiplymv">multiplyMV</a></li>
+<li><a href="#setidentitym">setIdentityM</a></li>
+<li><a href="#transposem">transposeM</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-41-zuo-biao-kong-jian-he-zhuan-huan/">
+              <h3 class="post-title">
+                4.1 坐标空间和转换
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

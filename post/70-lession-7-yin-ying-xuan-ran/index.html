@@ -1,0 +1,399 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>7.0 Lession 7 阴影渲染 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="7.0 Lession 7 阴影渲染 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+Lession6的不足
+回想一下Lesson6的冯氏光照模型，看L6_Shader.cpp的代码， 我们最后实现的镜面效果就是根据冯氏光照模型模拟的。
+最后的
+Vec3f r = (n*(n*l*2.f) - l).normal..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              7.0 Lession 7 阴影渲染
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                9 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="lession6的不足">Lession6的不足</h1>
+<p>回想一下Lesson6的冯氏光照模型，看<code>L6_Shader.cpp</code>的代码， 我们最后实现的镜面效果就是根据冯氏光照模型模拟的。<br>
+最后的</p>
+<pre><code>Vec3f r = (n*(n*l*2.f) - l).normalize();   // reflected light
+float spec = pow(std::max(r.z, 0.0f), 4);
+float diff = std::max(0.f, n*l);
+TGAColor c = model-&gt;diffuse(uv);
+color = c;
+for (int i=0; i&lt;3; i++) {
+    //5 for the ambient component, 1 for the diffuse component and .6 for the specular component.
+    color[i] = std::min&lt;float&gt;(20 + c[i]*(1.2*diff + .9*spec), 255);
+}
+</code></pre>
+<p>实际上，我们使用了常数环境光，加上漫反射，再加上镜面发射。得到的结果有</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584905789.png" alt="" loading="lazy"></figure>
+<p>可以看到虽然比之前更逼真了一些，但是光不对，没有阴影，尤其是图片脖子左侧的位置。如果加上阴影我们想得到的是这样的结果<br>
+<img src="https://sparkfengbo.github.io/post-images/1602584916136.png" alt="" loading="lazy"></p>
+<h1 id="阴影实现原理">阴影实现原理</h1>
+<p>回想我们做z-buffer的时候实际建立了一个缓冲区，用于记录深度信息，我们这里也实际建立两个相同大小，相同原理的缓冲区，做两次遍历。第一次缓冲区记录光照方向、相同的ModelView变换下的深度信息，第二次使用第一次的深度信息，如果深度值小区缓冲区说明被引用覆盖。</p>
+<h2 id="第一次">第一次</h2>
+<p>创建DepthShader</p>
+<pre><code>struct DepthShader{
+    Vec4f m2v(Matrix m) {
+        return Vec4f(m[0][0], m[1][0], m[2][0],m[3][0]);
+    }
+
+    Vec3f varying_tri[3];
+
+    Vec4f vertex4f(int iface, int nthvert) {
+        Vec3f vertex = model-&gt;vert(iface, nthvert);
+        Vec4f gl_vertex(vertex.x, vertex.y, vertex.z, 1);
+        gl_vertex = m2v(Viewport * Projection * ModelView * gl_vertex);
+        varying_tri[nthvert] = projectDivision(gl_vertex);
+        return gl_vertex;
+    }
+
+    bool fragment(Vec3f bar, TGAColor &amp;color) {
+        Vec3f p = Vec3f(
+                varying_tri[0].x * bar.x + varying_tri[1].x * bar.y +varying_tri[2].x * bar.z,
+                varying_tri[0].y * bar.x + varying_tri[1].y * bar.y +varying_tri[2].y * bar.z,
+                varying_tri[0].z * bar.x + varying_tri[1].z * bar.y +varying_tri[2].z * bar.z
+        );
+        color = TGAColor(255, 255, 255)*(p.z/depth);
+        return false;
+    }
+};
+
+{ // rendering the shadow buffer
+    TGAImage depth(width, height, TGAImage::RGB);
+    lookat(light_dir, center, up);
+    viewport(width/8, height/8, width*3/4, height*3/4);
+    projection(0);
+    DepthShader depthshader;
+    Vec4f screen_coords[3];
+    for (int i=0; i&lt;model-&gt;nfaces(); i++) {
+        for (int j=0; j&lt;3; j++) {
+            screen_coords[j] = depthshader.vertex4f(i, j);
+            if (i == 0) {
+                std::cerr&lt;&lt;&quot;screen_coords = &quot; &lt;&lt; screen_coords[j]&lt;&lt;std::endl;
+            }
+        }
+        triangle_shadow(screen_coords, depthshader, depth, shadowbuffer);
+    }
+    depth.flip_vertically(); // to place the origin in the bottom left corner of the image
+    depth.write_tga_file(&quot;lession7_depth.tga&quot;);
+}
+
+</code></pre>
+<p><strong>注意这里，eye的位置放在了光线上，并且没有做透视变换，实际就是Model、View的变换。</strong></p>
+<pre><code>lookat(light_dir, center, up);
+projection(0);
+</code></pre>
+<p>画三角形的时候实际上对shadowbuffer记录了当前<strong>视角</strong>下的深度信息</p>
+<pre><code>int frag_depth = z/w;
+if (c.x&lt;0 || c.y&lt;0 || c.z&lt;0 || zbuffer[(int)(P.x+P.y*image.get_width())]&gt;frag_depth) continue;
+bool discard = shader.fragment(c, color);
+if (!discard) {
+    zbuffer[(int)(P.x+P.y*image.get_width())] = frag_depth;
+    image.set(P.x, P.y, color);
+}
+</code></pre>
+<h2 id="第二次">第二次</h2>
+<p>第二次的shader真正的开始了图片渲染，第一次我们只是记录从光照看模型的角度下的深度值。</p>
+<p>这一次我们调整我们想要的视角和透视。</p>
+<pre><code>lookat(eye, center, up);
+viewport(width/8, height/8, width*3/4, height*3/4);
+projection(-1.f/(eye-center).norm());
+</code></pre>
+<p>Shader计算顶点坐标还是按照MVPViewport的顺序计算。</p>
+<p>计算片元的坐标，我们需要转换到第一次缓冲区的位置，但是我们第二次的时候做了MVPViewport的计算，所以我们要先乘以第二次<strong>MVPViewPort矩阵的逆矩阵</strong>还原打局部空间，然后再乘以上一次的MVPViewPort矩阵，转换成第一次的位置。</p>
+<pre><code>Vec4f sb_p = m2v(uniform_Mshadow* Vec4f(p.x, p.y, p.z, 1)); // corresponding point in the shadow buffer
+sb_p = sb_p/sb_p[3];
+int idx = int(sb_p[0]) + int(sb_p[1])*width; // index in the shadowbuffer array
+//神奇的z-fighting
+float shadow = .3+.7*(shadowbuffer[idx]&lt;sb_p[2]);
+</code></pre>
+<p>如果当前的深度值比第一次的深度缓冲小，说明不会被照亮，那么此像素不会被照亮，颜色变暗。</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602584931686.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602584940437.png" alt="" loading="lazy"></p>
+<pre><code>struct ShadowShader{
+    Vec4f m2v(Matrix m) {
+        return Vec4f(m[0][0], m[1][0], m[2][0],m[3][0]);
+    }
+
+    Matrix uniform_M;   // ModelView
+    Matrix uniform_MIT; // (Projection*ModelView).inverse().transpose()
+    Matrix uniform_Mshadow; // M*(Viewport*Projection*ModelView).inverse()， transform framebuffer screen coordinates to shadowbuffer screen coordinates
+    Vec2i varying_uv[3]; // triangle uv coordinates, written by the vertex shader, read by the fragment shader
+    Vec3f varying_tri[3]; // triangle coordinates before Viewport transform, written by VS, read by FS
+
+    ShadowShader(Matrix M, Matrix MIT, Matrix MS) : uniform_M(M), uniform_MIT(MIT), uniform_Mshadow(MS), varying_uv(), varying_tri() {}
+
+    Vec4f vertex(int iface, int nthvert) {
+        varying_uv[nthvert] = model-&gt;uv(iface, nthvert);
+        Vec3f vertex = model-&gt;vert(iface, nthvert);
+        Vec4f gl_vertex(vertex.x, vertex.y, vertex.z, 1);
+        gl_vertex = m2v(Viewport * Projection * ModelView * gl_vertex);
+        varying_tri[nthvert] = projectDivision(gl_vertex);
+        return gl_vertex;
+    }
+
+    bool fragment(Vec3f bar, TGAColor &amp;color) {
+        Vec3f p = Vec3f(
+                varying_tri[0].x * bar.x + varying_tri[1].x * bar.y +varying_tri[2].x * bar.z,
+                varying_tri[0].y * bar.x + varying_tri[1].y * bar.y +varying_tri[2].y * bar.z,
+                varying_tri[0].z * bar.x + varying_tri[1].z * bar.y +varying_tri[2].z * bar.z
+        );
+        Vec4f sb_p = m2v(uniform_Mshadow* Vec4f(p.x, p.y, p.z, 1)); // corresponding point in the shadow buffer
+        sb_p = sb_p/sb_p[3];
+        int idx = int(sb_p[0]) + int(sb_p[1])*width; // index in the shadowbuffer array
+        //神奇的z-fighting
+        float shadow = .3+.7*(shadowbuffer[idx]&lt;sb_p[2] +43.34);
+        Vec2i uv = varying_uv[0] * bar.x + varying_uv[1] * bar.y + varying_uv[2] * bar.z;
+        Vec3f normal = model-&gt;norm(uv);
+        Vec4f nt = m2v(uniform_MIT * Vec4f(normal.x, normal.y, normal.z, 1));
+        Vec3f n = Vec3f(nt.x, nt.y, nt.z).normalize();
+        //法向量不能随便使用矩阵转换空间，尤其是发生scale的情况下，要使用矩阵的逆矩阵转置矩阵
+        //转到世界空间
+        Vec4f lt = m2v((uniform_M * Vec4f(light_dir.x, light_dir.y, light_dir.z, 1)));
+        Vec3f l =Vec3f(lt.x, lt.y, lt.z).normalize(); // light vector
+        Vec3f r = (n*(n*l*2.f) - l).normalize();   // reflected light
+        float spec = pow(std::max(r.z, 0.0f), model-&gt;specular(uv));
+        float diff = std::max(0.f, n*l);
+        TGAColor c = model-&gt;diffuse(uv);
+        for (int i=0; i&lt;3; i++) color[i] = std::min&lt;float&gt;(20 + c[i]*shadow*(1.2*diff + .6*spec), 255);
+        return false;
+    }
+};
+
+{ // rendering the frame buffer
+    TGAImage frame(width, height, TGAImage::RGB);
+    lookat(eye, center, up);
+    viewport(width/8, height/8, width*3/4, height*3/4);
+    projection(-1.f/(eye-center).norm());
+    ShadowShader shader(ModelView, (Projection*ModelView).inverse().transpose(), M*(Viewport*Projection*ModelView).inverse());
+    Vec4f screen_coords[3];
+    for (int i=0; i&lt;model-&gt;nfaces(); i++) {
+        for (int j=0; j&lt;3; j++) {
+            screen_coords[j] = shader.vertex(i, j);
+        }
+        triangle_final(screen_coords, shader, frame, zbuffer);
+    }
+    frame.flip_vertically(); // to place the origin in the bottom left corner of the image
+    frame.write_tga_file(&quot;lession7_final.tga&quot;);
+}
+</code></pre>
+<h1 id="注意事项">注意事项</h1>
+<ul>
+<li>
+<p>注意这里，eye的位置放在了光线的方向位置上，并且没有做透视变换，实际就是Model、View的变换。</p>
+</li>
+<li>
+<p>第一次计算深度缓冲，我们把eye放在光线的位置上，只进行ModelView 和Viewport 的计算。</p>
+</li>
+<li>
+<p>第二次的时候需要进行正常的MVPViewPort的计算。</p>
+</li>
+<li>
+<p>第二次进行光线计算的时候<strong>法向量的空间变化只能时候MVP的逆矩阵的转置矩阵</strong>，最后进行归一化，因为只是一个向量，所以抛弃了w元素。</p>
+</li>
+</ul>
+<pre><code>Vec3f normal = model-&gt;norm(uv);
+Vec4f nt = m2v(uniform_MIT * Vec4f(normal.x, normal.y, normal.z, 1));
+Vec3f n = Vec3f(nt.x, nt.y, nt.z).normalize();
+
+(Projection*ModelView).inverse().transpose()
+</code></pre>
+<ul>
+<li>第二次<strong>光线的空间变化只能×  ModelView，不能乘以透视矩阵，因为透视矩阵不能作用于光线。</strong></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#lession6%E7%9A%84%E4%B8%8D%E8%B6%B3">Lession6的不足</a></li>
+<li><a href="#%E9%98%B4%E5%BD%B1%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86">阴影实现原理</a>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%80%E6%AC%A1">第一次</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E6%AC%A1">第二次</a></li>
+</ul>
+</li>
+<li><a href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9">注意事项</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/62-lession-6-fa-xian-tie-tu-he-tangent-kong-jian/">
+              <h3 class="post-title">
+                6.2 Lession 6 法线贴图和Tangent空间
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

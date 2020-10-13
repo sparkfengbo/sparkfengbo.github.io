@@ -1,0 +1,270 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>8.0 Lession 8 环境光遮蔽  | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="8.0 Lession 8 环境光遮蔽  | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+参考资料
+
+维基百科-环境光遮蔽
+维基百科-屏幕空间环境光遮蔽
+LearnOpenGL-SSAO
+知乎-游戏后期特效第四发 -- 屏幕空间环境光遮蔽(SSAO)
+CSDN-[图形学] 环境光遮蔽（AO)
+
+AO （ambient..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              8.0 Lession 8 环境光遮蔽 
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="参考资料">参考资料</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%8E%AF%E5%A2%83%E5%85%89%E9%81%AE%E8%94%BD">维基百科-环境光遮蔽</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%B1%8F%E5%B9%95%E7%A9%BA%E9%97%B4%E7%8E%AF%E5%A2%83%E5%85%89%E9%81%AE%E8%94%BD">维基百科-屏幕空间环境光遮蔽</a></li>
+<li><a href="https://learnopengl-cn.readthedocs.io/zh/latest/05%20Advanced%20Lighting/09%20SSAO/">LearnOpenGL-SSAO</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/25038820">知乎-游戏后期特效第四发 -- 屏幕空间环境光遮蔽(SSAO)</a></li>
+<li><a href="https://blog.csdn.net/ZJU_fish1996/article/details/85239514">CSDN-[图形学] 环境光遮蔽（AO)</a></li>
+</ul>
+<h1 id="ao-ambient-occlusion">AO （ambient occlusion）</h1>
+<p>说一下我的理解，TinyRenderer之前对光照的计算基于Phong光照模型，Phong光照模型是局部光照模型，环境光使用的都是常量，模拟的效果并不是特别逼真，比如管道内部比外部更暗，如果环境光是常数就看不出来这种感觉。我理解实时光线追踪技术实现成本比较高，AO的出现是采用相对折中的方法来达到效果的平衡。AO实现的方式很多，这里只记录SSAO。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584970905.png" alt="" loading="lazy"></figure>
+<h1 id="ssao">SSAO</h1>
+<p>SSAO的实现可分为三个步骤: 计算AO, 模糊/滤波, 与Color Buffer混合.</p>
+<h2 id="计算ao">计算AO</h2>
+<p>计算AO的核心问题在于如何取采样点并判断这些采样点是否被遮蔽.</p>
+<ul>
+<li>
+<p>第一个问题：如何去采样点？</p>
+<ul>
+<li>法向半球体(Normal-oriented Hemisphere)周围采样</li>
+</ul>
+</li>
+<li>
+<p>第二个问题：如何判断下图中的采样点遮蔽情况呢</p>
+<ul>
+<li>将采样点全部投影到View Plane上, 相当于获取采样点的UV坐标, 并同时获取Depth Buffer中该UV坐标处的深度值. 随后比较采样点的深度和场景中该点的深度. 如果采样点的深度更大, 说明其被场景遮蔽. 最终将所有采样点的AO贡献求和, 即是该点的AO值</li>
+</ul>
+</li>
+</ul>
+<h2 id="模糊滤波">模糊/滤波</h2>
+<p>一种方式是采用高斯模糊</p>
+<h2 id="color-buffer">Color Buffer</h2>
+<pre><code>一般加入Gamma Correction使得阴影更有层次感, 即最终结果为:
+
+tex2D ( _MainTex, i.uv ) * pow ( ( 1 - occlusion ), 2.2 );
+</code></pre>
+<h1 id="tinyrenderer">TinyRenderer</h1>
+<p>TinyRenderer的Lession8，首先介绍了AO的概念和半球采样。</p>
+<p>demo中第一次先计算1000次半球采样的深度平均值，参考Lesson7的shadow的计算，将深度值以纹理的相同位置保存在了灰阶图片中，能看到的点保存为白色255，课程中的采样点的选取以随意eye的位置，在上半球上随机点选取。最终将每次循环得到的点的颜色进行加权平均。</p>
+<p>下面是1000次采样的AO图。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602584982453.png" alt="" loading="lazy"></p>
+<p>这种全局采样的方法比较耗时，但是像前面所描述的，可以预先处理得到AO图像，下次渲染再使用以降低成本。</p>
+<p>lession8并没有将AO的图应用在最终的渲染结果。</p>
+<p>lesson7中没有加shadow计算，是下图的效果</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602584992670.png" alt="" loading="lazy"></figure>
+<p>根据<code>tex2D ( _MainTex, i.uv ) * pow ( ( 1 - occlusion ), 2.2 );</code>将AO图应用在渲染图得到下面的效果。</p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602585004370.png" alt="" loading="lazy"></figure>
+<p>可以看到明暗效果确实比之前要好一些，但是明暗最终还是需要再调整（有时间再调整）</p>
+<h2 id="tinyrenderer-的-ssao">TinyRenderer 的 SSAO</h2>
+<p>//TODO</p>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">参考资料</a></li>
+<li><a href="#ao-ambient-occlusion">AO （ambient occlusion）</a></li>
+<li><a href="#ssao">SSAO</a>
+<ul>
+<li><a href="#%E8%AE%A1%E7%AE%97ao">计算AO</a></li>
+<li><a href="#%E6%A8%A1%E7%B3%8A%E6%BB%A4%E6%B3%A2">模糊/滤波</a></li>
+<li><a href="#color-buffer">Color Buffer</a></li>
+</ul>
+</li>
+<li><a href="#tinyrenderer">TinyRenderer</a>
+<ul>
+<li><a href="#tinyrenderer-%E7%9A%84-ssao">TinyRenderer 的 SSAO</a></li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/70-lession-7-yin-ying-xuan-ran/">
+              <h3 class="post-title">
+                7.0 Lession 7 阴影渲染
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

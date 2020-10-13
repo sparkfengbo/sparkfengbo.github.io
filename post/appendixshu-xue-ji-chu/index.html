@@ -1,0 +1,375 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Appendix：数学基础 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="Appendix：数学基础 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+线性插值算法
+
+三十分钟理解：线性插值，双线性插值Bilinear Interpolation算法
+双线性插值-维基百科
+
+最近邻插值
+
+最近邻插值-维基百科
+
+线性插值
+
+双线性插值
+
+
+
+
+基 (线性代数)
+https://..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Appendix：数学基础
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="线性插值算法">线性插值算法</h1>
+<ul>
+<li><a href="https://blog.csdn.net/xbinworld/article/details/65660665">三十分钟理解：线性插值，双线性插值Bilinear Interpolation算法</a></li>
+<li><a href="https://zh.wikipedia.org/wiki/%E5%8F%8C%E7%BA%BF%E6%80%A7%E6%8F%92%E5%80%BC">双线性插值-维基百科</a></li>
+</ul>
+<h3 id="最近邻插值">最近邻插值</h3>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%9C%80%E8%BF%91%E9%82%BB%E6%8F%92%E5%80%BC">最近邻插值-维基百科</a></li>
+</ul>
+<h2 id="线性插值">线性插值</h2>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585036805.png" alt="" loading="lazy"></figure>
+<h2 id="双线性插值">双线性插值</h2>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585042586.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585048035.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585053269.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585058101.png" alt="" loading="lazy"></p>
+<h1 id="基-线性代数">基 (线性代数)</h1>
+<p>https://zh.wikipedia.org/wiki/%E5%9F%BA_(%E7%B7%9A%E6%80%A7%E4%BB%A3%E6%95%B8)</p>
+<h2 id="点积和叉积">点积和叉积</h2>
+<ul>
+<li><a href="https://blog.csdn.net/dcrmg/article/details/52416832">向量点乘（内积）和叉乘（外积、向量积）概念及几何意义解读</a></li>
+</ul>
+<h3 id="点积">点积</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585069667.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585075385.png" alt="" loading="lazy"></p>
+<p><strong>几何意义</strong></p>
+<p>计算向量夹角</p>
+<h3 id="几何意义">几何意义</h3>
+<ul>
+<li>
+<p>表征或计算两个向量之间的夹角</p>
+<ul>
+<li>a·b&gt;0    方向基本相同，夹角在0°到90°之间</li>
+<li>a·b=0    正交，相互垂直</li>
+<li>a·b&lt;0    方向基本相反，夹角在90°到180°之间<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585107118.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585101934.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>
+<p>b向量在a向量方向上的投影</p>
+</li>
+</ul>
+<h3 id="叉积">叉积</h3>
+<blockquote>
+<p>两个向量的叉乘，又叫向量积、外积、叉积，叉乘的运算结果是一个向量而不是一个标量。并且两个向量的叉积与这两个向量组成的坐标平面垂直。</p>
+</blockquote>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585116317.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585120531.png" alt="" loading="lazy"></p>
+<p>如果对导出公式有疑问可以参考拉普拉斯展开式：</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602585130100.png" alt="" loading="lazy"></figure>
+<p>几何参考：</p>
+<p>在三维几何中，向量a和向量b的叉乘结果是一个向量，更为熟知的叫法是法向量，该向量垂直于a和b向量构成的平面。</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585137750.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585144117.png" alt="" loading="lazy"></p>
+<h2 id="拉普拉斯展开">拉普拉斯展开</h2>
+<p><a href="https://zh.wikipedia.org/wiki/%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E5%B1%95%E5%BC%80">拉普拉斯展开-维基百科</a></p>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602585154067.png" alt="" loading="lazy"></figure>
+<h2 id="重心坐标">重心坐标</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E9%87%8D%E5%BF%83%E5%9D%90%E6%A0%87">重心坐标-维基百科</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/58199366">重心坐标（Barycentric coordinates）- 知乎</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/65495373">三角形重心坐标- 知乎</a></li>
+</ul>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602585161416.png" alt="" loading="lazy"></figure>
+<p>变形得：</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585169316.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585174983.png" alt="" loading="lazy"></p>
+<h3 id="计算">计算</h3>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585182433.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585187868.png" alt="" loading="lazy"></p>
+<p>这里计算重心坐标时计算了好久，这里记录一下</p>
+<pre><code>AP = uAB + vAC
+其中 u v 在[0,1]之间
+展开：
+
+P-A = u(B-A) + v(C-A)
+P = (1-u-v)A + uB + vC
+
+由AP = uAB + vAC
+得到
+uAB + vAC + PA = 0；
+
+uABx + vACx + PAx = 0；
+uABy + vACy + PAy = 0；
+
+正交，实际找到 [ABx， ACx，PAx], [ABy+ ACy + PAy]的叉乘
+得到的结果为 [a,b,c]
+
+由于是正交
+带入原子式，
+
+aAB + bAC + cPA = 0
+
+展开：
+
+a(B-A) + b(C-A) + c(P-A) = 0;
+
+得到：
+
+P= （1-a/c-b/c）A + a/cB + b/cC  
+
+</code></pre>
+<h3 id="应用">应用</h3>
+<ul>
+<li>
+<p><a href="https://www.cnblogs.com/graphics/archive/2010/08/05/1793393.html">判断点是否在三角形内</a></p>
+<ul>
+<li><img src="https://sparkfengbo.github.io/post-images/1602585201166.png" alt="" loading="lazy"></li>
+<li>
+<blockquote>
+<p>P位于三角形ABC内部，u和v必须满足什么条件呢？有如下三个条件</p>
+<ul>
+<li>u &gt;= 0</li>
+<li>v &gt;= 0</li>
+<li>u + v &lt;= 1<br>
+几个边界情况，当u = 0且v = 0时，就是点A，当u = 0,v = 1时，就是点B，而当u = 1, v = 0时，就是点C</li>
+</ul>
+</blockquote>
+</li>
+<li><img src="https://sparkfengbo.github.io/post-images/1602585214349.png" alt="" loading="lazy"></li>
+</ul>
+</li>
+<li>
+<p>线性插值-纹理等</p>
+<ul>
+<li>
+<blockquote>
+<p>打比方说，P1处纹理坐标为texcoord1，P2处为texcoord2，P3处为texcoord3，则P处纹理坐标就是texcoord=w1<em>texcoord1+w2</em>texcoord2+w3*texcoord3。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E7%BA%BF%E6%80%A7%E6%8F%92%E5%80%BC%E7%AE%97%E6%B3%95">线性插值算法</a><br>
+*
+<ul>
+<li><a href="#%E6%9C%80%E8%BF%91%E9%82%BB%E6%8F%92%E5%80%BC">最近邻插值</a></li>
+<li><a href="#%E7%BA%BF%E6%80%A7%E6%8F%92%E5%80%BC">线性插值</a></li>
+<li><a href="#%E5%8F%8C%E7%BA%BF%E6%80%A7%E6%8F%92%E5%80%BC">双线性插值</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9F%BA-%E7%BA%BF%E6%80%A7%E4%BB%A3%E6%95%B0">基 (线性代数)</a>
+<ul>
+<li><a href="#%E7%82%B9%E7%A7%AF%E5%92%8C%E5%8F%89%E7%A7%AF">点积和叉积</a>
+<ul>
+<li><a href="#%E7%82%B9%E7%A7%AF">点积</a></li>
+<li><a href="#%E5%87%A0%E4%BD%95%E6%84%8F%E4%B9%89">几何意义</a></li>
+<li><a href="#%E5%8F%89%E7%A7%AF">叉积</a></li>
+</ul>
+</li>
+<li><a href="#%E6%8B%89%E6%99%AE%E6%8B%89%E6%96%AF%E5%B1%95%E5%BC%80">拉普拉斯展开</a></li>
+<li><a href="#%E9%87%8D%E5%BF%83%E5%9D%90%E6%A0%87">重心坐标</a>
+<ul>
+<li><a href="#%E8%AE%A1%E7%AE%97">计算</a></li>
+<li><a href="#%E5%BA%94%E7%94%A8">应用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/80-lession-8-huan-jing-guang-zhe-bi/">
+              <h3 class="post-title">
+                8.0 Lession 8 环境光遮蔽 
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

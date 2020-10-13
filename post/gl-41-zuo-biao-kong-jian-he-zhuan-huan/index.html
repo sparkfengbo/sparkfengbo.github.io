@@ -1,0 +1,350 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4.1 坐标空间和转换 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="4.1 坐标空间和转换 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+五种坐标空间
+
+局部空间（Local Space）
+世界空间（World Space）
+观察空间（View Space）
+裁剪空间（Clip Space）
+屏幕空间（Screen Space）
+
+一种通俗的解释
+
+我们先来简略地..." />
+    <meta name="keywords" content="OpenGL" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              4.1 坐标空间和转换
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                11 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/BopasCkmM/" class="post-tag">
+                  # OpenGL
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="五种坐标空间">五种坐标空间</h1>
+<ul>
+<li>局部空间（Local Space）</li>
+<li>世界空间（World Space）</li>
+<li>观察空间（View Space）</li>
+<li>裁剪空间（Clip Space）</li>
+<li>屏幕空间（Screen Space）</li>
+</ul>
+<h2 id="一种通俗的解释">一种通俗的解释</h2>
+<blockquote>
+<p>我们先来简略地了解一下图中各个过程：</p>
+<ul>
+<li>首先，一个3D对象的模型被创建（使用某种建模软件）出来之后，是以本地坐标(local coordinates)来表达的，坐标原点(0, 0, 0)一般位于3D对象的中心。不同的3D对象对应各自不同的本地坐标系(local space)。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585811728.png" alt="" loading="lazy"></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>3D对象的本地坐标经过一个model变换，就变换到成了世界坐标(world coordinates)。不同的对象经过各自的model变换之后，就都位于同一个世界坐标系(world space)中了，它们的世界坐标就能表达各自的相对位置。一般来说，model变换又包含三种可能的变换：缩放(scaling)、旋转(rotation)、平移(translation)。在计算机图形学中，一个变换通常使用矩阵乘法来计算完成，因此这里的model变换相当于给本地坐标左乘一个model矩阵，就得到了世界坐标。后边将要介绍的view变换和投影变换，也都对应着一个矩阵乘法。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585821742.png" alt="" loading="lazy"></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>在同一个世界坐标系内的各个3D对象共同组成了一个场景(scene)，对于这个场景，我们可以从不同的角度去观察。当观察角度不同的时候，我们眼中看到的也不同。为了表达这个观察视角，我们会再建立一个相机坐标系，英文可以称为camera space, 或eye space, 或view space。从世界坐标系到相机坐标系的转换，我们称之为view变换。当我们用相机这个词的时候，相机相当于眼睛，执行一个view变换，就相当于我们把眼睛调整到了我们想要的一个观察视角上。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585829358.png" alt="" loading="lazy"></li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>
+<p>对相机坐标执行一个投影变换(projection)，就变换成了裁剪坐标(clip coordinates)。在裁剪坐标系(clip space)下，x、y、z各个坐标轴上会指定一个可见范围，坐标超过可见范围的顶点(vertex)就会被裁剪掉，这样，3D场景中超出指定范围的部分最终就不会被绘制，我们也就看不到这些部分了。这个投影变换，是从3D变换到2D的关键步骤。之所以会有这么一步，是因为我们总是通过一个屏幕来观察3D场景（类似于透过一扇窗户观察窗外的景色），屏幕（窗户）不是无限大的，因此一定存在某些观察视角，我们看不到场景的全部。看不到的场景部分，就是通过这一步被裁剪掉的，这也是「裁剪」这一词的来历；另一方面，把3D场景投射到2D屏幕上，也主要是由这一步起的作用。另外值得注意的是，经过裁剪变换，3D对象的顶点个数不一定总是减少，还有可能被裁剪后反而增多了。这个细节我们留在后面再讨论。</p>
+</li>
+<li>
+<p>裁剪坐标(clip coordinates)经过一个特殊的perspective division的过程，就变换成了NDC坐标(Normalized Device Coordinates)。这个perspective division的过程，跟齐次坐标有关，我们留在后面再讨论它的细节。由于这个过程在OpenGL ES中是自动进行的，我们不需要针对它来编程，因此我们经常把它和投影变换放在一起来理解。我们可以不太严谨地暂且认为，相机坐标经过了一个投影变换，就直接得到NDC了。NDC是什么呢？它才是真正的由OpenGL ES来定义的坐标。在NDC的定义中，x、y、z各个坐标都在[-1,1]之间。因此，NDC定义了一个边长为2的立方体，每个边从-1到1，NDC中的每个坐标都位于这个立方体内（落在立方体外的顶点在前一步已经被裁剪掉了）。值得注意的是，虽然NDC包含x、y、z三个坐标轴，但它主要表达了顶点在xOy平面内的位置，x和y坐标它们最终会对应到屏幕的像素位置上去。而z坐标只是为了表明深度关系，谁在前谁在后（前面的挡住后面的），因此z坐标只是相对大小有意义，z的绝对数值是多大并不具有现实的意义。<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585837026.png" alt="" loading="lazy"></p>
+</li>
+</ul>
+</blockquote>
+<blockquote>
+<ul>
+<li>NDC坐标每个维度的取值范围都是[-1,1]，但屏幕坐标并不是这样，而是大小不一。以分辨率720x1280的屏幕为例，它的x取值范围是[0, 720]，y的取值范围是[0,1280]。这样NDC坐标就需要一个变换，才能变换到屏幕坐标(screen coordinates)，这个变换被称为视口变换(viewport transform)。在OpenGL ES中，这个变换也是自动完成的，但需要我们通过glViewport接口来指定绘制视口（屏幕）的大小。这里还需要注意的一点是，屏幕坐标(screen coordinates)与屏幕的像素(pixel)还不一样。屏幕坐标(screen coordinates)是屏幕上任意一个点的精确位置，简单来说就是可以是任意小数，但像素的位置只能是整数了。这里的视口变换是从NDC坐标变换到屏幕坐标，还没有到最终的像素位置。再从屏幕坐标对应到像素位置，是后面的光栅化完成的（光栅化的细节不在本文的讨论范围）。</li>
+</ul>
+</blockquote>
+<h2 id="局部空间local-space">局部空间（Local Space）</h2>
+<p>模型的坐标参考点都是自己，这些坐标所在的坐标空间就是局部空间。</p>
+<h2 id="世界空间world-space">世界空间（World Space）</h2>
+<p>多个模型绘制在更大的一个空间，通过<strong>模型矩阵</strong>，将不同模型进行缩放、位移、旋转，这样，不用考虑局部空间，而多个模型组成一个世界空间。</p>
+<h2 id="观察空间view-space">观察空间（View Space）</h2>
+<p>当物体在世界空间中就位了，接下来就是要考虑从哪个方向和角度来观察物体了。</p>
+<p>在观察空间里，坐标原点不再是世界空间的坐标原点了，而是以摄像机的视角作为场景原点，最终建立了一个以摄像机位置为原点的坐标系。</p>
+<p><strong>视图矩阵（View Matrix）</strong></p>
+<h2 id="裁剪空间clip-space">裁剪空间（Clip Space）</h2>
+<p>当物体坐标都位于观察空间后，接下来要做的就是裁剪。根据我们的需要来裁剪一定范围内的物体，而在这个范围之外的坐标就会被忽略掉。</p>
+<p>从观察空间到裁剪空间，需要用到：<strong>投影矩阵（Projection Matrix）</strong>。</p>
+<p>投影矩阵会指定一个坐标范围，这个范围内的坐标将变换为<strong>归一化设备坐标（NDC)</strong> ，不在这个范围内的坐标就会被裁剪掉。</p>
+<p>观察空间中的坐标经过投影矩阵的变换之后称为投影坐标，又叫做裁剪坐标。</p>
+<ul>
+<li>正交投影</li>
+<li>透视投影</li>
+</ul>
+<h3 id="normalized-device-coordinates归一化设备坐标系">Normalized device coordinates（归一化设备坐标系）</h3>
+<p>当坐标经过投影矩阵的变换到裁剪空间之后，紧接着就会进行透视除法的操作。</p>
+<p>经过裁剪之后，再进行透视除法。就是将 x、y、z 坐标分别除以 w 分量，得到新的 x、y、z 坐标。由于 x、y、z 坐标的绝对值都小于 w 的绝对值，所以得到新的坐标值都是位于 [−1,1] 的区间内的。此时得到的坐标，也就是归一化设备坐标。</p>
+<p>归一化设备坐标是独立于屏幕的，而且它的坐标系用的是左手坐标系。</p>
+<h2 id="屏幕空间screen-space">屏幕空间（Screen Space）</h2>
+<p>OpenGL 会使用 glViewPort 函数来将归一化设备坐标映射到屏幕坐标，每个坐标都关联了屏幕上的一个点，这个过程称为视口变换。这一步操作不再需要变换矩阵了。</p>
+<h1 id="坐标空间转换">坐标空间转换</h1>
+<ul>
+<li>模型矩阵（Model Matrix）
+<ul>
+<li>发生在世界空间</li>
+</ul>
+</li>
+<li>视图矩阵（View Matrix）
+<ul>
+<li>发生在观察空间</li>
+</ul>
+</li>
+<li>投影矩阵（Projection Matrix）
+<ul>
+<li>发生在裁剪空间</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585849058.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585855558.png" alt="" loading="lazy"></p>
+<h2 id="模型矩阵model-matrix">模型矩阵（Model Matrix）</h2>
+<h2 id="视图矩阵view-matrix">视图矩阵（View Matrix）</h2>
+<h2 id="投影矩阵projection-matrix">投影矩阵（Projection Matrix）</h2>
+<h3 id="平截头体frustum">平截头体(Frustum)</h3>
+<p>由投影矩阵创建的观察区域(Viewing Box)被称为平截头体(Frustum),也可以叫做视景体，且每个出现在平截头体范围内的坐标都会最终出现在用户的屏幕上。将一定范围内的坐标转化到标准化设备坐标系的过程(而且它很容易被映射到2D观察空间坐标)被称之为投影(Projection)，因为使用投影矩阵能将3维坐标投影(Project)到很容易映射的2D标准化设备坐标系中。</p>
+<h3 id="正交投影">正交投影</h3>
+<p>正射投影(Orthographic Projection)矩阵定义了一个类似立方体的平截头体，指定了一个裁剪空间，每一个在这空间外面的顶点都会被裁剪。创建一个正射投影矩阵需要指定可见平截头体的宽、高和长度。所有在使用正射投影矩阵转换到裁剪空间后如果还处于这个平截头体里面的坐标就不会被裁剪。它的平截头体看起来像一个容器：</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585864491.png" alt="" loading="lazy"></figure>
+<p>上面的平截头体定义了由宽、高、近平面和远平面决定的可视的坐标系。任何出现在近平面前面或远平面后面的坐标都会被裁剪掉。正视平截头体直接将平截头体内部的顶点映射到标准化设备坐标系中，因为每个向量的w分量都是不变的；如果w分量等于1.0，则透视划分不会改变坐标的值。</p>
+<p>正射投影矩阵直接将坐标映射到屏幕的二维平面内，但实际上一个直接的投影矩阵将会产生不真实的结果，</p>
+<h3 id="透视投影">透视投影</h3>
+<p>由于透视的原因，平行线似乎在很远的地方看起来会相交。这正是透视投影(Perspective Projection)想要模仿的效果，这个投影矩阵不仅将给定的平截头体范围映射到裁剪空间，同样还修改了每个顶点坐标的w值，从而使得离观察者越远的顶点坐标w分量越大。被转换到裁剪空间的坐标都会在-w到w的范围之间(任何大于这个范围的对象都会被裁剪掉)。</p>
+<p><img src="https://sparkfengbo.github.io/post-images/1602585872107.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585878458.png" alt="" loading="lazy"></p>
+<p>左侧fov是90度，右侧是45度，可见fov越大，可见的范围越广。</p>
+<h2 id="透视划分perspective-division">透视划分(Perspective Division)</h2>
+<p>一旦所有顶点被转换到裁剪空间，最终的操作——透视划分(Perspective Division)将会执行，在这个过程中我们将位置向量的x，y，z分量分别除以向量的齐次w分量；透视划分是将4维裁剪空间坐标转换为3维标准化设备坐标。这一步会在每一个顶点着色器运行的最后被自动执行。</p>
+<h1 id="可参考">可参考</h1>
+<ul>
+<li><a href="http://zhangtielei.com/posts/blog-opengl-transformations-1.html">OpenGL ES和坐标变换（一）</a></li>
+<li><a href="http://zhangtielei.com/posts/blog-opengl-transformations-2.html">OpenGL ES和坐标变换（二）</a></li>
+<li><a href="https://learnopengl-cn.readthedocs.io/zh/latest/01%20Getting%20started/08%20Coordinate%20Systems/">learnopengl-cn 坐标系统</a></li>
+<li><a href="https://glumes.com/post/opengl/opengl-tutorial-coordinate/">OpenGL 学习系列---坐标系统</a></li>
+<li><a href="http://www.opengl-tutorial.org/cn/beginners-tutorials/tutorial-3-matrices/">opengl-tutorial 第三课：矩阵</a></li>
+<li><a href="https://glumes.com/post/opengl/opengl-tutorial-projection-matrix/">OpenGL 学习系列---投影矩阵</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E4%BA%94%E7%A7%8D%E5%9D%90%E6%A0%87%E7%A9%BA%E9%97%B4">五种坐标空间</a>
+<ul>
+<li><a href="#%E4%B8%80%E7%A7%8D%E9%80%9A%E4%BF%97%E7%9A%84%E8%A7%A3%E9%87%8A">一种通俗的解释</a></li>
+<li><a href="#%E5%B1%80%E9%83%A8%E7%A9%BA%E9%97%B4local-space">局部空间（Local Space）</a></li>
+<li><a href="#%E4%B8%96%E7%95%8C%E7%A9%BA%E9%97%B4world-space">世界空间（World Space）</a></li>
+<li><a href="#%E8%A7%82%E5%AF%9F%E7%A9%BA%E9%97%B4view-space">观察空间（View Space）</a></li>
+<li><a href="#%E8%A3%81%E5%89%AA%E7%A9%BA%E9%97%B4clip-space">裁剪空间（Clip Space）</a>
+<ul>
+<li><a href="#normalized-device-coordinates%E5%BD%92%E4%B8%80%E5%8C%96%E8%AE%BE%E5%A4%87%E5%9D%90%E6%A0%87%E7%B3%BB">Normalized device coordinates（归一化设备坐标系）</a></li>
+</ul>
+</li>
+<li><a href="#%E5%B1%8F%E5%B9%95%E7%A9%BA%E9%97%B4screen-space">屏幕空间（Screen Space）</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9D%90%E6%A0%87%E7%A9%BA%E9%97%B4%E8%BD%AC%E6%8D%A2">坐标空间转换</a>
+<ul>
+<li><a href="#%E6%A8%A1%E5%9E%8B%E7%9F%A9%E9%98%B5model-matrix">模型矩阵（Model Matrix）</a></li>
+<li><a href="#%E8%A7%86%E5%9B%BE%E7%9F%A9%E9%98%B5view-matrix">视图矩阵（View Matrix）</a></li>
+<li><a href="#%E6%8A%95%E5%BD%B1%E7%9F%A9%E9%98%B5projection-matrix">投影矩阵（Projection Matrix）</a>
+<ul>
+<li><a href="#%E5%B9%B3%E6%88%AA%E5%A4%B4%E4%BD%93frustum">平截头体(Frustum)</a></li>
+<li><a href="#%E6%AD%A3%E4%BA%A4%E6%8A%95%E5%BD%B1">正交投影</a></li>
+<li><a href="#%E9%80%8F%E8%A7%86%E6%8A%95%E5%BD%B1">透视投影</a></li>
+</ul>
+</li>
+<li><a href="#%E9%80%8F%E8%A7%86%E5%88%92%E5%88%86perspective-division">透视划分(Perspective Division)</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%AF%E5%8F%82%E8%80%83">可参考</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-40-zuo-biao-xi-ji-he-bian-huan/">
+              <h3 class="post-title">
+                4.0 坐标系、几何变换
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

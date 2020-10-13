@@ -1,0 +1,454 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2.0 Lession 2 三角形和面剔除 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="2.0 Lession 2 三角形和面剔除 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+画三角形-描边
+通过Brensenham画线算法完成
+
+void line(Vec2i p0, Vec2i p1, TGAColor color, TGAImage &amp;image);
+
+void triangle_lin..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              2.0 Lession 2 三角形和面剔除
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                8 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="画三角形-描边">画三角形-描边</h1>
+<p>通过Brensenham画线算法完成</p>
+<pre><code>
+void line(Vec2i p0, Vec2i p1, TGAColor color, TGAImage &amp;image);
+
+void triangle_line(Vec2i p0, Vec2i p1, Vec2i p2, TGAColor color, TGAImage &amp;image) {
+    line(p0, p1, color, image);
+    line(p1, p2, color, image);
+    line(p0, p2, color, image);
+}
+
+
+void line(Vec2i p0, Vec2i p1, TGAColor color, TGAImage &amp;image) {
+    bool steep = std::abs(p1.y - p0.y) &gt; std::abs(p1.x - p0.x);
+    if (steep) {
+        std::swap(p0.x, p0.y);
+        std::swap(p1.x, p1.y);
+    }
+
+    if(p0.x &gt; p1.x) {
+        std::swap(p0, p1);
+    }
+
+    int dy = p1.y - p0.y;
+    int dx = p1.x - p0.x;
+
+    float derror = (float )std::abs(dy) * 2;
+    float delta = dx * 2;
+    float error = 0;
+    int yStep = dy &gt; 0 ? 1 : -1;;
+    float y = p0.y;
+    for (int x = p0.x; x &lt;= p1.x; x++) {
+        if (steep) {
+            image.set(y, x, color);
+        } else {
+            image.set(x, y, color);
+        }
+
+        error += derror;
+        if (error &gt; dx) {
+            error -= delta;
+            y += yStep;
+        }
+    }
+}
+
+</code></pre>
+<h1 id="画三角形-填充">画三角形-填充</h1>
+<h2 id="行扫描">行扫描</h2>
+<pre><code>void triangle_line_sweeping_seperate(Vec2i p0, Vec2i p1, Vec2i p2, TGAColor color, TGAImage &amp;image) {
+    //冒泡
+    if (p0.y &gt; p1.y) std::swap(p0, p1);
+    if (p0.y &gt; p2.y) std::swap(p0, p2);
+    if (p1.y &gt; p2.y) std::swap(p1, p2);
+
+    std::cout&lt;&lt; &quot;after swap\n&quot; &lt;&lt; p0 &lt;&lt; p1 &lt;&lt; p2;
+
+    //总高度
+    int totalHeight = p2.y - p0.y + 1;
+    //第一段三角形高度
+    int segmentHeight_1 = p1.y - p0.y + 1;
+    int segmentHeight_2 = p2.y - p1.y + 1;
+
+    std::cout&lt;&lt; &quot;totalHeight=&quot; &lt;&lt; totalHeight &lt;&lt; &quot; segmentHeight=&quot; &lt;&lt; segmentHeight_1&lt;&lt;&quot;\n&quot;;
+
+    //绘制第一段三角形
+    for(int y = p0.y; y &lt;= p1.y; y++) {
+        //计算比例
+        float alpha = ((float) (y - p0.y + 1) / segmentHeight_1);
+        Vec2i A =   p0 + (p1 - p0) *  alpha;
+        float beta  = ((float) (y - p0.y + 1) / totalHeight);
+        Vec2i B =   p0 + (p2 - p0) *  beta;
+        std::cout&lt;&lt; &quot;A = &quot;&lt;&lt; A &lt;&lt; &quot;B= &quot;&lt;&lt; B;
+        if (A.x &gt; B.x) {
+            std::swap(A, B);
+        }
+        for (int x = A.x; x &lt;= B.x; x++) {
+            image.set(x, y, color);
+        }
+    }
+    //绘制第二段三角形
+    for(int y = p1.y; y &lt;= p2.y; y++) {
+        float alpha = ((float) (y - p1.y + 1) / segmentHeight_2);
+        Vec2i A =   p1 + (p2 - p1) *  alpha;
+        float beta  = ((float) (y - p0.y + 1) / totalHeight);
+        Vec2i B =   p0 + (p2 - p0) *  beta;
+        std::cout&lt;&lt; &quot;A = &quot;&lt;&lt; A &lt;&lt; &quot;B= &quot;&lt;&lt; B;
+        if (A.x &gt; B.x) {
+            std::swap(A, B);
+        }
+        for (int x = A.x; x &lt;= B.x; x++) {
+            image.set(x, y, color);
+        }
+    }
+}
+
+void triangle_line_merge(Vec2i p0, Vec2i p1, Vec2i p2, TGAColor color, TGAImage &amp;image) {
+    //冒泡
+    if (p0.y &gt; p1.y) std::swap(p0, p1);
+    if (p0.y &gt; p2.y) std::swap(p0, p2);
+    if (p1.y &gt; p2.y) std::swap(p1, p2);
+
+    std::cout&lt;&lt; &quot;after swap\n&quot; &lt;&lt; p0 &lt;&lt; p1 &lt;&lt; p2;
+
+    //总高度
+    int totalHeight = p2.y - p0.y + 1;
+    //第一段三角形高度
+    int segmentHeight_1 = p1.y - p0.y + 1;
+    //第二段三角形高度
+    int segmentHeight_2 = p2.y - p1.y + 1;
+
+    std::cout&lt;&lt; &quot;totalHeight=&quot; &lt;&lt; totalHeight &lt;&lt; &quot; segmentHeight=&quot; &lt;&lt; segmentHeight_1&lt;&lt;&quot;\n&quot;;
+    for(int y = p0.y; y &lt;= p2.y; y++) {
+        bool isPart1 = y &gt; p1.y - 1 ? false : true;
+        float alpha = isPart1 ? ((float) (y - p0.y + 1) / segmentHeight_1) : ((float) (y - p1.y + 1) / segmentHeight_2);
+        Vec2i A =   isPart1 ? p0 + (p1 - p0) *  alpha : p1 + (p2 - p1) *  alpha;
+
+        float beta  = ((float) (y - p0.y) / totalHeight);
+        Vec2i B =   p0 + (p2 - p0) *  beta;
+        std::cout&lt;&lt; &quot;A = &quot;&lt;&lt; A &lt;&lt; &quot;B= &quot;&lt;&lt; B;
+        if (A.x &gt; B.x) {
+            std::swap(A, B);
+        }
+        for (int x = A.x; x &lt;= B.x; x++) {
+            image.set(x, y, color);
+        }
+    }
+}
+</code></pre>
+<h2 id="重心坐标">重心坐标</h2>
+<p>关于重心坐标，可以参考数学基础部分。</p>
+<p>思想：</p>
+<ul>
+<li>确定三角形的范围</li>
+<li>然后逐点判断 点是否在三角形中</li>
+</ul>
+<p>这里计算重心坐标时计算了好久，这里记录一下</p>
+<pre><code>AP = uAB + vAC
+其中 u v 在[0,1]之间
+展开：
+
+P-A = u(B-A) + v(C-A)
+P = (1-u-v)A + uB + vC
+
+由AP = uAB + vAC
+得到
+uAB + vAC + PA = 0；
+
+uABx + vACx + PAx = 0；
+uABy + vACy + PAy = 0；
+
+正交，实际找到 [ABx， ACx，PAx], [ABy+ ACy + PAy]的叉乘
+得到的结果为 [a,b,c]
+
+带入原子式，
+
+aAB + bAC + cPA = 0
+
+展开：
+
+a(B-A) + b(C-A) + c(P-A) = 0;
+
+得到：
+
+P= （1-a/c-b/c）A + a/cB + b/cC  
+
+</code></pre>
+<pre><code>Vec3f barycentric(Vec2i p0, Vec2i p1, Vec2i p2, Vec2i p) {
+    Vec3f bc = Vec3f(p1.x - p0.x, p2.x - p0.x, p0.x - p.x) ^Vec3f(p1.y - p0.y, p2.y - p0.y, p0.y - p.y);
+    int t = bc.z &gt; 0 ? bc.z : -bc.z;
+    //bc.z != 0 并且我们传入的值是Vec2i，所以这里可以提前计算
+    if (t &lt; 1) {
+        std::cout &lt;&lt; &quot;barycentric&quot; &lt;&lt; bc;
+        return Vec3f(-1, 1, 1);
+    }
+    return Vec3f(1.f - (bc.x + bc.y) / bc.z, bc.y / bc.z, bc.x / bc.z);
+}
+
+void triangle_barycentric(Vec2i p0, Vec2i p1, Vec2i p2, TGAColor color, TGAImage &amp;image) {
+    Vec2i rectFMax(0, 0);
+    Vec2i rectFMin(image.get_width() - 1, image.get_height() - 1);
+    Vec2i clamp(image.get_width() - 1, image.get_height() - 1);
+    for (int i = 0; i &lt; 3; i++) {
+        for (int j = 0; j &lt; 2; j++) {
+            Vec2i *t;
+            if (i == 0) t = &amp;p0;
+            else if (i == 1) t = &amp;p1;
+            else t = &amp;p2;
+
+            int r = 0;
+            if (j == 0) r = t-&gt;x;
+            else r = t-&gt;y;
+
+            rectFMin[j] = std::max(0, std::min(rectFMin[j], r));
+            rectFMax[j] = std::min(clamp[j], std::max(rectFMax[j], r));
+        }
+    }
+
+    Vec2i P;
+    for (P.x = rectFMin.x; P.x &lt;= rectFMax.x; P.x++) {
+        for (P.y = rectFMin.y; P.y &lt;= rectFMax.y; P.y++) {
+            Vec3f bc_screen = barycentric(p0, p1, p2, P);
+            if (bc_screen.x &lt; 0 || bc_screen.y &lt; 0 || bc_screen.z &lt; 0) continue;
+            image.set(P.x, P.y, color);
+        }
+    }
+}
+</code></pre>
+<h1 id="面剔除-back-face-culling">面剔除  Back-face culling</h1>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Back-face_culling">Back-face culling 维基百科</a></li>
+<li><a href="https://learnopengl.com/Advanced-OpenGL/Face-culling">OpenGL Face-culling</a></li>
+</ul>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584014233.png" alt="" loading="lazy"></figure>
+<pre><code>    TGAImage image5(1000, 1000, TGAImage::RGB);
+    Model model(&quot;../obj/african_head.obj&quot;);
+    int width = 1000;
+    int height = 1000;
+    Vec3f light_dir(0,0,-1);
+    for (int face = 0; face &lt; model.nfaces(); face++) {
+        std::vector&lt;int&gt; vertIdxes = model.face(face);
+        Vec2i screen_coordinate[3];
+        Vec3f world_coordinate[3];
+        for (int j = 0; j &lt; 3; j++) {
+            Vec3f v = model.vert(vertIdxes[j]);
+            screen_coordinate[j] = Vec2i((v.x+1.)*width/2., (v.y+1.)*height/2.);
+            world_coordinate[j] = v;
+        }
+
+        //obj 顶点顺序都是逆时针，所以计算法向量需要注意顺序
+        //假设顶点是ABC  那么 AC AB  的叉积 指向内方向
+        Vec3f norm = (world_coordinate[2] - world_coordinate[0]) ^ (world_coordinate[1] - world_coordinate[0]);
+        //计算点积 值的正负代表cos值的正负， cos 0-90 &gt; 0  90-180 &lt; 0
+        //光源方向 z轴负方向
+        norm.normalize();
+        float intensity = norm.dotProduct(light_dir);
+        if (intensity &gt; 0) {
+            triangle_barycentric(screen_coordinate[0], screen_coordinate[1], screen_coordinate[2], TGAColor(intensity*255, intensity*255, intensity*255, 255), image5);
+        }
+    }
+    image5.flip_vertically();
+    image5.write_tga_file(&quot;lession2_review_backface_culling.tga&quot;);
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E7%94%BB%E4%B8%89%E8%A7%92%E5%BD%A2-%E6%8F%8F%E8%BE%B9">画三角形-描边</a></li>
+<li><a href="#%E7%94%BB%E4%B8%89%E8%A7%92%E5%BD%A2-%E5%A1%AB%E5%85%85">画三角形-填充</a>
+<ul>
+<li><a href="#%E8%A1%8C%E6%89%AB%E6%8F%8F">行扫描</a></li>
+<li><a href="#%E9%87%8D%E5%BF%83%E5%9D%90%E6%A0%87">重心坐标</a></li>
+</ul>
+</li>
+<li><a href="#%E9%9D%A2%E5%89%94%E9%99%A4-back-face-culling">面剔除  Back-face culling</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/12-lession-1-wavefront-obj-file/">
+              <h3 class="post-title">
+                1.2 Lession 1 Wavefront .obj File
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

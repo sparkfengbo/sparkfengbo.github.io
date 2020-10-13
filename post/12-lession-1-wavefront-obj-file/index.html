@@ -1,0 +1,356 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>1.2 Lession 1 Wavefront .obj File | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="1.2 Lession 1 Wavefront .obj File | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+参考
+
+
+Wavefront .obj file - 维基百科
+
+推荐看英文版
+
+
+
+OBJ Spec
+
+
+翻译 Warefront Object File （.obj）文档
+
+翻译的质量不是很好，看起来像是直译，不过可以参考
+..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              1.2 Lession 1 Wavefront .obj File
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li>
+<p><a href="https://en.wikipedia.org/wiki/Wavefront_.obj_file">Wavefront .obj file - 维基百科</a></p>
+<ul>
+<li>推荐看英文版</li>
+</ul>
+</li>
+<li>
+<p><a href="http://www.martinreddy.net/gfx/3d/OBJ.spec">OBJ Spec</a></p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/nju_zjy/article/details/84801674">翻译 Warefront Object File （.obj）文档</a></p>
+<ul>
+<li>翻译的质量不是很好，看起来像是直译，不过可以参考</li>
+</ul>
+</li>
+</ul>
+<h1 id="介绍">介绍</h1>
+<p>OBJ (or .OBJ)是Wavefront公司开发的3D几何定义文件。包含每个顶点的位置、纹理坐标和UV坐标、<br>
+法线等。</p>
+<p>顶点坐标逆时针定义，所以无需法线定义。</p>
+<h1 id="文件格式">文件格式</h1>
+<pre><code># this is a comment
+</code></pre>
+<pre><code>  # List of geometric vertices, with (x, y, z [,w]) coordinates, w is optional and defaults to 1.0.
+  v 0.123 0.234 0.345 1.0
+  v ...
+  ...
+  # List of texture coordinates, in (u, [,v ,w]) coordinates, these will vary between 0 and 1. v, w are optional and default to 0.
+  vt 0.500 1 [0]
+  vt ...
+  ...
+  # List of vertex normals in (x,y,z) form; normals might not be unit vectors.
+  vn 0.707 0.000 0.707
+  vn ...
+  ...
+  # Parameter space vertices in ( u [,v] [,w] ) form; free form geometry statement ( see below )
+  vp 0.310000 3.210000 2.100000
+  vp ...
+  ...
+  # Polygonal face element (see below)
+  f 1 2 3
+  f 3/1 4/2 5/3
+  f 6/4/1 3/5/3 7/6/5
+  f 7//1 8//2 9//3
+  f ...
+  ...
+  # Line element (see below)
+  l 5 8 1 2 4 9
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v</td>
+<td>几何顶点</td>
+<td>(x,y,z[,w]) 坐标，w可选，默认1，后面可能会跟RGB的顶点颜色</td>
+</tr>
+<tr>
+<td>vt</td>
+<td>纹理坐标</td>
+<td>(u, [,v ,w]) coordinates, 0-1. v, w are optional and default to 0.</td>
+</tr>
+<tr>
+<td>vn</td>
+<td>法线</td>
+<td>(x,y,z) form 不一定是单位向量</td>
+</tr>
+<tr>
+<td>vp</td>
+<td></td>
+<td>Parameter space vertices in ( u [,v] [,w] ) form</td>
+</tr>
+<tr>
+<td>f</td>
+<td>面</td>
+<td><code>f v1 v2 v3 ....</code>   <code>f v1/vt1 v2/vt2 v3/vt3 ...</code> <code>f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3 ..</code> <code>f v1//vn1 v2//vn2 v3//vn3 ...</code></td>
+</tr>
+<tr>
+<td>l</td>
+<td>线</td>
+<td>l 5 8 1 2 4 9</td>
+</tr>
+<tr>
+<td>mtllib</td>
+<td>材质</td>
+<td>mtllib [external .mtl file name]</td>
+</tr>
+<tr>
+<td>l</td>
+<td>单元格</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="mtl">MTL</h1>
+<table>
+<thead>
+<tr>
+<th>关键字</th>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>newmtl</td>
+<td>材质命名</td>
+<td>newmtl Colored</td>
+</tr>
+<tr>
+<td>Ka</td>
+<td>ambient color</td>
+<td>Ka 1.000 1.000 1.000</td>
+</tr>
+<tr>
+<td>Kd</td>
+<td>diffuse color</td>
+<td>Kd 1.000 1.000 1.000</td>
+</tr>
+<tr>
+<td>Ks</td>
+<td>specular color</td>
+<td>Ks 0.000 0.000 0.000     # black (off)</td>
+</tr>
+<tr>
+<td>Ns</td>
+<td>weighted using the specular exponent</td>
+<td>Ns 10.000                # ranges between 0 and 1000</td>
+</tr>
+</tbody>
+</table>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%8F%82%E8%80%83">参考</a></li>
+<li><a href="#%E4%BB%8B%E7%BB%8D">介绍</a></li>
+<li><a href="#%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F">文件格式</a></li>
+<li><a href="#mtl">MTL</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/10-lession-1-brensenham-hua-xian-suan-fa/">
+              <h3 class="post-title">
+                1.0 Lession 1 Brensenham画线算法
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

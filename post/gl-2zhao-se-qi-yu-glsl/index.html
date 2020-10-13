@@ -1,0 +1,1082 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>2.着色器与GLSL | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="2.着色器与GLSL | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+GLSL
+支持了很多c++和java的特性，有一些相似性
+#version 330 core
+
+void main()
+{
+    //TODO
+}
+
+注释
+//
+/**/
+
+变量
+支持for循环
+for(int i =0; i..." />
+    <meta name="keywords" content="OpenGL" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              2.着色器与GLSL
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                16 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/BopasCkmM/" class="post-tag">
+                  # OpenGL
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="glsl">GLSL</h1>
+<p>支持了很多c++和java的特性，有一些相似性</p>
+<pre><code>#version 330 core
+
+void main()
+{
+    //TODO
+}
+</code></pre>
+<h2 id="注释">注释</h2>
+<pre><code>//
+/**/
+</code></pre>
+<h2 id="变量">变量</h2>
+<p>支持for循环</p>
+<pre><code>for(int i =0; i &lt; 10;i++){
+
+}
+</code></pre>
+<h3 id="基本数据类型">基本数据类型</h3>
+<ul>
+<li>float</li>
+<li>double</li>
+<li>int</li>
+<li>uint</li>
+<li>bool</li>
+</ul>
+<p>声明必须初始化</p>
+<pre><code>double pi = 3.1415926LF;
+
+</code></pre>
+<p>类型转换</p>
+<pre><code>float f = 10.0;
+int ten = (int)f;
+</code></pre>
+<ul>
+<li>uint -&gt; int</li>
+<li>float -&gt; int\uint</li>
+<li>double -&gt; float\int\uint</li>
+</ul>
+<h3 id="聚合类型">聚合类型</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">基本类型</th>
+<th style="text-align:center">2D向量</th>
+<th style="text-align:center">3D向量</th>
+<th style="text-align:center">4D向量</th>
+<th style="text-align:center">矩阵类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">float</td>
+<td style="text-align:center">vec2</td>
+<td style="text-align:center">vec3</td>
+<td style="text-align:center">vec4</td>
+<td style="text-align:center">mat2、mat3、mat4、mat2x2 、mat2x3、mat2x4、mat3x2、mat3x3、mat3x4、mat4x2、mat4x3、mat4x4</td>
+</tr>
+<tr>
+<td style="text-align:center">double</td>
+<td style="text-align:center">dvec2</td>
+<td style="text-align:center">dvec3</td>
+<td style="text-align:center">dvec4</td>
+<td style="text-align:center">dmat2、dmat3、dmat4、dmat2x2 、dmat2x3、dmat2x4、dmat3x2、dmat3x3、dmat3x4、dmat4x2、dmat4x3、dmat4x4</td>
+</tr>
+<tr>
+<td style="text-align:center">int</td>
+<td style="text-align:center">ivec2</td>
+<td style="text-align:center">ivec3</td>
+<td style="text-align:center">ivec4</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">uint</td>
+<td style="text-align:center">uvec2</td>
+<td style="text-align:center">uvec3</td>
+<td style="text-align:center">uvec4</td>
+<td style="text-align:center">-</td>
+</tr>
+<tr>
+<td style="text-align:center">bool</td>
+<td style="text-align:center">bvec2</td>
+<td style="text-align:center">bvec3</td>
+<td style="text-align:center">bvec4</td>
+<td style="text-align:center">-</td>
+</tr>
+</tbody>
+</table>
+<pre><code>vec3 v = vec3(1.0, 1.0, 1.0);
+
+ivec3 step = ivec3(v);
+
+vec4 color;
+vec3 RGB = vec3(color);//只有前三个分量
+
+vec3 white = vec3(1.0); //white = (1.0, 1.0,1.0)
+vec4 translucent = vec4(white, 0.5);
+
+
+             
+</code></pre>
+<pre><code>mat3(1.0); //对角矩阵
+
+//给定的数据先填充列，再填充行**
+/**
+ (1.0, 4.0, 7.0,
+  2.0, 5.0, 8.0,
+  3.0, 6.0, 9.0
+ )
+**/
+
+mat3 M = mat3(1.0, 2.0, 3.0,
+              4.0, 5.0, 6.0,
+              7.0, 8.0, 9.0);
+
+
+vec3 column1 = vec3(1.0, 2.0, 3.0);
+vec3 column2 = vec3(4.0, 5.0, 6.0);
+vec3 column3 = vec3(7.0, 8.0, 9.0);
+mat3 M = mat3(column1, column2, column3);
+
+
+vec2 column1 = vec3(1.0, 2.0);
+vec2 column2 = vec3(4.0, 5.0);
+vec2 column3 = vec3(7.0, 8.0);
+mat3 M = mat3(column1, 3.0,
+                column2, 6.0
+                column3, 9.0);
+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">分量访问符</th>
+<th style="text-align:center">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">（x,y,z,w）</td>
+<td style="text-align:center">位置相关</td>
+</tr>
+<tr>
+<td style="text-align:center">（r,g,b,a）</td>
+<td style="text-align:center">颜色相关</td>
+</tr>
+<tr>
+<td style="text-align:center">（s,t,p,q）</td>
+<td style="text-align:center">纹理坐标相关</td>
+</tr>
+</tbody>
+</table>
+<pre><code>
+float v_y = velocity.y;
+float v_y = velocity[1];
+
+
+vec3 luminance = color.rrr;
+
+
+color = color.abgr; //反转每个分量
+
+</code></pre>
+<h3 id="结构体">结构体</h3>
+<pre><code>struct Particle {
+    float v,
+    vec3 position
+}
+
+Particle p = Particle(10.0, pos);
+</code></pre>
+<h3 id="数组">数组</h3>
+<pre><code>float[3] v = float[3]{1.0,1.0,10.0};
+
+v.length();
+
+mat3x4 m;
+int c = m.length();
+int r = m[0].length();                                                               
+</code></pre>
+<h2 id="限制符">限制符</h2>
+<h3 id="存储限定符">存储限定符</h3>
+<h4 id="const">const</h4>
+<ul>
+<li>将变量定义为只读</li>
+</ul>
+<h4 id="attribute">attribute</h4>
+<ul>
+<li>attribute变量是应用程序传输给顶点着色器的逐顶点数据，即每个顶点都需要一份数据，通常用于表示顶点坐标、顶点颜色、纹理坐标等数据。attribute变量在shader中是只读的，不能在顶点着色器中进行修改。此外，attribute变量必须由执行着色器的应用程序传输数据进行赋值。</li>
+<li>可使用的最大attribute数量是有上限的，可以使用内置函数glGetIntegerv来查询GL_MAX_VERTEX_ATTRIBS。OpenGL ES 2.0至少支持8个attribute变量。</li>
+</ul>
+<h4 id="uniform">uniform</h4>
+<ul>
+<li>设置变量为用户应用程序传递给着色器的数据，对于图元是只读的。</li>
+<li>着色器可以使用的uniform个数是有限的，可以使用内置函数glGetIntegerv来查询GL_MAX_VERTEX_UNIFORM_VECTORS和GL_MAX_FRAGMENT_UNIFORM_VECTORS。OpenGL ES 2.0至少支持128个顶点uniform以及16个片元uniform。</li>
+</ul>
+<h4 id="varying">varying</h4>
+<ul>
+<li>varying用于声明顶点着色器和片元着色器之间共享的变量。在顶点和片元着色器中，必须有相同的varying变量声明。首先，顶点着色器为每个顶点的varying变量赋值，然后光栅化阶段会对varying变量进行插值计算（光栅化后的每个片元都会得到一个对应的varying变量值），最后把插值结果交给片元着色器进行着色。varying只能用于修饰浮点标量、浮点向量、浮点矩阵以及包含这些类型的数组。</li>
+<li>varying数量也存在限制，可以使用glGetIntegerv来查询GL_MAX_VARYING_VECTORS。OpenGL ES 2.0至少支持8个varying变量。</li>
+</ul>
+<h4 id="buffer">buffer</h4>
+<ul>
+<li>设置应用程序共享的一块可读写的内存，这款内存也作为着色器中的存储缓存</li>
+</ul>
+<h4 id="shared">shared</h4>
+<ul>
+<li>设置变量是本地工作组中共享的</li>
+</ul>
+<h3 id="参数限定符">参数限定符</h3>
+<h4 id="in">in</h4>
+<ul>
+<li>着色器阶段的输入变量</li>
+</ul>
+<h4 id="out">out</h4>
+<ul>
+<li>着色器阶段的输出变量</li>
+</ul>
+<h3 id="精度限定符">精度限定符</h3>
+<ul>
+<li>highp	最高精度</li>
+<li>lowp	最低精度</li>
+<li>mediump	中间精度，介于两者之间</li>
+</ul>
+<h2 id="语句">语句</h2>
+<h3 id="算数操作符">算数操作符</h3>
+<p>和java、c++类似</p>
+<p>++、+=、a ? b :c 、</p>
+<h3 id="流控制">流控制</h3>
+<pre><code>if () {
+
+} else {
+
+}
+
+switch (init_value) {
+    case b:
+        break;
+}
+</code></pre>
+<h3 id="循环">循环</h3>
+<p>for， do while、while</p>
+<ul>
+<li>break</li>
+<li>continue</li>
+<li>return</li>
+<li>discard
+<ul>
+<li>只在片元着色器中有效，丢弃当前的片元，终止着色器的执行</li>
+</ul>
+</li>
+</ul>
+<h2 id="函数">函数</h2>
+<p>和c++类似，使用前必须给出函数声明或函数体</p>
+<pre><code>float xxx(float x, float y);
+</code></pre>
+<h3 id="参数限制符">参数限制符</h3>
+<p>GLSL没有指针的的概念</p>
+<ul>
+<li>in
+<ul>
+<li>默认，不需要指定，将数据拷贝到函数中</li>
+</ul>
+</li>
+<li>const in
+<ul>
+<li>将只读数据拷贝到函数中</li>
+</ul>
+</li>
+<li>out
+<ul>
+<li>从函数获取数值（输入函数的值是未定义的）</li>
+</ul>
+</li>
+<li>inout
+<ul>
+<li>将数据拷贝到函数中，并从函数获取数值</li>
+</ul>
+</li>
+</ul>
+<h2 id="计算不变性">计算不变性</h2>
+<p>GLSL无法保证不同着色器，完全相同的计算式会得到完全一样的结果。</p>
+<p>额外</p>
+<pre><code>const float f = sin(10.0)//宿主机的编译器负责计算
+
+float g = sin(10.0)//图形硬件负责
+</code></pre>
+<p>f和g可能不一样</p>
+<h3 id="invariant">invariant</h3>
+<p>修饰着色器的输出变量</p>
+<pre><code>invariant gl_Position;
+invariant centroid out vec3 color;
+</code></pre>
+<h3 id="precise">precise</h3>
+<p>可以设置任何计算中的变量或者函数返回值。</p>
+<h2 id="预处理">预处理</h2>
+<h3 id="宏定义">宏定义</h3>
+<pre><code>#define
+#undef
+
+#ifdef
+#endif
+#ifndef
+#elif
+#else
+</code></pre>
+<h3 id="编译器控制">编译器控制</h3>
+<pre><code>#pragma optimize(on)
+#pragma debug(on)
+</code></pre>
+<h2 id="数据块接口">数据块接口</h2>
+<ul>
+<li>
+<p>uniform块</p>
+<pre><code>   uniform b {
+       vec4 v1,
+       bool v2;
+   };
+
+   uniform b {
+       vec4 v1,
+       bool v2;
+   } name;
+</code></pre>
+</li>
+<li>
+<p>in/out块</p>
+</li>
+<li>
+<p>buffer块</p>
+</li>
+</ul>
+<h3 id="uniform块">uniform块</h3>
+<p>布局控制</p>
+<ul>
+<li>shared
+<ul>
+<li>默认</li>
+</ul>
+</li>
+<li>binding = N</li>
+<li>packed</li>
+<li>std140</li>
+<li>std430</li>
+<li>offset = N</li>
+<li>align = N</li>
+<li>row_major</li>
+<li>column_major</li>
+</ul>
+<h3 id="inout块">in/out块</h3>
+<h3 id="buffer块">buffer块</h3>
+<h2 id="内置变量">内置变量</h2>
+<h3 id="顶点着色器内置变量">顶点着色器内置变量</h3>
+<ul>
+<li>gl_Position
+<ul>
+<li>gl_Position是输出变量，用来保存顶点位置的齐次坐标。该值用作图元装配、裁剪以及其他固定管道操作。如果顶点着色器中没有对gl_Position赋值，那么在后续阶段它的值是不确定的。gl_Position可以被写入多次，后续步骤以最后一次写入值为准。</li>
+</ul>
+</li>
+<li>gl_PointSize
+<ul>
+<li>gl_PointSize是输出变量，是着色器用来控制被栅格化点的大小，以像素为单位。如果顶点着色器中没有对gl_PointSize赋值，那么在后续阶段它的值是不确定的。</li>
+</ul>
+</li>
+</ul>
+<h3 id="片元着色器内置变量">片元着色器内置变量</h3>
+<ul>
+<li>gl_FragColor
+<ul>
+<li>gl_FragColor是输出变量，定义了后续管线中片元的颜色值。gl_FragColor可以被写入多次，后续步骤以最后一次写入值为准。如果执行了discard操作，则片元会被丢弃，gl_FragColor将不再有意义。</li>
+</ul>
+</li>
+<li>gl_FragCoord
+<ul>
+<li>gl_FragCoord是只读变量，保存当前片元的窗口坐标(x, y, z, 1/w)，该值是图元装配阶段对图元插值计算所得，z分量表示当前片元的深度值。</li>
+</ul>
+</li>
+<li>gl_FragDepth
+<ul>
+<li>gl_FragDepth是输出变量，用于改变片元的深度值（替代gl_FragCoord.z深度值）。如果在任何地方写入了它的值，那么务必在所有执行路径中都写入它的值，否则未写入的路径上它的值有可能不明确。</li>
+</ul>
+</li>
+<li>gl_FrontFacing
+<ul>
+<li>gl_FrontFacing是只读变量，如果片元属于面朝前的图元，那么它的值为true。该变量可以选取顶点着色器计算出的两个颜色之一以模拟双面光照。</li>
+</ul>
+</li>
+<li>gl_PointCoord
+<ul>
+<li>gl_PointCoord是只读变量，表示当前片元在点图元中的二维坐标，范围是0.0到1.0。如果当前图元不是点，那么gl_PointCoord读取的值将是不明确的。</li>
+</ul>
+</li>
+</ul>
+<h2 id="内嵌函数">内嵌函数</h2>
+<p>可参考官方文档或网上资料，例如<a href="https://juejin.im/post/5cf878a2e51d4510a5033583#heading-44">《OpenGL之GLSL》</a></p>
+<p>ParamType可以是float、vec2、vec3、vec4，参数类型和返回类型是一致的。</p>
+<h3 id="三角函数">三角函数</h3>
+<ul>
+<li>
+<p>ParamType radians(ParamType degrees)</p>
+<ul>
+<li>把角度转换为弧度</li>
+</ul>
+</li>
+<li>
+<p>ParamType degrees(ParamType radians)</p>
+<ul>
+<li>把弧度转换为角度</li>
+</ul>
+</li>
+<li>
+<p>ParamType sin(ParamType radians)</p>
+<ul>
+<li>以弧度为单位，计算正弦值</li>
+</ul>
+</li>
+<li>
+<p>ParamType cos(ParamType radians)</p>
+<ul>
+<li>以弧度为单位，计算余弦值</li>
+</ul>
+</li>
+<li>
+<p>ParamType tan(ParamType radians)</p>
+<ul>
+<li>以弧度为单位，计算正切值</li>
+</ul>
+</li>
+<li>
+<p>ParamType asin(ParamType value)</p>
+<ul>
+<li>sin的反函数，计算给定值的弧度，value的绝对值 &lt;= 1，返回的弧度范围是[-π/2,π/2]</li>
+</ul>
+</li>
+<li>
+<p>ParamType acos(ParamType value)</p>
+<ul>
+<li>cos的反函数，计算给定值的弧度，value的绝对值 &lt;= 1，返回的弧度范围是[0,π]</li>
+</ul>
+</li>
+<li>
+<p>ParamType atan(ParamType y_over_x)</p>
+<ul>
+<li>tan的反函数，计算给定值的弧度，返回的弧度范围是[-π/2,π/2]</li>
+</ul>
+</li>
+<li>
+<p>ParamType atan(ParamType y, ParamType x)</p>
+<ul>
+<li>tan的反函数，也可以称作atan2，返回一个正切值为y/x的弧度，x和y的符号用来确定角在哪个象限。返回的弧度范围是(−π,π)。如果x和y都为0，则结果是未定义的</li>
+</ul>
+</li>
+</ul>
+<h3 id="指数函数">指数函数</h3>
+<ul>
+<li>
+<p>ParamType pow(ParamType x, ParamType y)</p>
+<ul>
+<li>幂函数返回x的y次方</li>
+</ul>
+</li>
+<li>
+<p>ParamType exp(ParamType x)</p>
+<ul>
+<li>exp函数返回常数e的x次方</li>
+</ul>
+</li>
+<li>
+<p>ParamType exp2(ParamType x)</p>
+<ul>
+<li>exp2函数返回常数2的x次方</li>
+</ul>
+</li>
+<li>
+<p>ParamType log(ParamType x)</p>
+<ul>
+<li>以常数e为底x的对数函数</li>
+</ul>
+</li>
+<li>
+<p>ParamType log2(ParamType x)</p>
+<ul>
+<li>以常数2为底x的对数函数</li>
+</ul>
+</li>
+<li>
+<p>ParamType sqrt(ParamType x)</p>
+<ul>
+<li>返回X的平方根</li>
+</ul>
+</li>
+<li>
+<p>ParamType inversesqrt(ParamType x)</p>
+<ul>
+<li>返回x的平方根的倒数</li>
+</ul>
+</li>
+</ul>
+<h3 id="通用函数">通用函数</h3>
+<ul>
+<li>
+<p>ParamType abs(ParamType x)</p>
+<ul>
+<li>返回x的绝对值</li>
+</ul>
+</li>
+<li>
+<p>ParamType sign(ParamType x)</p>
+<ul>
+<li>x为正时返回1.0,x为零时返回0.0,x为负时返回-1.0</li>
+</ul>
+</li>
+<li>
+<p>ParamType floor(ParamType x)</p>
+<ul>
+<li>返回小于或等于x的最大整数</li>
+</ul>
+</li>
+<li>
+<p>ParamType ceil(ParamType x)</p>
+<ul>
+<li>返回大于或等于x的最小值</li>
+</ul>
+</li>
+<li>
+<p>ParamType fract(ParamType x)</p>
+<ul>
+<li>返回x的小数部分，即: x - floor(x)。</li>
+</ul>
+</li>
+<li>
+<p>ParamType mod(ParamType x, ParamType y)</p>
+<ul>
+<li>x – y * floor(x / y)，如果x和y是整数，返回值是x除以y的余数</li>
+</ul>
+</li>
+<li>
+<p>ParamType mod(ParamType x, float y)</p>
+<ul>
+<li>上面mod的变体：y总是float，对于浮点向量，向量的每个分量除以y</li>
+</ul>
+</li>
+<li>
+<p>ParamType min(ParamType x, ParamType y)</p>
+<ul>
+<li>返回两个参数的较小值。对于浮点向量，操作是按分量进行比较的</li>
+</ul>
+</li>
+<li>
+<p>ParamType min(ParamType x, float y)</p>
+<ul>
+<li>上面min的变体：y总是float，对于浮点向量，向量的每个分量与y进行比较</li>
+</ul>
+</li>
+<li>
+<p>ParamType max(ParamType x, ParamType y)</p>
+<ul>
+<li>返回两个参数的较大值。对于浮点向量，操作是按分量进行比较的</li>
+</ul>
+</li>
+<li>
+<p>ParamType max(ParamType x, float y)</p>
+<ul>
+<li>上面max的变体：y总是float，对于浮点向量，向量的每个分量与y进行比较</li>
+</ul>
+</li>
+<li>
+<p>ParamType clamp(ParamType x, ParamType minVal, ParamType maxVal)</p>
+<ul>
+<li>如果x大于minVal，小于maxVal，则返回x。如果x小于minVal，则返回minVal。如果x大于maxVal，则返回maxVal</li>
+</ul>
+</li>
+<li>
+<p>ParamType clamp(ParamType x, float minVal, float maxVal)</p>
+<ul>
+<li>上面clamp的变体，minVal和maxVal总是float，对于浮点向量，向量的每个分量与minVal和maxVal进行比较</li>
+</ul>
+</li>
+<li>
+<p>ParamType mix(ParamType x, ParamType y, ParamType a)</p>
+<ul>
+<li>返回x和y的线性混合，即x * (1 - a) + y * a</li>
+</ul>
+</li>
+<li>
+<p>ParamType mix(ParamType x, ParamType y, float a)</p>
+<ul>
+<li>上面mix的变体，a总是float，对于浮点向量，向量的每个分量与a计算</li>
+</ul>
+</li>
+<li>
+<p>ParamType step(ParamType edge, ParamType x)</p>
+<ul>
+<li>如果x比edge小，则返回0.0，否则返回1.0</li>
+</ul>
+</li>
+<li>
+<p>ParamType step(float edge, ParamType x)</p>
+<ul>
+<li>上面step的变体，edge总是float，对于浮点向量，向量的每个分量与edge计算</li>
+</ul>
+</li>
+<li>
+<p>ParamType smoothstep(ParamType edge0, ParamType edge1, ParamType x)</p>
+<ul>
+<li>如果x小于edge0，则返回0.0；如果x大于edge1，则返回1.0。否则，返回值将使用Hermite多项式在0.0到1.0之间进行插值</li>
+</ul>
+</li>
+<li>
+<p>ParamType smoothstep(float edge0, float edge1, ParamType x)</p>
+<ul>
+<li>上面smoothstep的变体，edge0和edge1总是float，对于浮点向量，向量的每个分量与edge0和edge1比较</li>
+</ul>
+</li>
+</ul>
+<h3 id="几何函数">几何函数</h3>
+<ul>
+<li>
+<p>float length(ParamType x)</p>
+<ul>
+<li>返回向量长度，即各分量平方和的平方根，对于浮点标量则返回其绝对值</li>
+</ul>
+</li>
+<li>
+<p>float distance(ParamType p0, ParamType p1)</p>
+<ul>
+<li>返回两点之间的距离，两点的距离就是向量d(p0 - p1, 从p1开始，指向p0)的长度，对于浮点标量则返回其绝对值</li>
+</ul>
+</li>
+<li>
+<p>float distance(ParamType p0, ParamType p1)</p>
+<ul>
+<li>返回两点之间的距离，两点的距离就是向量d(p0 - p1, 从p1开始，指向p0)的长度，对于浮点标量则返回其绝对值</li>
+</ul>
+</li>
+<li>
+<p>float dot(ParamType x, ParamType y)</p>
+<ul>
+<li>返回两个向量的点积，即两个向量各个分量乘积的和，对于浮点标量则返回x和y的乘积</li>
+</ul>
+</li>
+<li>
+<p>vec3 cross(vec3 x, vec3 y)</p>
+<ul>
+<li>返回两个向量的叉乘向量，更为熟知的叫法是法向量，该向量垂直于x和y向量构成的平面，其长度等于x和y构成的平行四边形的面积。输入参数只能是三分量浮点向量</li>
+</ul>
+</li>
+<li>
+<p>ParamType normalize(ParamType x)</p>
+<ul>
+<li>返回向量x的单位向量，即x / |x|，对于浮点标量直接返回1.0</li>
+</ul>
+</li>
+<li>
+<p>ParamType faceforward(ParamType N, ParamType I, ParamType Nref)</p>
+<ul>
+<li>如果dot(Nref, I) &lt; 0那么返回N向量，否则返回–N向量</li>
+</ul>
+</li>
+<li>
+<p>ParamType reflect(ParamType I, ParamType N)</p>
+<ul>
+<li>I：the incident vector(入射向量), N：the normal vector of the reflecting surface(反射面的法向量)，返回反射方向: I – 2 * dot(N,I) * N，N一般是单位向量</li>
+</ul>
+</li>
+<li>
+<p>ParamType refract(ParamType I, ParamType N, float eta)</p>
+<ul>
+<li>I：the incident vector(入射向量), N：the normal vector of the refracting surface(折射面法向量)，eta：折射率。返回入射向量I关于法向量N的折射向量，折射率为eta，I和N一般是单位向量</li>
+</ul>
+</li>
+</ul>
+<h3 id="矩阵函数">矩阵函数</h3>
+<blockquote>
+<p>不同于传统的向量相乘，这里matrixCompMult返回一个向量，该向量的各分量等于x和y向量各个分量的乘积。</p>
+</blockquote>
+<pre><code>mat2 matrixCompMult(mat2 x, mat2 y)  
+mat3 matrixCompMult(mat3 x, mat3 y)  
+mat4 matrixCompMult(mat4 x, mat4 y)
+
+// 结果向量z
+z[i][j] = x[i][j] * y[i][j]
+
+</code></pre>
+<h3 id="矢量向量关系函数">矢量（向量）关系函数</h3>
+<ul>
+<li>
+<p>bvec lessThan(vec x, vec y)  bvec lessThan(ivec x, ivec y)</p>
+<ul>
+<li>结果向量result[i] = x[i] &lt; y[i]</li>
+</ul>
+</li>
+<li>
+<p>bvec lessThanEqual(vec x, vec y)  bvec lessThanEqual(ivec x, ivec y)</p>
+<ul>
+<li>结果向量result[i] = x[i] &lt;= y[i]</li>
+</ul>
+</li>
+<li>
+<p>bvec greaterThan(vec x, vec y)  bvec greaterThan(ivec x, ivec y)</p>
+<ul>
+<li>结果向量result[i] = x[i] &gt; y[i]</li>
+</ul>
+</li>
+<li>
+<p>bvec greaterThanEqual(vec x, vec y)  bvec greaterThanEqual(ivec x, ivec y)</p>
+<ul>
+<li>结果向量result[i] = x[i] &gt;= y[i]</li>
+</ul>
+</li>
+<li>
+<p>bvec equal(vec x, vec y)  bvec equal(ivec x, ivec y)</p>
+<ul>
+<li>结果向量result[i] = x[i] == y[i]</li>
+</ul>
+</li>
+<li>
+<p>bvec notEqual(vec x, vec y)  bvec notEqual(ivec x, ivec y)</p>
+<ul>
+<li>结果向量result[i] = x[i] != y[i]</li>
+</ul>
+</li>
+<li>
+<p>bool any(bvec x)</p>
+<ul>
+<li>假如参数向量的任意一个分量为true，那么返回true</li>
+</ul>
+</li>
+<li>
+<p>bool all(bvec x)</p>
+<ul>
+<li>假如参数向量的所有分量为true，那么返回true</li>
+</ul>
+</li>
+<li>
+<p>bvec not(bvec x)</p>
+<ul>
+<li>对布尔向量取反</li>
+</ul>
+</li>
+</ul>
+<h3 id="纹理查找函数">纹理查找函数</h3>
+<blockquote>
+<p>纹理查询的目的是从纹理中提取指定坐标的颜色信息。OpenGL中纹理有两种：</p>
+</blockquote>
+<ul>
+<li>2D纹理（sampler2D）</li>
+<li>3D纹理（samplerCube）</li>
+</ul>
+<blockquote>
+<p>顶点着色器和片元着色器中都可以使用纹理查找函数。但是顶点着色器中不会计算细节级别（level of detail），所以二者的纹理查找函数略有不同。<br>
+以下函数只在顶点着色器中可用：</p>
+</blockquote>
+<pre><code>vec4 texture2DLod(sampler2D sampler, vec2 coord, float lod);
+vec4 texture2DProjLod(sampler2D sampler, vec3 coord, float lod);
+vec4 texture2DProjLod(sampler2D sampler, vec4 coord, float lod);
+vec4 textureCubeLod(samplerCube sampler, vec3 coord, float lod);
+</code></pre>
+<blockquote>
+<p>以下函数只在片元着色器中可用：</p>
+</blockquote>
+<pre><code>vec4 texture2D(sampler2D sampler, vec2 coord, float bias);
+vec4 texture2DProj(sampler2D sampler, vec3 coord, float bias);
+vec4 texture2DProj(sampler2D sampler, vec4 coord, float bias);
+vec4 textureCube(samplerCube sampler, vec3 coord, float bias);
+</code></pre>
+<blockquote>
+<p>float类型参数bias表示：使用mipmaps计算纹理的适当细节级别之后，在执行实际的纹理查找操作之前添加的偏差。<br>
+以下函数在顶点着色器和片元着色器中都可用:</p>
+</blockquote>
+<pre><code>vec4 texture2D(sampler2D sampler, vec2 coord);
+vec4 texture2DProj(sampler2D sampler, vec3 coord);
+vec4 texture2DProj(sampler2D sampler, vec4 coord);
+vec4 textureCube(samplerCube sampler, vec3 coord);
+</code></pre>
+<h1 id="着色器编译">着色器编译</h1>
+<ul>
+<li>glShaderSource</li>
+<li>glCompileShader</li>
+<li>glCreateShader</li>
+<li>glAttachShader</li>
+<li>glCreateProgram</li>
+<li>glLinkProgram</li>
+<li>glUseProgram</li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#glsl">GLSL</a>
+<ul>
+<li><a href="#%E6%B3%A8%E9%87%8A">注释</a></li>
+<li><a href="#%E5%8F%98%E9%87%8F">变量</a>
+<ul>
+<li><a href="#%E5%9F%BA%E6%9C%AC%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B">基本数据类型</a></li>
+<li><a href="#%E8%81%9A%E5%90%88%E7%B1%BB%E5%9E%8B">聚合类型</a></li>
+<li><a href="#%E7%BB%93%E6%9E%84%E4%BD%93">结构体</a></li>
+<li><a href="#%E6%95%B0%E7%BB%84">数组</a></li>
+</ul>
+</li>
+<li><a href="#%E9%99%90%E5%88%B6%E7%AC%A6">限制符</a>
+<ul>
+<li><a href="#%E5%AD%98%E5%82%A8%E9%99%90%E5%AE%9A%E7%AC%A6">存储限定符</a>
+<ul>
+<li><a href="#const">const</a></li>
+<li><a href="#attribute">attribute</a></li>
+<li><a href="#uniform">uniform</a></li>
+<li><a href="#varying">varying</a></li>
+<li><a href="#buffer">buffer</a></li>
+<li><a href="#shared">shared</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8F%82%E6%95%B0%E9%99%90%E5%AE%9A%E7%AC%A6">参数限定符</a>
+<ul>
+<li><a href="#in">in</a></li>
+<li><a href="#out">out</a></li>
+</ul>
+</li>
+<li><a href="#%E7%B2%BE%E5%BA%A6%E9%99%90%E5%AE%9A%E7%AC%A6">精度限定符</a></li>
+</ul>
+</li>
+<li><a href="#%E8%AF%AD%E5%8F%A5">语句</a>
+<ul>
+<li><a href="#%E7%AE%97%E6%95%B0%E6%93%8D%E4%BD%9C%E7%AC%A6">算数操作符</a></li>
+<li><a href="#%E6%B5%81%E6%8E%A7%E5%88%B6">流控制</a></li>
+<li><a href="#%E5%BE%AA%E7%8E%AF">循环</a></li>
+</ul>
+</li>
+<li><a href="#%E5%87%BD%E6%95%B0">函数</a>
+<ul>
+<li><a href="#%E5%8F%82%E6%95%B0%E9%99%90%E5%88%B6%E7%AC%A6">参数限制符</a></li>
+</ul>
+</li>
+<li><a href="#%E8%AE%A1%E7%AE%97%E4%B8%8D%E5%8F%98%E6%80%A7">计算不变性</a>
+<ul>
+<li><a href="#invariant">invariant</a></li>
+<li><a href="#precise">precise</a></li>
+</ul>
+</li>
+<li><a href="#%E9%A2%84%E5%A4%84%E7%90%86">预处理</a>
+<ul>
+<li><a href="#%E5%AE%8F%E5%AE%9A%E4%B9%89">宏定义</a></li>
+<li><a href="#%E7%BC%96%E8%AF%91%E5%99%A8%E6%8E%A7%E5%88%B6">编译器控制</a></li>
+</ul>
+</li>
+<li><a href="#%E6%95%B0%E6%8D%AE%E5%9D%97%E6%8E%A5%E5%8F%A3">数据块接口</a>
+<ul>
+<li><a href="#uniform%E5%9D%97">uniform块</a></li>
+<li><a href="#inout%E5%9D%97">in/out块</a></li>
+<li><a href="#buffer%E5%9D%97">buffer块</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F">内置变量</a>
+<ul>
+<li><a href="#%E9%A1%B6%E7%82%B9%E7%9D%80%E8%89%B2%E5%99%A8%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F">顶点着色器内置变量</a></li>
+<li><a href="#%E7%89%87%E5%85%83%E7%9D%80%E8%89%B2%E5%99%A8%E5%86%85%E7%BD%AE%E5%8F%98%E9%87%8F">片元着色器内置变量</a></li>
+</ul>
+</li>
+<li><a href="#%E5%86%85%E5%B5%8C%E5%87%BD%E6%95%B0">内嵌函数</a>
+<ul>
+<li><a href="#%E4%B8%89%E8%A7%92%E5%87%BD%E6%95%B0">三角函数</a></li>
+<li><a href="#%E6%8C%87%E6%95%B0%E5%87%BD%E6%95%B0">指数函数</a></li>
+<li><a href="#%E9%80%9A%E7%94%A8%E5%87%BD%E6%95%B0">通用函数</a></li>
+<li><a href="#%E5%87%A0%E4%BD%95%E5%87%BD%E6%95%B0">几何函数</a></li>
+<li><a href="#%E7%9F%A9%E9%98%B5%E5%87%BD%E6%95%B0">矩阵函数</a></li>
+<li><a href="#%E7%9F%A2%E9%87%8F%E5%90%91%E9%87%8F%E5%85%B3%E7%B3%BB%E5%87%BD%E6%95%B0">矢量（向量）关系函数</a></li>
+<li><a href="#%E7%BA%B9%E7%90%86%E6%9F%A5%E6%89%BE%E5%87%BD%E6%95%B0">纹理查找函数</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E7%9D%80%E8%89%B2%E5%99%A8%E7%BC%96%E8%AF%91">着色器编译</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-1opengl-ji-ben-gai-nian-he-ming-ci-jie-shi/">
+              <h3 class="post-title">
+                1.OpenGL基本概念和名词解释
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

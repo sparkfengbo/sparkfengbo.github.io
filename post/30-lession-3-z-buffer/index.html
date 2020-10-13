@@ -1,0 +1,329 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>3.0 Lession 3 z-buffer | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="3.0 Lession 3 z-buffer | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+参考
+
+维基百科-深度缓冲
+
+简单的-二维ybuffer
+下面的图是二维图片，上面的是二维在一维的切面，为了看的更清晰，把1px扩展到16px。实际创建了一个数组进行buffer缓冲
+
+
+void rasterize(Vec2i..." />
+    <meta name="keywords" content="渲染引擎" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              3.0 Lession 3 z-buffer
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                5 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/MjwAtVYTe/" class="post-tag">
+                  # 渲染引擎
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="参考">参考</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%B7%B1%E5%BA%A6%E7%BC%93%E5%86%B2">维基百科-深度缓冲</a></li>
+</ul>
+<h1 id="简单的-二维ybuffer">简单的-二维ybuffer</h1>
+<p>下面的图是二维图片，上面的是二维在一维的切面，为了看的更清晰，把1px扩展到16px。实际创建了一个数组进行buffer缓冲</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602584247614.png" alt="" loading="lazy"></figure>
+<pre><code>
+void rasterize(Vec2i p0, Vec2i p1, TGAColor color, TGAImage &amp;image, int ybuffer[]) {
+    if (p0.x &gt; p1.x) {
+        std::swap(p0, p1);
+    }
+
+    for (int x = p0.x; x &lt;= p1.x; x++) {
+        float t = (x-p0.x)/(float)(p1.x-p0.x);
+        //注意 + .5 进行四舍五入
+        int y = p0.y*(1.-t) + p1.y*t + .5;
+        if (ybuffer[x] &lt; y) {
+            ybuffer[x] = y;
+            image.set(x, 0, color);
+        }
+    }
+}
+
+
+TGAImage image(800, 16, TGAImage::RGB);
+int ybuffer[800];
+for (int i = 0; i &lt; 800; i++) {
+    ybuffer[i] = std::numeric_limits&lt;int&gt;::min();
+}
+rasterize(Vec2i(20, 34),   Vec2i(744, 400), Red, image, ybuffer);
+rasterize(Vec2i(120, 434), Vec2i(444, 400), Green, image, ybuffer);
+rasterize(Vec2i(330, 463), Vec2i(594, 200), Blue, image,ybuffer);
+
+for (int x = 0; x &lt; 800; x++) {
+    TGAColor color = image.get(x, 0);
+    for (int j = 1; j &lt; 16; j++) {
+        image.set(x, j, color);
+    }
+}
+image.flip_vertically(); // i want to have the origin at the left bottom corner of the image
+image.write_tga_file(&quot;l3_ybuffer.tga&quot;);
+</code></pre>
+<h1 id="zbuffer">zbuffer</h1>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602584258712.png" alt="" loading="lazy"></figure>
+<pre><code>
+void triangle_line_sweeping_3d(Vec3i p0, Vec3i p1, Vec3i p2, TGAColor color, TGAImage &amp;image, int* zbuffer) {
+    //冒泡
+    if (p0.y &gt; p1.y) std::swap(p0, p1);
+    if (p0.y &gt; p2.y) std::swap(p0, p2);
+    if (p1.y &gt; p2.y) std::swap(p1, p2);
+
+    std::cout &lt;&lt; &quot;after swap\n&quot; &lt;&lt; p0 &lt;&lt; p1 &lt;&lt; p2;
+
+    //总高度
+    int totalHeight = p2.y - p0.y + 1;
+    //第一段三角形高度
+    int segmentHeight_1 = p1.y - p0.y + 1;
+    //第二段三角形高度
+    int segmentHeight_2 = p2.y - p1.y + 1;
+
+    std::cout &lt;&lt; &quot;totalHeight=&quot; &lt;&lt; totalHeight &lt;&lt; &quot; segmentHeight=&quot; &lt;&lt; segmentHeight_1 &lt;&lt; &quot;\n&quot;;
+    for (int y = p0.y; y &lt;= p2.y; y++) {
+        bool isPart1 = y &gt; p1.y - 1 ? false : true;
+        float alpha = isPart1 ? ((float) (y - p0.y + 1) / segmentHeight_1) : ((float) (y - p1.y + 1) / segmentHeight_2);
+        Vec3i A = isPart1 ? p0 + (p1 - p0) * alpha : p1 + (p2 - p1) * alpha;
+
+        //注意这里beta计算变换高度是 y - p0.y + 1，最后的+1很重要
+        float beta = ((float) (y - p0.y + 1) / totalHeight);
+        Vec3i B = p0 + (p2 - p0) * beta;
+        std::cout &lt;&lt; &quot;A = &quot; &lt;&lt; A &lt;&lt; &quot;B= &quot; &lt;&lt; B;
+        if (A.x &gt; B.x) {
+            std::swap(A, B);
+        }
+
+        for (int x = A.x; x &lt;= B.x; x++) {
+            float t = (x - A.x)/(float)(B.x - A.x);
+            int z = A.z * (1-t) + B.z * t + .5f;
+            int bufferIdx = x + image.get_width() * y;
+            if (zbuffer[bufferIdx] &lt; z) {
+                zbuffer[bufferIdx] = z;
+                image.set(x, y, color);
+            }
+        }
+    }
+}
+
+
+</code></pre>
+<pre><code>    int width = 1000;
+    int height = 1000;
+    int depth = 255;
+    TGAImage image(width, height, TGAImage::RGB);
+    Model model(&quot;../obj/african_head.obj&quot;);
+    Vec3f lightDir(0,0,-1);
+    int zbuffer[width * height];
+    for (int i=0; i&lt;width*height; i++) {
+        zbuffer[i] = std::numeric_limits&lt;int&gt;::min();
+    }
+    for (int face=0; face &lt; model.nfaces(); face++) {
+        std::vector&lt;int&gt; vertIdxes = model.face(face);
+        Vec3i screenCordinate[3];
+        Vec3f worldCordinate[3];
+        for (int vId = 0; vId &lt; 3; vId++) {
+            Vec3f v = model.vert(face, vId);
+            // z映射到0-255
+            screenCordinate[vId] = Vec3i ((v.x + 1.) /2. * image.get_width(), (v.y + 1.) /2. * image.get_height(), (v.z+1.)*depth/2.);
+            worldCordinate[vId] = v;
+        }
+
+        Vec3f norm = (worldCordinate[2] - worldCordinate[0]) ^ (worldCordinate[1] - worldCordinate[0]);
+        norm.normalize();
+        float intensity = norm.dotProduct(lightDir);
+        if (intensity &gt; 0) {
+            triangle_line_sweeping_3d(screenCordinate[0], screenCordinate[1], screenCordinate[2], TGAColor(intensity*255, intensity*255, intensity*255, 255), image, zbuffer);
+        }
+    }
+    image.flip_vertically();
+    image.write_tga_file(&quot;l3_zbuffer.tga&quot;);
+</code></pre>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%8F%82%E8%80%83">参考</a></li>
+<li><a href="#%E7%AE%80%E5%8D%95%E7%9A%84-%E4%BA%8C%E7%BB%B4ybuffer">简单的-二维ybuffer</a></li>
+<li><a href="#zbuffer">zbuffer</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/20-lession-2-san-jiao-xing-he-mian-ti-chu/">
+              <h3 class="post-title">
+                2.0 Lession 2 三角形和面剔除
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>

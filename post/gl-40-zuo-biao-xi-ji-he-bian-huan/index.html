@@ -1,0 +1,300 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>4.0 坐标系、几何变换 | FengBo`s Blog</title>
+<link rel="shortcut icon" href="https://sparkfengbo.github.io/favicon.ico?v=1602589626658">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://sparkfengbo.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="4.0 坐标系、几何变换 | FengBo`s Blog - Atom Feed" href="https://sparkfengbo.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="[TOC]
+坐标系
+参考 维基百科-坐标系
+笛卡尔坐标系
+二维、三维
+x,y,z
+齐次坐标
+参考字节百科
+指的是将一个原本是n维的向量用一个n+1维向量来表示。在几何意义上，相当于把发生在三维空间的变换限制在H=1的平面内。
+在齐次坐标表示..." />
+    <meta name="keywords" content="OpenGL" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://sparkfengbo.github.io">
+  <img class="avatar" src="https://sparkfengbo.github.io/images/avatar.png?v=1602589626658" alt="">
+  </a>
+  <h1 class="site-title">
+    FengBo`s Blog
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          列表
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="https://sparkfengbo.github.io/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              4.0 坐标系、几何变换
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-10-13
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+                <a href="https://sparkfengbo.github.io/tag/BopasCkmM/" class="post-tag">
+                  # OpenGL
+                </a>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>[TOC]</p>
+<h1 id="坐标系">坐标系</h1>
+<p>参考 <a href="https://zh.wikipedia.org/wiki/%E5%9D%90%E6%A8%99%E7%B3%BB">维基百科-坐标系</a></p>
+<h2 id="笛卡尔坐标系">笛卡尔坐标系</h2>
+<p>二维、三维</p>
+<p>x,y,z</p>
+<h2 id="齐次坐标">齐次坐标</h2>
+<p>参考<a href="https://m.baike.com/wiki/%E9%BD%90%E6%AC%A1%E5%9D%90%E6%A0%87?fr=toutiao&amp;redirect=1&amp;tt_from=weixin&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;utm_campaign=client_share&amp;wxshare_count=1">字节百科</a></p>
+<p>指的是将一个原本是n维的向量用一个n+1维向量来表示。在几何意义上，相当于把发生在三维空间的变换限制在H=1的平面内。</p>
+<p>在齐次坐标表示时，会增加一个额外的坐标，例如平面上的一点可以表示为（x, y, z），其中x/z及y/z为其原来在平面上的笛卡尔坐标。其优点是可以在不使用无限大的情形下表示射影平面上的任意点。一般齐次坐标会用在坐标之间的比例比实际的数值来的重要的情形下。</p>
+<p>引入齐次坐标的目的主要是合并矩阵运算中的乘法和加法，改为矩阵乘法。</p>
+<h2 id="极坐标系">极坐标系</h2>
+<p>参考<a href="https://zh.wikipedia.org/wiki/%E6%9E%81%E5%9D%90%E6%A0%87%E7%B3%BB">维基百科-极坐标系</a></p>
+<p>在极坐标系中，一坐标（r, θ）只会其对应唯一的一点，但每一点均可对应许多个坐标。例如坐标（r, θ）、（r, θ+2π）及（−r, θ+π）都是对应同一点的不同坐标。而极点的坐标为（0, θ），θ可为任意值。</p>
+<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602585724581.png" alt="" loading="lazy"></figure>
+<h2 id="球坐标系">球坐标系</h2>
+<p>参考<a href="https://zh.wikipedia.org/wiki/%E7%90%83%E5%BA%A7%E6%A8%99%E7%B3%BB">维基百科-球坐标系</a></p>
+<p>利用球坐标(r, θ, φ)表示一个点P在三维空间的位置的三维正交坐标系</p>
+<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602585732080.png" alt="" loading="lazy"></figure>
+<p>物理学中通常使用的球坐标(r, θ, φ) (ISO 约定)：径向距离r，极角θ（theta）与方位角φ（phi）。</p>
+<h2 id="其他坐标系">其他坐标系</h2>
+<ul>
+<li>曲线坐标系</li>
+<li>广义坐标</li>
+<li>正则坐标</li>
+<li>普吕克坐标</li>
+<li>重心坐标</li>
+<li>平行坐标</li>
+</ul>
+<h1 id="笛卡尔坐标系下的变换">笛卡尔坐标系下的变换</h1>
+<p>参考</p>
+<ul>
+<li>
+<p><a href="https://zh.wikipedia.org/wiki/%E7%AC%9B%E5%8D%A1%E5%B0%94%E5%9D%90%E6%A0%87%E7%B3%BB#%E6%97%8B%E8%BD%AC">维基百科-笛卡尔坐标系</a></p>
+</li>
+<li>
+<p><a href="https://learnopengl-cn.readthedocs.io/zh/latest/01%20Getting%20started/07%20Transformations/#_18">learnopengl-cn 变换</a></p>
+</li>
+</ul>
+<h2 id="欧几里得变换">欧几里得变换</h2>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E7%AC%9B%E5%8D%A1%E5%B0%94%E5%9D%90%E6%A0%87%E7%B3%BB#%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E5%8F%98%E6%8D%A2">维基百科-笛卡尔坐标系#欧几里得变换</a></li>
+</ul>
+<blockquote>
+<p>欧几里得变换或欧几里得移动是欧几里得平面的点集到同一平面上点集的（双射）映射，它保持诸点之间的距离。这种映射（也叫等距映射）有四种类型：平移、旋转、反射和滑移反射。</p>
+</blockquote>
+<h2 id="仿射变换">仿射变换</h2>
+<p>参考<a href="https://www.toutiao.com/i6792403616599638531/?tt_from=weixin&amp;utm_campaign=client_share&amp;wxshare_count=1&amp;timestamp=1587470082&amp;app=news_article&amp;utm_source=weixin&amp;utm_medium=toutiao_ios&amp;req_id=202004211954420100150411361D0F92AA&amp;group_id=6792403616599638531">一文搞懂仿射变换的原理和应用</a></p>
+<blockquote>
+<p>仿射变换，又称仿射映射，是指在几何中，对一个向量空间进行一次线性变换并接上一个平移，变换为另一个向量空间。</p>
+</blockquote>
+<blockquote>
+<p>在仿射变换中，增加了一个额外维度而所有点对这个额外维度给出数值1。这么做的好处是点平移可以在矩阵A的最后列中指定。在这种方式下，所有欧几里得变换都可处理成矩阵点乘法。</p>
+</blockquote>
+<h3 id="平移">平移</h3>
+<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602585741860.jpeg" alt="" loading="lazy"></figure>
+<h3 id="翻转">翻转</h3>
+<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602585747658.png" alt="" loading="lazy"></figure>
+<h3 id="缩放">缩放</h3>
+<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602585755475.jpeg" alt="" loading="lazy"></figure>
+<h3 id="旋转">旋转</h3>
+<p>原点旋转<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585761692.jpeg" alt="" loading="lazy"></p>
+<p>推导<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585768909.png" alt="" loading="lazy"><br>
+<img src="https://sparkfengbo.github.io/post-images/1602585774675.png" alt="" loading="lazy"></p>
+<p>点c（a，b）旋转<br>
+<img src="https://sparkfengbo.github.io/post-images/1602585779710.png" alt="" loading="lazy"></p>
+<h1 id="额外欧拉角">额外：欧拉角</h1>
+<ul>
+<li><a href="https://zh.wikipedia.org/wiki/%E6%AC%A7%E6%8B%89%E8%A7%92">维基百科-欧拉角</a></li>
+</ul>
+
+              </div>
+              <div class="toc-container">
+                <ul class="markdownIt-TOC">
+<li><a href="#%E5%9D%90%E6%A0%87%E7%B3%BB">坐标系</a>
+<ul>
+<li><a href="#%E7%AC%9B%E5%8D%A1%E5%B0%94%E5%9D%90%E6%A0%87%E7%B3%BB">笛卡尔坐标系</a></li>
+<li><a href="#%E9%BD%90%E6%AC%A1%E5%9D%90%E6%A0%87">齐次坐标</a></li>
+<li><a href="#%E6%9E%81%E5%9D%90%E6%A0%87%E7%B3%BB">极坐标系</a></li>
+<li><a href="#%E7%90%83%E5%9D%90%E6%A0%87%E7%B3%BB">球坐标系</a></li>
+<li><a href="#%E5%85%B6%E4%BB%96%E5%9D%90%E6%A0%87%E7%B3%BB">其他坐标系</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%9B%E5%8D%A1%E5%B0%94%E5%9D%90%E6%A0%87%E7%B3%BB%E4%B8%8B%E7%9A%84%E5%8F%98%E6%8D%A2">笛卡尔坐标系下的变换</a>
+<ul>
+<li><a href="#%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E5%8F%98%E6%8D%A2">欧几里得变换</a></li>
+<li><a href="#%E4%BB%BF%E5%B0%84%E5%8F%98%E6%8D%A2">仿射变换</a>
+<ul>
+<li><a href="#%E5%B9%B3%E7%A7%BB">平移</a></li>
+<li><a href="#%E7%BF%BB%E8%BD%AC">翻转</a></li>
+<li><a href="#%E7%BC%A9%E6%94%BE">缩放</a></li>
+<li><a href="#%E6%97%8B%E8%BD%AC">旋转</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E9%A2%9D%E5%A4%96%E6%AC%A7%E6%8B%89%E8%A7%92">额外：欧拉角</a></li>
+</ul>
+
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://sparkfengbo.github.io/post/gl-3hui-zhi/">
+              <h3 class="post-title">
+                3.绘制
+              </h3>
+            </a>
+          </div>
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'da148b41f2241d3da378',
+    clientSecret: '47599c9fbcbc1693fdf0f9e823bb8cf096eeb38e',
+    repo: 'sparkfengbo.github.io',
+    owner: 'sparkfengbo',
+    admin: ['sparkfengbo'],
+    id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://sparkfengbo.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
