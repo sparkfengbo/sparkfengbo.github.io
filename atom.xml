@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://sparkfengbo.github.io</id>
     <title>FengBo`s Blog</title>
-    <updated>2020-10-12T12:12:46.210Z</updated>
+    <updated>2020-10-13T05:56:37.324Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://sparkfengbo.github.io"/>
     <link rel="self" href="https://sparkfengbo.github.io/atom.xml"/>
@@ -10,6 +10,297 @@
     <logo>https://sparkfengbo.github.io/images/avatar.png</logo>
     <icon>https://sparkfengbo.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, FengBo`s Blog</rights>
+    <entry>
+        <title type="html"><![CDATA[Handler]]></title>
+        <id>https://sparkfengbo.github.io/post/handler/</id>
+        <link href="https://sparkfengbo.github.io/post/handler/">
+        </link>
+        <updated>2020-10-13T05:55:39.000Z</updated>
+        <content type="html"><![CDATA[<p>需要关注的点：</p>
+<ul>
+<li>
+<p>Handler</p>
+</li>
+<li>
+<p>Looper</p>
+</li>
+<li>
+<p>ThreadLocal</p>
+</li>
+<li>
+<p>MessageQueue</p>
+</li>
+<li>
+<p>HandlerThread</p>
+</li>
+<li>
+<p>IntentService</p>
+</li>
+<li>
+<p>MessageQueue.IdleHandler</p>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/30601168">《你知道android的MessageQueue.IdleHandler吗？》</a></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>简而言之，就是在looper里面的message暂时处理完了，这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完了的时候继续回调</p>
+</blockquote>
+<ul>
+<li><a href="https://www.zhihu.com/question/34652589/answer/90344494">Android中为什么主线程不会因为Looper.loop()里的死循环卡死？</a></li>
+</ul>
+<hr>
+<h2 id="handlerthread">HandlerThread</h2>
+<blockquote>
+<p>继承自Thread，run的时候会调用Looper.prepare();有两个比较重要的方法</p>
+<p>public Looper getLooper()</p>
+<p>public Handler getThreadHandler()</p>
+<p>使用完成后需要调用quit()</p>
+</blockquote>
+<hr>
+<h2 id="intentservice">IntentService</h2>
+<blockquote>
+<p>onCreate()会创建HandlerThread并start，创建刚才的HandlerThread的Looper的ServiceHandler<br>
+Overide的onHandleIntent方法是在异步线程中执行</p>
+</blockquote>
+<hr>
+<ul>
+<li><a href="https://www.zhihu.com/question/34652589">Android中为什么主线程不会因为Looper.loop()里的死循环卡死？<br>
+</a></li>
+<li><a href="https://github.com/sparkfengbo/AndroidNotes/blob/master/Android/%E6%B6%88%E6%81%AF%E6%A1%86%E6%9E%B6.md">我自己很久之前写的一些笔记</a></li>
+</ul>
+<hr>
+<p>涉及到的4个类：</p>
+<ul>
+<li><code>Handler</code></li>
+<li><code>Looper</code></li>
+<li><code>ThreadLocal</code></li>
+<li><code>MessageQueue</code></li>
+</ul>
+<h3 id="1threadlocal">1.ThreadLocal</h3>
+<p>每个线程有一些和自己相关的变量，ThreadLocal的作用就是保存这些变量的。所有的变量是通过内部的静态类<code>Value</code>存储的。虽然，线程都是通过访问相同的<code>ThreadLocal</code>，但是每个线程保存的变量是分开的：</p>
+<pre><code>public void set(T value) {    
+      Thread currentThread = Thread.currentThread();    
+      Values values = values(currentThread);    
+      if (values == null) {        
+            values = initializeValues(currentThread);    }    
+      values.put(this, value);
+}
+</code></pre>
+<p>上面的set方法中，values方法返回当前线程的localValues成员变量：</p>
+<pre><code>/** 
+  * Gets Values instance for this thread and variable type. 
+  */
+Values values(Thread current) {    
+      return current.localValues;
+}
+</code></pre>
+<p>那么线程内部的localValues是什么？</p>
+<pre><code>public class Thread implements Runnable {
+    /** 
+      * Normal thread local values. 
+      */
+    ThreadLocal.Values localValues;
+    /*省略若干代码*/
+}
+</code></pre>
+<p>可以看到，<code>Thread</code>中的<code>localValues</code>是定义在<code>ThreadLocal</code>中线程本地的变量。如果在  <code>values ()</code>方法取得<code>null</code>值，就执行<code>initializeValues</code>方法。<br>
+<code>initializeValues</code>是如何实现的呢？</p>
+<pre><code>Values initializeValues(Thread current) {    
+      return current.localValues = new Values();
+}
+</code></pre>
+<p>然后将value的值放在当前线程的的<code>localValues</code>里。这样，虽然看起来访问的是用一个ThreadLocal，但是得到的值却是根据线程而不同的。</p>
+<blockquote>
+<p>注：不同sdk中ThreadLocal内部的实现时不一样的，比如在6.0的版本实现的方式就不是上面的方式，但是原理还是一样的</p>
+</blockquote>
+<p><strong>举个例子</strong></p>
+<pre><code>public class JsonTestMetaData {
+    public String json_str;
+}
+
+public class MainActivity extends Activity {
+
+    ThreadLocal&lt;JsonTestMetaData&gt; local = new ThreadLocal&lt;&gt;();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, &quot;onCreate&quot;);
+       
+        JsonTestMetaData data = new JsonTestMetaData();
+        data.json_str = &quot;main_thread&quot;;
+        local.set(data);
+
+        Log.e(TAG, local.get().json_str);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JsonTestMetaData data = new JsonTestMetaData();
+                data.json_str = &quot;other_thread&quot;;
+                local.set(data);
+                Log.e(TAG, local.get().json_str);
+            }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                if (local.get() != null) {
+                    Log.e(TAG, local.get().json_str);
+                } else {
+                    Log.e(TAG, &quot;local.get() is null&quot;);
+
+                }
+            }
+        }).start();
+
+
+        Log.e(TAG, local.get().json_str);
+
+    }
+}
+</code></pre>
+<p>得到的结果：</p>
+<pre><code>01-09 14:28:36.410 29303-29303/com.sparkfengbo.app.javabcsxtest E/MainActivity: main_thread
+01-09 14:28:36.412 29303-29303/com.sparkfengbo.app.javabcsxtest E/MainActivity: main_thread
+01-09 14:28:36.412 29303-29331/com.sparkfengbo.app.javabcsxtest E/MainActivity: other_thread
+01-09 14:28:36.413 29303-29332/com.sparkfengbo.app.javabcsxtest E/MainActivity: local.get() is null
+</code></pre>
+<h3 id="2messagequeue">2.MessageQueue</h3>
+<p>MessageQueue是一个消息队列，包含成员变量<code>Message mMessages;</code>，可以理解成链表的头部。存储的形式不是队列，而是单链表。<br>
+内部包含5个native方法：</p>
+<pre><code>private native static long nativeInit();
+private native static void nativeDestroy(long ptr);
+private native static void nativePollOnce(long ptr, int timeoutMillis);
+private native static void nativeWake(long ptr);
+private native static boolean nativeIsIdling(long ptr);
+</code></pre>
+<p>底层还是通过native代码完成的。</p>
+<p>在Java层面，</p>
+<p>主要是<code>next</code>方法，获得下一个消息；</p>
+<p>和<code>enqueueMessage</code> 将消息插入到队列中。</p>
+<h3 id="3looper">3.Looper</h3>
+<p>Looper是做什么的？Looper的职能是为一个线程创建<code>MessageQueue</code>，绑定到这个线程，为此线程执行消息循环。</p>
+<p>Looper内部包含MessageQueue和Thread的引用</p>
+<p>MessageQueue在<code>prepare</code>方法中创建,在<code>loop</code>方法开始循环。</p>
+<p>Java层的Looper和MessageQueue有在C++对应的类，分别是Looper（Native）和NativeMessageQueue类</p>
+<p>线程默认是没有looper的，除非你在线程调用<code>prepare</code>方法，然后才能执行<code>loop</code>方法才能进行消息处理。</p>
+<p><code>prepare</code>做了什么呢？</p>
+<pre><code>private static void prepare(boolean quitAllowed) {    
+      if (sThreadLocal.get() != null) {        
+          throw new RuntimeException(&quot;Only one Looper may be created per thread&quot;);    
+      }    
+      sThreadLocal.set(new Looper(quitAllowed));}
+</code></pre>
+<p>你可以看到<code>prepare()</code>方法只能调用一次。在最后会创建一个Looper放在ThreadLocal里保存。<br>
+Looper是如何创建的呢？</p>
+<pre><code>private Looper(boolean quitAllowed) {    
+      mQueue = new MessageQueue(quitAllowed);    
+      mThread = Thread.currentThread();
+}
+</code></pre>
+<p>可以看到，构造方法是私有的，新创建了一个MessageQueue，mThread就是当前线程。<br>
+那么Looper是如何执行消息循环的？</p>
+<pre><code>public static void loop() {    
+        /*中间省略若干代码*/
+        final Looper me = myLooper();    
+        if (me == null) {        
+              throw new RuntimeException(&quot;No Looper; Looper.prepare() wasn't called on this thread.&quot;);    
+        }    
+        final MessageQueue queue = me.mQueue;    
+        for (;;) {        
+              Message msg = queue.next();       
+              msg.target.dispatchMessage(msg);     
+              msg.recycleUnchecked();    
+        }
+}
+</code></pre>
+<p>可以看到，通过一个无限循环，不停的在消息队列中拿消息，将消息分发到指定的地方。</p>
+<blockquote>
+<p>Message的target其实就是Handler</p>
+</blockquote>
+<p>所以，在你写的线程中，可以这样使用：</p>
+<pre><code>class LooperThread extends Thread {     
+      public Handler mHandler;      
+      public void run() {          
+            Looper.prepare();
+            mHandler = new Handler() {
+                  public void handleMessage(Message msg) {
+                       // process incoming messages here
+                  }
+            };
+            Looper.loop();
+     }
+}
+</code></pre>
+<p>不过上述的方式太low，在代码中也不方便，可以这样写：</p>
+<p><strong>HandlerThread</strong></p>
+<pre><code>HandlerThread thread  = new HandlerThread(&quot;new_handler_thread&quot;);
+Handler handler = new Handler(thread.getLooper(), new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                return false;
+            }
+});
+</code></pre>
+<p>HandlerThread继承自Thread，自身会创建一个Looper。</p>
+<p>关于 HandlerThread可参考 <a href="http://blog.csdn.net/lmj623565791/article/details/47079737/">Android HandlerThread 完全解析</a></p>
+<p>大多数和消息循环的交互都是通过<code>Handler</code>去完成的，就像你在<code>Handler</code>那部分看到的那样。记得在你不再执行消息循环的时候调用<code>Looper</code>的<code>quit</code>方法。</p>
+<h3 id="4handler">4.Handler</h3>
+<p><code>Handler</code>能够发送和处理和<code>MessageQueue</code>关联的 <code>Message</code> 或 <code>Runnable</code>。每个<code>Handler</code>和一个单独的线程关联，这个线程就是你创建这个<code>Handler</code>的时候所在的线程，需要处理的<code>MessageQueue</code>也是这个线程的<code>MessageQueue</code>。</p>
+<p>请看：</p>
+<pre><code>public Handler(Callback callback, boolean async) {    
+    /*省略若干代码*/
+    mLooper = Looper.myLooper();
+    if (mLooper == null) {    
+        throw new RuntimeException(        
+          &quot;Can't create handler inside thread that has not called Looper.prepare()&quot;);}
+    mQueue = mLooper.mQueue;
+    mCallback = callback;
+    mAsynchronous = async;
+}
+
+public Handler(Looper looper, Callback callback, boolean async) {
+    mLooper = looper;
+    mQueue = looper.mQueue;
+    mCallback = callback;
+    mAsynchronous = async;
+}
+</code></pre>
+<p>Handler有很多个构造函数，最终都会调用到这个构造函数。你可以看到Handler中的的Looper成员，就是通过Looper的静态方法<code>myLooper</code>得到的，<code>myLooper</code>是干啥的？你可以看Looper的内容，在上面代码中得到了一个和这个线程关联的Looper。如果 <code>mLooper</code>成员是<code>null</code>，那么就抛出异常。你可能会问，我在activity中随便创建handler啊，没有调用<code>Looper.myLooper()</code>方法。那是因为当你的应用运行的时候，Android已经通过<code>Looper</code>的静态方法<code>prepareMainLooper</code>创建了，这个方法只能执行一次，否则就会抛出异常了。这个<code>Looper</code>适合线程绑定的，你再看看<code>mQueue</code>，是从<code>mLooper</code>中拿到的。</p>
+<p>调用的顺序如下：</p>
+<ul>
+<li>Message的callback是否是null？不是调用callback的run方法（其实这里Message的callback是一个Runnable对象，通过Handler的post方法传递）</li>
+<li>Handler的callback是否是null？不是调用callback。这里的callback的类型是<code>Handler.Callback()</code></li>
+<li>最终调用Handler的handleMessage的方法。</li>
+</ul>
+<pre><code>    /**
+     * Handle system messages here.
+     */
+    public void dispatchMessage(Message msg) {
+        if (msg.callback != null) {
+            handleCallback(msg);
+        } else {
+            if (mCallback != null) {
+                if (mCallback.handleMessage(msg)) {
+                    return;
+                }
+            }
+            handleMessage(msg);
+        }
+    }
+</code></pre>
+<h3 id="5-messagequeueidlehandler">5. MessageQueue.IdleHandler</h3>
+<ul>
+<li><a href="https://zhuanlan.zhihu.com/p/30601168">《你知道android的MessageQueue.IdleHandler吗？》</a></li>
+</ul>
+<blockquote>
+<p>简而言之，就是在looper里面的message暂时处理完了，这个时候会回调这个接口，返回false，那么就会移除它，返回true就会在下次message处理完了的时候继续回调</p>
+</blockquote>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[About]]></title>
         <id>https://sparkfengbo.github.io/post/about/</id>
@@ -492,136 +783,6 @@ write(socket_fd, tmp_buf, len);
 <hr>
 <h1 id="3io软件层级">3.IO软件层级</h1>
 <h1 id="4盘">4.盘</h1>
-]]></content>
-    </entry>
-    <entry>
-        <title type="html"><![CDATA[4.存储和文件]]></title>
-        <id>https://sparkfengbo.github.io/post/czxt-4cun-chu-he-wen-jian/</id>
-        <link href="https://sparkfengbo.github.io/post/czxt-4cun-chu-he-wen-jian/">
-        </link>
-        <updated>2020-10-12T10:23:50.000Z</updated>
-        <content type="html"><![CDATA[<h1 id="1文件">1.文件</h1>
-<h2 id="文件命名"><s>文件命名</s></h2>
-<h2 id="文件结构"><s>文件结构</s></h2>
-<h2 id="文件类型">文件类型</h2>
-<ul>
-<li>
-<p>普通文件</p>
-<ul>
-<li>普通文件一般分为ASCII文件和二进制文件。ASCII文件由多行正文组成。在某些系统中，每行用回车符结束，其他系统则用换行符结束。有些系统还同时采用回车符和换行符（如MS-DOS）。文件中各行的长度不一定相同。</li>
-<li>ASCII文件的最大优势是可以显示和打印，还可以用任何文本编辑器进行编辑。</li>
-<li>其他与ASCII文件不同的是二进制文件。打印出来的二进制文件是无法理解的、充满混乱字符的一张表。通常，二进制文件有一定的内部结构，使用该文件的程序才了解这种结构。</li>
-</ul>
-</li>
-<li>
-<p>目录</p>
-</li>
-<li>
-<p>字符特殊文件</p>
-<ul>
-<li>和输入/输出有关，用于串行I/O类设备，如终端、打印机、网络等。</li>
-</ul>
-</li>
-<li>
-<p>块特殊文件</p>
-<ul>
-<li>用于磁盘类设备。</li>
-</ul>
-</li>
-</ul>
-<h2 id="文件读取">文件读取</h2>
-<ul>
-<li><s>顺序存取</s></li>
-<li>随机存取</li>
-</ul>
-<h2 id="文件属性">文件属性</h2>
-<blockquote>
-<p>文件都有文件名和数据。另外，所有的操作系统还会保存其他与文件相关的信息，如文件创建的日期和时间、文件大小等。这些附加信息称为文件属性（attribute），有些人称之为元数据（metadata）。文件的属性在不同系统中差别很大。一些常用的属性在图4-4中列出，但还存在其他的属性。</p>
-</blockquote>
-<figure data-type="image" tabindex="1"><img src="https://sparkfengbo.github.io/post-images/1602498249545.png" alt="" loading="lazy"></figure>
-<h1 id="2目录">2.目录</h1>
-<h2 id="结构">结构</h2>
-<ul>
-<li>一级目录系统</li>
-<li>层次目录系统</li>
-</ul>
-<figure data-type="image" tabindex="2"><img src="https://sparkfengbo.github.io/post-images/1602498258561.png" alt="" loading="lazy"></figure>
-<h2 id="路径名">路径名</h2>
-<figure data-type="image" tabindex="3"><img src="https://sparkfengbo.github.io/post-images/1602498267327.png" alt="" loading="lazy"></figure>
-<h1 id="3文件系统的实现">3.文件系统的实现</h1>
-<h2 id="文件系统布局">文件系统布局</h2>
-<figure data-type="image" tabindex="4"><img src="https://sparkfengbo.github.io/post-images/1602498275229.png" alt="" loading="lazy"></figure>
-<blockquote>
-<p>多数磁盘划分为一个或多个分区，每个分区中有一个独立的文件系统。磁盘的0号扇区称为主引导记录（Master Boot Record，MBR），用来引导计算机。在MBR的结尾是分区表。该表给出了每个分区的起始和结束地址。表中的一个分区被标记为活动分区。</p>
-</blockquote>
-<blockquote>
-<p>在计算机被引导时，BIOS读入并执行MBR。MBR做的第一件事是确定活动分区，读入它的第一个块，称为引导块（boot block），并执行之。引导块中的程序将装载该分区中的操作系统。为统一起见，每个分区都从一个启动块开始，即使它不含有一个可启动的操作系统。</p>
-</blockquote>
-<h2 id="文件的实现">文件的实现</h2>
-<ul>
-<li>连续分配
-<ul>
-<li>把每个文件作为一连串连续数据块存储在磁盘上</li>
-<li>实现简单，记录第一块的磁盘地址和文件的块数即可</li>
-<li>读操作更好</li>
-<li>缺点： 磁盘碎片</li>
-</ul>
-</li>
-</ul>
-<figure data-type="image" tabindex="5"><img src="https://sparkfengbo.github.io/post-images/1602498286294.png" alt="" loading="lazy"></figure>
-<ul>
-<li>
-<p>链表分配</p>
-<ul>
-<li>没有磁盘碎片</li>
-</ul>
-<blockquote>
-<p>与连续分配方案不同，这一方法可以充分利用每个磁盘块。不会因为磁盘碎片（除了最后一块中的内部碎片）而浪费存储空间。同样，在目录项中，只需要存放第一块的磁盘地址，文件的其他块就可以从这个首块地址查找到。</p>
-</blockquote>
-<ul>
-<li>随机存取缓慢，需要链表查找</li>
-<li>指针占去了一些字节<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498300227.png" alt="" loading="lazy"></li>
-</ul>
-</li>
-<li>
-<p>在内存中采用表的链表分配</p>
-<ul>
-<li><strong>如果取出每个磁盘块的指针字，把它放在内存的一个表中，就可以解决上述链表的两个不足。</strong></li>
-<li>内存中的这样一个表格称为<strong>文件分配表（File Allocation Table，FAT）</strong>。</li>
-<li>保留所有磁盘块的链接表的表大小正比于磁盘自身的大小，磁盘越大，这个表可能很大。</li>
-</ul>
-</li>
-</ul>
-<figure data-type="image" tabindex="6"><img src="https://sparkfengbo.github.io/post-images/1602498310160.png" alt="" loading="lazy"></figure>
-<ul>
-<li>i节点
-<ul>
-<li>给每个文件赋予一个称为i节点（index-node）的数据结构，其中列出了文件属性和文件块的磁盘地址。</li>
-<li><strong>只有在对应文件打开时，其i节点才在内存中</strong></li>
-<li>i节点机制需要在内存中有一个数组，其大小正比于可能要同时打开的最大文件个数。它与磁盘无关</li>
-<li>相对于在内存中采用表的方式而言，这种机制具有很大的优势，即只有在对应文件打开时，其i节点才在内存中<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498320660.png" alt="" loading="lazy"></li>
-</ul>
-</li>
-</ul>
-<h2 id="目录的实现">目录的实现</h2>
-<p>所有目录项大小一样的实现<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498329477.png" alt="" loading="lazy"></p>
-<p>非-所有目录项大小一样的实现</p>
-<p>“有三个文件，project-budget、personnel和foo”<br>
-<img src="https://sparkfengbo.github.io/post-images/1602498337576.png" alt="" loading="lazy"></p>
-<h2 id="实现">实现</h2>
-<ul>
-<li><a href="https://zh.wikipedia.org/wiki/NTFS">NTFS</a></li>
-<li>FAT</li>
-<li>EXT2
-<ul>
-<li>https://wizardforcel.gitbooks.io/vbird-linux-basic-4e/content/59.html</li>
-</ul>
-</li>
-<li>HFS （苹果）</li>
-</ul>
 ]]></content>
     </entry>
 </feed>
